@@ -3,7 +3,8 @@
  *
  */
 
-public class Welcome {
+public class Compiler {
+    
     public static void main (String[] args) {
         System.out.println("Welcome to my compilers repository!");
     }
