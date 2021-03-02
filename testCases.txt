@@ -1,1 +1,1 @@
-{{{{{{}}} /* comments are ignored */   }} }}$
+{int a a=a string b a=b}$

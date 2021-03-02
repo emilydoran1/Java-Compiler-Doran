@@ -39,7 +39,6 @@ public class Lexer {
 
         for(int i = 0; i < line.length(); i++) {
             longestMatch += line.charAt(i);
-
             // check if we are inside a comment
             if (insideComment == false) {
 
@@ -102,11 +101,15 @@ public class Lexer {
 
                 // check if current char is whitespace
                 else if (checkWhitespace(line.charAt(i))) {
-                    longestMatch = "";
-                    lastFoundStart = i-1;
-//                    System.out.println(lastFound + " " + i);
-                    if(longestMatch == " " ){
-                        System.out.println("test");
+                    if(lastFound != ""){
+                        System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
+                    }
+                    else{
+                        longestMatch = "";
                     }
 
                 }
