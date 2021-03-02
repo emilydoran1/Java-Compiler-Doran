@@ -81,6 +81,11 @@ public class Lexer {
                     }
 
                 }
+                // check if longest match is a digit - update positions
+                else if (checkDigit(line.charAt(i))) {
+                    lastFound = longestMatch;
+                    lastFoundEnd = i;
+                }
 
             }
         }
@@ -127,12 +132,12 @@ public class Lexer {
     }
 
     // digit (4)
-    private boolean checkDigit(String stringToCheck){
+    private boolean checkDigit(char charToCheck){
         // a digit is a single number 0-9
         String regexInteger = "[0-9]";
         boolean isDigit = false;
 
-        if (Pattern.matches(regexInteger, stringToCheck)) {
+        if (Pattern.matches(regexInteger, Character.toString(charToCheck))) {
             isDigit = true;
         }
 
