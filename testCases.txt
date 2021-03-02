@@ -1,1 +1,3 @@
-This file will contain test cases for testing the compiler.
+{whilea=9}$
+{{{{{{int}}}}}}$
+{{{{{{}}} /* comments are ignored */ }}}}$ { /* comments are still ignored */ int @}$
