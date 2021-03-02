@@ -58,13 +58,13 @@ public class Lexer {
                     if(lastFound == ""){
                         lastFound = longestMatch;
                         lastFoundEnd = i;
-                    }
-                    else if(lastFound == "" && i == line.length()){
-                        System.out.println(lastFound + " found at " + lastFoundStart);
-                        longestMatch = "";
-                        lastFound = "";
-                        lastFoundStart = lastFoundEnd+1;
-                        i = lastFoundEnd;
+                        if(i == line.length()-1){
+                            System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundStart = lastFoundEnd+1;
+                            i = lastFoundEnd;
+                        }
                     }
                     else{
                         // check if we have a two character symbol
@@ -73,7 +73,7 @@ public class Lexer {
                             lastFoundEnd = i;
                         }
 
-                        System.out.println(lastFound + " found at " + lastFoundStart);
+                        System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
                         longestMatch = "";
                         lastFound = "";
                         lastFoundStart = lastFoundEnd+1;
