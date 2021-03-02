@@ -41,14 +41,20 @@ public class Lexer {
             // check if we are inside a comment
             if (insideComment == false) {
                 longestMatch += line.charAt(i);
+
+                // check if longest match is a keyword - update positions
                 if (checkKeyword(longestMatch)) {
                     lastFound = longestMatch;
                     lastFoundEnd = i;
 
-                } else if (checkId(longestMatch)) {
+                }
+                // check if longest match is an id - update positions
+                else if (checkId(longestMatch)) {
                     lastFound = longestMatch;
                     lastFoundEnd = i;
-                } else if (checkSymbol(line.charAt(i))) {
+                }
+                // check if longest match is a symbol or if it is stop point
+                else if (checkSymbol(line.charAt(i))) {
                     if(lastFound == ""){
                         lastFound = longestMatch;
                         lastFoundEnd = i;
@@ -61,14 +67,21 @@ public class Lexer {
                         i = lastFoundEnd;
                     }
                     else{
-                       System.out.println(lastFound + " found at " + lastFoundStart);
-                       longestMatch = "";
-                       lastFound = "";
-                       lastFoundStart = lastFoundEnd+1;
-                       i = lastFoundEnd;
+                        // check if we have a two character symbol
+                        if (longestMatch.equals("!=") || longestMatch.equals("==")) {
+                            lastFound = longestMatch;
+                            lastFoundEnd = i;
+                        }
+
+                        System.out.println(lastFound + " found at " + lastFoundStart);
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
                     }
 
                 }
+
             }
         }
 

@@ -1,3 +1,3 @@
-{whilea=9}$
+{whilea!=9}$
 {{{{{{int}}}}}}$
 {{{{{{}}} /* comments are ignored */ }}}}$ { /* comments are still ignored */ int @}$
