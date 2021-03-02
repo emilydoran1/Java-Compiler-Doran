@@ -38,9 +38,10 @@ public class Lexer {
         int lastFoundEnd = 0;
 
         for(int i = 0; i < line.length(); i++) {
+            longestMatch += line.charAt(i);
+
             // check if we are inside a comment
             if (insideComment == false) {
-                longestMatch += line.charAt(i);
 
                 // check if longest match is a keyword - update positions
                 if (checkKeyword(longestMatch)) {
@@ -87,6 +88,36 @@ public class Lexer {
                     lastFoundEnd = i;
                 }
 
+                // check if we are in a comment
+
+                // check if we are in a string
+
+                // check if current char is whitespace
+//                else if (checkWhitespace(line.charAt(i))) {
+//                    System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+//                    longestMatch = "";
+//                    lastFound = "";
+//                    lastFoundStart = lastFoundEnd+1;
+//                    i = lastFoundEnd;
+//                }
+                else if(checkComment(longestMatch) == true){
+                    System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                    longestMatch = "";
+                    lastFound = "";
+                    lastFoundStart = lastFoundEnd+1;
+                    i = lastFoundEnd;
+                }
+
+            }
+
+            // we are inside of a comment
+            else{
+                checkComment(longestMatch);
+                if(insideComment == false){
+                    longestMatch = "";
+                    lastFound = "";
+                    lastFoundStart = i+1;
+                }
             }
         }
 
@@ -106,12 +137,12 @@ public class Lexer {
     }
 
     // id (2)
-    private boolean checkId(String charToCheck){
+    private boolean checkId(String stringToCheck){
         // an Id is a single character a-z
         String regexCharacter = "[a-z]";
         boolean isId = false;
 
-        if (Pattern.matches(regexCharacter, charToCheck)) {
+        if (Pattern.matches(regexCharacter, stringToCheck)) {
             isId = true;
         }
 
@@ -155,6 +186,31 @@ public class Lexer {
         }
 
         return isChar;
+    }
+
+    // check whitespace
+    private boolean checkWhitespace(char charToCheck){
+        boolean isWhitespace = false;
+        if(charToCheck == ' '){
+            isWhitespace =  true;
+        }
+        return isWhitespace;
+    }
+
+    private boolean checkComment(String stringToCheck){
+        boolean isComment = false;
+
+        if (stringToCheck.contains("/*")) {
+            isComment = true;
+            insideComment = true;
+        }
+
+        if (stringToCheck.contains("*/")) {
+            isComment = true;
+            insideComment = false;
+        }
+
+        return isComment;
     }
 
 }
