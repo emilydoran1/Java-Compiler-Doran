@@ -58,6 +58,7 @@ public class Lexer {
                 else if (checkSymbol(line.charAt(i))) {
                     if(lastFound == ""){
                         lastFound = longestMatch;
+                        lastFoundStart = i;
                         lastFoundEnd = i;
                         if(i == line.length()-1){
                             System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
@@ -88,24 +89,26 @@ public class Lexer {
                     lastFoundEnd = i;
                 }
 
-                // check if we are in a comment
-
                 // check if we are in a string
 
-                // check if current char is whitespace
-//                else if (checkWhitespace(line.charAt(i))) {
-//                    System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
-//                    longestMatch = "";
-//                    lastFound = "";
-//                    lastFoundStart = lastFoundEnd+1;
-//                    i = lastFoundEnd;
-//                }
+                // check if we are in a comment
                 else if(checkComment(longestMatch) == true){
                     System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
                     longestMatch = "";
                     lastFound = "";
                     lastFoundStart = lastFoundEnd+1;
                     i = lastFoundEnd;
+                }
+
+                // check if current char is whitespace
+                else if (checkWhitespace(line.charAt(i))) {
+                    longestMatch = "";
+                    lastFoundStart = i-1;
+//                    System.out.println(lastFound + " " + i);
+                    if(longestMatch == " " ){
+                        System.out.println("test");
+                    }
+
                 }
 
             }
