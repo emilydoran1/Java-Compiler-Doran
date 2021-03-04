@@ -31,7 +31,6 @@ public class Lexer {
     }
 
     private void getToken(String line){
-//        System.out.println("INFO Lexer - Lexing program " + programNum + "...");
         String longestMatch = "";
         String lastFound = "";
         int lastFoundStart = 0;
@@ -39,6 +38,7 @@ public class Lexer {
 
         for(int i = 0; i < line.length(); i++) {
             if(newProgram == true){
+                System.out.println();
                 System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
                 newProgram = false;
             }
@@ -148,13 +148,15 @@ public class Lexer {
 
                 // check if we are in a comment
                 else if(checkComment(longestMatch) == true){
-                    Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                    System.out.println(tok.toString());
+                    if(lastFound != "") {
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+                        System.out.println(tok.toString());
 
-                    longestMatch = "";
-                    lastFound = "";
-                    lastFoundStart = lastFoundEnd+1;
-                    i = lastFoundEnd;
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
+                    }
                 }
 
                 // check if current char is whitespace
