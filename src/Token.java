@@ -46,7 +46,20 @@ public class Token {
         String regexKeyword = "(while)|(print)|(string)|(if)|(int)|(boolean)|(true)|(false)";
 
         if (Pattern.matches(regexKeyword, value)) {
-            tokenKind = "T_KEYWORD";
+            if(value.equals("while"))
+                tokenKind = "T_WHILE";
+            else if(value.equals("print"))
+                tokenKind = "T_PRINT]";
+            else if(value.equals("string") || value.equals("int") || value.equals("boolean"))
+                tokenKind = "T_VARIABLE_TYPE";
+            else if(value.equals("if"))
+                tokenKind = "T_IF]";
+            else if(value.equals("while"))
+                tokenKind = "T_WHILE]";
+            else if(value.equals("true"))
+                tokenKind = "T_BOOL_TRUE]";
+            else if(value.equals("false"))
+                tokenKind = "T_BOOL_FALSE]";
         }
         else if (Pattern.matches(regexId, value)) {
             tokenKind = "T_ID";
