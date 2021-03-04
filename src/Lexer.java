@@ -94,7 +94,7 @@ public class Lexer {
                             if(lastFound.equals("$")){
                                 programNum++;
                                 newProgram = true;
-                                System.out.println("INFO  Lexer - Lex completed with " + numErrors + " errors");
+                                System.out.println(finishedProgram());
                             }
 
                             longestMatch = "";
@@ -365,6 +365,13 @@ public class Lexer {
         }
 
         return isString;
+    }
+
+    private String finishedProgram(){
+        if(numErrors == 0)
+            return "INFO  Lexer - Lex completed with " + numErrors + " errors";
+        else
+            return "Error Lexer - Lex failed with " + numErrors + " error(s)";
     }
 
 }
