@@ -10,7 +10,7 @@ public class Token {
     String regexCharacter = "[a-z]";
 
     public Token(String kind, String value, int lineNum, int position){
-        this.kind = kind;
+        this.kind = tokenKind(value);
         this.value = value;
         this.lineNum = lineNum;
         this.position = position;
@@ -35,5 +35,29 @@ public class Token {
     public String toString(){
         return "DEBUG Lexer - " + getKind() + " [ " + getValue() + " ] found at (" + getLine() +
                 ":" + getPosition() + ")";
+    }
+
+    // get the token kind
+    public String tokenKind(String value){
+        String tokenKind = "";
+        String regexDigit = "[0-9]";
+        String regexSymbol = "[{}!=+()$]";
+        String regexId = "[a-z]";
+        String regexKeyword = "(while)|(print)|(string)|(if)|(int)|(boolean)|(true)|(false)";
+
+        if (Pattern.matches(regexKeyword, value)) {
+            tokenKind = "T_KEYWORD";
+        }
+        else if (Pattern.matches(regexId, value)) {
+            tokenKind = "T_ID";
+        }
+        else if (Pattern.matches(regexSymbol, value)) {
+            tokenKind = "T_SYMBOL";
+        }
+        else if (Pattern.matches(regexDigit, value)) {
+            tokenKind = "T_DIGIT";
+        }
+
+        return tokenKind;
     }
 }
