@@ -132,17 +132,29 @@ public class Lexer {
                 }
                 // check if longest match is a digit - update positions
                 else if (checkDigit(line.charAt(i))) {
-                    lastFound = longestMatch;
-                    lastFoundEnd = i;
+                     if(insideQuotes == false){
+                         lastFound = longestMatch;
+                         lastFoundEnd = i;
 
-                    if (i == line.length()-1){
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
-                        longestMatch = "";
-                        lastFound = "";
-                        lastFoundStart = lastFoundEnd+1;
-                        i = lastFoundEnd;
-                    }
+                         if (i == line.length()-1){
+                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+                             System.out.println(tok.toString());
+                             longestMatch = "";
+                             lastFound = "";
+                             lastFoundStart = lastFoundEnd+1;
+                             i = lastFoundEnd;
+                         }
+                     }
+                     else{
+                         System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                                 " Unrecognized Token inside string: " + line.charAt(i));
+
+                         longestMatch = "";
+                         lastFound = "";
+                         lastFoundStart = i+1;
+                         numErrors++;
+                     }
+
                 }
                 // check if we are in a string and we have a char
                 else if (checkChar(line.charAt(i))) {
