@@ -10,12 +10,13 @@ public class Lexer {
 
     private int programNum = 1;
     private int numErrors = 0;
+    public boolean newProgram = true;
 
     public Lexer(String passedFile) {
         try {
             File file = new File(passedFile);
             Scanner scanner = new Scanner(file);
-            System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
+
             while (scanner.hasNext()) {
                 String line = scanner.nextLine();
                 getToken(line);
@@ -27,7 +28,6 @@ public class Lexer {
             e.printStackTrace();
         }
 
-        //getToken(passedFile, programNum);
     }
 
     private void getToken(String line){
@@ -38,6 +38,10 @@ public class Lexer {
         int lastFoundEnd = 0;
 
         for(int i = 0; i < line.length(); i++) {
+            if(newProgram == true){
+                System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
+                newProgram = false;
+            }
             longestMatch += line.charAt(i);
 //            System.out.println(longestMatch);
 
@@ -77,7 +81,7 @@ public class Lexer {
                 }
                 // check if longest match is a symbol or if it is stop point
                 else if (checkSymbol(line.charAt(i))) {
-                    if(lastFound == ""){
+                     if(lastFound == ""){
                         lastFound = longestMatch;
                         lastFoundStart = i;
                         lastFoundEnd = i;
@@ -86,6 +90,12 @@ public class Lexer {
                         if(i == line.length()-1){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                             System.out.println(tok.toString());
+
+                            if(lastFound.equals("$")){
+                                programNum++;
+                                newProgram = true;
+                            }
+
                             longestMatch = "";
                             lastFound = "";
                             lastFoundStart = lastFoundEnd+1;
