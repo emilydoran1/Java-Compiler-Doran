@@ -39,6 +39,7 @@ public class Token {
 
     // get the token kind
     public String tokenKind(String value){
+
         String tokenKind = "";
         String regexDigit = "[0-9]";
         String regexSymbol = "[{}!=+()$]";
@@ -64,7 +65,7 @@ public class Token {
         else if (Pattern.matches(regexId, value)) {
             tokenKind = "T_ID";
         }
-        else if (Pattern.matches(regexSymbol, value)) {
+        else if (Pattern.matches(regexSymbol, value) || value.equals("==") || value.equals("!=")) {
             tokenKind = "";
 
             if(value.equals("{"))
