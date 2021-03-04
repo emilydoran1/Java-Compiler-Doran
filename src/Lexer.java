@@ -51,7 +51,7 @@ public class Lexer {
 
                     // check if we are at the end of the line
                     if (i == line.length()-1){
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
                         longestMatch = "";
                         lastFound = "";
@@ -67,7 +67,7 @@ public class Lexer {
 
                     // check if we are at the end of the line
                     if (i == line.length()-1 && insideQuotes == false){
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
                         longestMatch = "";
                         lastFound = "";
@@ -84,7 +84,7 @@ public class Lexer {
 
                         // check if we are at the end of the line
                         if(i == line.length()-1){
-                            Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                            Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                             System.out.println(tok.toString());
                             longestMatch = "";
                             lastFound = "";
@@ -100,7 +100,7 @@ public class Lexer {
 
                             // check if we are at the end of the line
                             if (i == line.length()-1 && insideQuotes == false){
-                                Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                                Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                                 System.out.println(tok.toString());
                                 longestMatch = "";
                                 lastFound = "";
@@ -109,7 +109,7 @@ public class Lexer {
                             }
                         }
 
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
 
                         longestMatch = "";
@@ -125,7 +125,7 @@ public class Lexer {
                     lastFoundEnd = i;
 
                     if (i == line.length()-1){
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
                         longestMatch = "";
                         lastFound = "";
@@ -138,7 +138,7 @@ public class Lexer {
 
                 // check if we are in a comment
                 else if(checkComment(longestMatch) == true){
-                    Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                    Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                     System.out.println(tok.toString());
 
                     longestMatch = "";
@@ -150,7 +150,7 @@ public class Lexer {
                 // check if current char is whitespace
                 else if (checkWhitespace(line.charAt(i))) {
                     if(lastFound != ""){
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
 
                         longestMatch = "";
@@ -168,7 +168,7 @@ public class Lexer {
 
                 // check if we are at the end of line and not inside string
                 else if (i == line.length()-1 && insideQuotes == false){
-                    Token tok = new Token("", lastFound, currentLine, lastFoundStart);
+                    Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                     System.out.println(tok.toString());
                     longestMatch = "";
                     lastFound = "";

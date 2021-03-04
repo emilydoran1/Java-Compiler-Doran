@@ -66,7 +66,7 @@ public class Token {
         }
         else if (Pattern.matches(regexSymbol, value)) {
             tokenKind = "";
-            
+
             if(value.equals("{"))
                 tokenKind = "T_L_BRACE";
             else if(value.equals("}"))
