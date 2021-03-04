@@ -90,6 +90,9 @@ public class Token {
         else if (Pattern.matches(regexDigit, value)) {
             tokenKind = "T_DIGIT";
         }
+        else if (value.equals("\"")) {
+            tokenKind = "T_QUOTE";
+        }
 
         return tokenKind;
     }

@@ -65,12 +65,12 @@ public class Lexer {
 
                 }
                 // check if longest match is an id - update positions
-                else if (checkId(longestMatch)) {
+                else if (checkId(longestMatch) && insideQuotes == false) {
                     lastFound = longestMatch;
                     lastFoundEnd = i;
 
                     // check if we are at the end of the line
-                    if (i == line.length()-1 && insideQuotes == false){
+                    if (i == line.length()-1){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
                         longestMatch = "";
@@ -144,8 +144,42 @@ public class Lexer {
                         i = lastFoundEnd;
                     }
                 }
+                // check if we are in a string and we have a char
+                else if (checkChar(line.charAt(i))) {
+                    Token tok = new Token("", longestMatch, currentLine, i+1);
+                    System.out.println(tok.toString());
+                    longestMatch = "";
+                    lastFound = "";
+                    lastFoundEnd = i;
+                    lastFoundStart = i;
+                }
 
                 // check if we are in a string
+                else if(checkString(longestMatch) == true){
+                    if(lastFound != "") {
+                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+                        System.out.println(tok.toString());
+
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
+                    }
+                    else{
+                        lastFound = "\"";
+                        Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
+                        System.out.println(tok.toString());
+
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = i;
+                        i = lastFoundEnd+1;
+                        if(insideQuotes == false)
+                            insideQuotes = true;
+                        else
+                            insideQuotes = false;
+                    }
+                }
 
                 // check if we are in a comment
                 else if(checkComment(longestMatch) == true){
@@ -262,7 +296,7 @@ public class Lexer {
         String regexCharacter = "[a-z]";
         boolean isChar = false;
 
-        if ((insideQuotes == true) && (Pattern.matches(regexCharacter, Character.toString(charToCheck)))) {
+        if (Pattern.matches(regexCharacter, Character.toString(charToCheck))) {
             isChar = true;
         }
 
@@ -294,6 +328,17 @@ public class Lexer {
         }
 
         return isComment;
+    }
+
+    // check if we are inside a string
+    private boolean checkString(String stringToCheck){
+        boolean isString = false;
+
+        if (stringToCheck.contains("\"")) {
+            isString = true;
+        }
+
+        return isString;
     }
 
 }
