@@ -10,7 +10,7 @@ public class Token {
     String regexCharacter = "[a-z]";
 
     public Token(String kind, String value, int lineNum, int position){
-        this.kind = tokenKind(value);
+        this.kind = tokenKind(value, kind);
         this.value = value;
         this.lineNum = lineNum;
         this.position = position;
@@ -38,7 +38,7 @@ public class Token {
     }
 
     // get the token kind
-    public String tokenKind(String value){
+    public String tokenKind(String value, String kind){
 
         String tokenKind = "";
         String regexDigit = "[0-9]";
@@ -46,7 +46,10 @@ public class Token {
         String regexId = "[a-z]";
         String regexKeyword = "(while)|(print)|(string)|(if)|(int)|(boolean)|(true)|(false)";
 
-        if (Pattern.matches(regexKeyword, value)) {
+        if(kind.equals("T_CHAR")){
+            tokenKind = "T_CHAR";
+        }
+        else if (Pattern.matches(regexKeyword, value)) {
             if(value.equals("while"))
                 tokenKind = "T_WHILE";
             else if(value.equals("print"))

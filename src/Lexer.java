@@ -146,7 +146,7 @@ public class Lexer {
                 }
                 // check if we are in a string and we have a char
                 else if (checkChar(line.charAt(i))) {
-                    Token tok = new Token("", longestMatch, currentLine, i+1);
+                    Token tok = new Token("T_CHAR", longestMatch, currentLine, i+1);
                     System.out.println(tok.toString());
                     longestMatch = "";
                     lastFound = "";
