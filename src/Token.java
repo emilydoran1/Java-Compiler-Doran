@@ -65,7 +65,26 @@ public class Token {
             tokenKind = "T_ID";
         }
         else if (Pattern.matches(regexSymbol, value)) {
-            tokenKind = "T_SYMBOL";
+            tokenKind = "";
+            
+            if(value.equals("{"))
+                tokenKind = "T_L_BRACE";
+            else if(value.equals("}"))
+                tokenKind = "T_R_BRACE";
+            else if(value.equals("="))
+                tokenKind = "T_ASSIGN_OP";
+            else if(value.equals("=="))
+                tokenKind = "T_EQUALITY_OP";
+            else if(value.equals("!="))
+                tokenKind = "T_INEQUALITY_OP";
+            else if(value.equals("+"))
+                tokenKind = "T_ADDITION_OP";
+            else if(value.equals("("))
+                tokenKind = "T_L_PAREN";
+            else if(value.equals(")"))
+                tokenKind = "T_R_PAREN";
+            else if(value.equals("$"))
+                tokenKind = "T_EOP";
         }
         else if (Pattern.matches(regexDigit, value)) {
             tokenKind = "T_DIGIT";
