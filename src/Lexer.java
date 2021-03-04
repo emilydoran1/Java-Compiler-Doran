@@ -19,7 +19,7 @@ public class Lexer {
             while (scanner.hasNext()) {
                 String line = scanner.nextLine();
                 getToken(line);
-//                System.out.println(line);
+
                 currentLine++;
             }
             scanner.close();
@@ -39,6 +39,8 @@ public class Lexer {
 
         for(int i = 0; i < line.length(); i++) {
             longestMatch += line.charAt(i);
+//            System.out.println(longestMatch);
+
             // check if we are inside a comment
             if (insideComment == false) {
 
@@ -47,11 +49,31 @@ public class Lexer {
                     lastFound = longestMatch;
                     lastFoundEnd = i;
 
+                    // check if we are at the end of the line
+                    if (i == line.length()-1){
+                        Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                        System.out.println(tok.toString());
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
+                    }
+
                 }
                 // check if longest match is an id - update positions
                 else if (checkId(longestMatch)) {
                     lastFound = longestMatch;
                     lastFoundEnd = i;
+
+                    // check if we are at the end of the line
+                    if (i == line.length()-1 && insideQuotes == false){
+                        Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                        System.out.println(tok.toString());
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
+                    }
                 }
                 // check if longest match is a symbol or if it is stop point
                 else if (checkSymbol(line.charAt(i))) {
@@ -59,8 +81,11 @@ public class Lexer {
                         lastFound = longestMatch;
                         lastFoundStart = i;
                         lastFoundEnd = i;
+
+                        // check if we are at the end of the line
                         if(i == line.length()-1){
-                            System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                            Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                            System.out.println(tok.toString());
                             longestMatch = "";
                             lastFound = "";
                             lastFoundStart = lastFoundEnd+1;
@@ -72,9 +97,21 @@ public class Lexer {
                         if (longestMatch.equals("!=") || longestMatch.equals("==")) {
                             lastFound = longestMatch;
                             lastFoundEnd = i;
+
+                            // check if we are at the end of the line
+                            if (i == line.length()-1 && insideQuotes == false){
+                                Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                                System.out.println(tok.toString());
+                                longestMatch = "";
+                                lastFound = "";
+                                lastFoundStart = lastFoundEnd+1;
+                                i = lastFoundEnd;
+                            }
                         }
 
-                        System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                        Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                        System.out.println(tok.toString());
+
                         longestMatch = "";
                         lastFound = "";
                         lastFoundStart = lastFoundEnd+1;
@@ -86,13 +123,24 @@ public class Lexer {
                 else if (checkDigit(line.charAt(i))) {
                     lastFound = longestMatch;
                     lastFoundEnd = i;
+
+                    if (i == line.length()-1){
+                        Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                        System.out.println(tok.toString());
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = lastFoundEnd+1;
+                        i = lastFoundEnd;
+                    }
                 }
 
                 // check if we are in a string
 
                 // check if we are in a comment
                 else if(checkComment(longestMatch) == true){
-                    System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                    Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                    System.out.println(tok.toString());
+
                     longestMatch = "";
                     lastFound = "";
                     lastFoundStart = lastFoundEnd+1;
@@ -102,16 +150,30 @@ public class Lexer {
                 // check if current char is whitespace
                 else if (checkWhitespace(line.charAt(i))) {
                     if(lastFound != ""){
-                        System.out.println(lastFound + " found at " + currentLine + ":" + lastFoundStart);
+                        Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                        System.out.println(tok.toString());
+
                         longestMatch = "";
                         lastFound = "";
                         lastFoundStart = lastFoundEnd+1;
                         i = lastFoundEnd;
                     }
                     else{
+                        // skip over white space, but update index of start
                         longestMatch = "";
+                        lastFoundStart = i+1;
                     }
 
+                }
+
+                // check if we are at the end of line and not inside string
+                else if (i == line.length()-1 && insideQuotes == false){
+                    Token tok = new Token("Test", lastFound, currentLine, lastFoundStart);
+                    System.out.println(tok.toString());
+                    longestMatch = "";
+                    lastFound = "";
+                    lastFoundStart = lastFoundEnd+1;
+                    i = lastFoundEnd;
                 }
 
             }
@@ -145,10 +207,10 @@ public class Lexer {
     // id (2)
     private boolean checkId(String stringToCheck){
         // an Id is a single character a-z
-        String regexCharacter = "[a-z]";
+        String regexId = "[a-z]";
         boolean isId = false;
 
-        if (Pattern.matches(regexCharacter, stringToCheck)) {
+        if (Pattern.matches(regexId, stringToCheck)) {
             isId = true;
         }
 
@@ -197,12 +259,14 @@ public class Lexer {
     // check whitespace
     private boolean checkWhitespace(char charToCheck){
         boolean isWhitespace = false;
-        if(charToCheck == ' '){
-            isWhitespace =  true;
+        String regexWhitespace = "\\s";
+        if (Pattern.matches(regexWhitespace, Character.toString(charToCheck))) {
+            isWhitespace = true;
         }
         return isWhitespace;
     }
 
+    // check if we are inside a comment
     private boolean checkComment(String stringToCheck){
         boolean isComment = false;
 

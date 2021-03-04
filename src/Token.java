@@ -16,7 +16,7 @@ public class Token {
         this.position = position;
     }
 
-    public String getName(){
+    public String getKind(){
         return kind;
     }
 
@@ -30,5 +30,10 @@ public class Token {
 
     public int getPosition(){
         return position;
+    }
+
+    public String toString(){
+        return "DEBUG Lexer - " + getKind() + " [ " + getValue() + " ] found at (" + getLine() +
+                ":" + getPosition() + ")";
     }
 }
