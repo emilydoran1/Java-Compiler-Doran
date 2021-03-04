@@ -1,2 +1,2 @@
-{"stri ng"}$
+{"stri ng "}$
 

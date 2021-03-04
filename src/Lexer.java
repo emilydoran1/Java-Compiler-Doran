@@ -151,7 +151,7 @@ public class Lexer {
                     longestMatch = "";
                     lastFound = "";
                     lastFoundEnd = i;
-                    lastFoundStart = i;
+                    lastFoundStart = lastFoundEnd+1;
                 }
 
                 // check if we are in a string
@@ -206,9 +206,23 @@ public class Lexer {
                         i = lastFoundEnd;
                     }
                     else{
-                        // skip over white space, but update index of start
-                        longestMatch = "";
-                        lastFoundStart = i+1;
+                        // if we are in string, print white space token
+                        if(insideQuotes == true){
+                            lastFound = " ";
+                            Token tok = new Token("T_CHAR", lastFound, currentLine, lastFoundStart+1);
+                            System.out.println(tok.toString());
+
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundEnd = i;
+                            lastFoundStart = lastFoundEnd+1;
+                        }
+                        // skip over white space, but update index of start if not in string
+                        else{
+                            longestMatch = "";
+                            lastFoundStart = i+1;
+                        }
+
                     }
 
                 }
