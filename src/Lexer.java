@@ -40,6 +40,7 @@ public class Lexer {
             if(newProgram == true){
                 System.out.println();
                 System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
+                numErrors = 0;
                 newProgram = false;
             }
             longestMatch += line.charAt(i);
@@ -178,18 +179,20 @@ public class Lexer {
                         i = lastFoundEnd;
                     }
                     else{
-                        lastFound = "\"";
-                        Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+                        if(line.charAt(i) == '\"'){
+                            lastFound = "\"";
+                            Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
+                            System.out.println(tok.toString());
 
-                        longestMatch = "";
-                        lastFound = "";
-                        lastFoundStart = i;
-                        i = lastFoundEnd+1;
-                        if(insideQuotes == false)
-                            insideQuotes = true;
-                        else
-                            insideQuotes = false;
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundStart = i;
+                            i = lastFoundEnd+1;
+                            if(insideQuotes == false)
+                                insideQuotes = true;
+                            else
+                                insideQuotes = false;
+                        }
                     }
                 }
 
@@ -247,6 +250,16 @@ public class Lexer {
                     lastFound = "";
                     lastFoundStart = lastFoundEnd+1;
                     i = lastFoundEnd;
+                }
+
+                else if(insideQuotes == true && longestMatch != ""){
+                    System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                            " Unrecognized Token inside string: " + line.charAt(i));
+                    longestMatch = "";
+                    lastFound = "";
+                    lastFoundStart = i+1;
+                    lastFoundEnd = i+1;
+                    numErrors++;
                 }
 
             }
@@ -322,7 +335,7 @@ public class Lexer {
         String regexCharacter = "[a-z]";
         boolean isChar = false;
 
-        if (Pattern.matches(regexCharacter, Character.toString(charToCheck))) {
+        if (Pattern.matches(regexCharacter, Character.toString(charToCheck)) && insideQuotes == true) {
             isChar = true;
         }
 
