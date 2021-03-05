@@ -88,7 +88,7 @@ public class Lexer {
                         lastFoundEnd = i;
 
                         // check if we are at the end of the line
-                        if(i == line.length()-1){
+                        if(i == line.length()-1 || lastFound.equals("$")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                             System.out.println(tok.toString());
 
@@ -102,6 +102,17 @@ public class Lexer {
                             lastFound = "";
                             lastFoundStart = lastFoundEnd+1;
                             i = lastFoundEnd;
+
+                        }
+                        else if(insideQuotes == true){
+                            System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                                    " Unrecognized Token inside string: " + line.charAt(i));
+
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundStart = i+1;
+                            lastFoundEnd = i+1;
+                            numErrors++;
                         }
                     }
                     else{
@@ -121,13 +132,25 @@ public class Lexer {
                             }
                         }
 
-                        Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+                        if(insideQuotes == false){
+                            Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+                            System.out.println(tok.toString());
 
-                        longestMatch = "";
-                        lastFound = "";
-                        lastFoundStart = lastFoundEnd+1;
-                        i = lastFoundEnd;
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundStart = lastFoundEnd+1;
+                            i = lastFoundEnd;
+                        }
+                        else{
+                            System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                                    " Unrecognized Token inside string: " + line.charAt(i));
+
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundStart = i+1;
+                            numErrors++;
+                        }
+
                     }
 
                 }
@@ -179,6 +202,7 @@ public class Lexer {
                         i = lastFoundEnd;
                     }
                     else{
+                        // create token for closing quote
                         if(line.charAt(i) == '\"'){
                             lastFound = "\"";
                             Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
@@ -252,6 +276,7 @@ public class Lexer {
                     i = lastFoundEnd;
                 }
 
+                // check if an illegal symbol was entered in the quotes
                 else if(insideQuotes == true && longestMatch != ""){
                     System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
                             " Unrecognized Token inside string: " + line.charAt(i));
