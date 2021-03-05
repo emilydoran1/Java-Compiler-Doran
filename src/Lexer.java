@@ -298,16 +298,16 @@ public class Lexer {
                     numErrors++;
                 }
 
-//                else if(longestMatch != "" && lastFound == ""){
-//                    System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
-//                            " Unrecognized Token: " + line.charAt(i));
-//
-//                    longestMatch = "";
-//                    lastFound = "";
-//                    lastFoundStart = i+1;
-//                    lastFoundEnd = i+1;
-//                    numErrors++;
-//                }
+                else if(longestMatch != "" && lastFound == "" && !longestMatch.equals("/")){
+                    System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                            " Unrecognized Token: " + line.charAt(i));
+
+                    longestMatch = "";
+                    lastFound = "";
+                    lastFoundStart = i+1;
+                    lastFoundEnd = i+1;
+                    numErrors++;
+                }
 
             }
 
