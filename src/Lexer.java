@@ -44,7 +44,6 @@ public class Lexer {
                 newProgram = false;
             }
             longestMatch += line.charAt(i);
-//            System.out.println(longestMatch);
 
             // check if we are inside a comment
             if (insideComment == false) {
@@ -167,10 +166,20 @@ public class Lexer {
                 // check if longest match is a digit - update positions
                 else if (checkDigit(line.charAt(i))) {
                      if(insideQuotes == false){
-                         lastFound = longestMatch;
-                         lastFoundEnd = i;
-
-                         if (i == line.length()-1){
+                         if(lastFound == ""){
+                             lastFound = longestMatch;
+                             lastFoundEnd = i;
+                             if(i == line.length() - 1){
+                                 Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+                                 System.out.println(tok.toString());
+                                 longestMatch = "";
+                                 lastFound = "";
+                                 lastFoundEnd = i;
+                                 lastFoundStart = lastFoundEnd+1;
+                                 i = lastFoundEnd;
+                             }
+                         }
+                         else{
                              Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                              System.out.println(tok.toString());
                              longestMatch = "";
@@ -178,6 +187,7 @@ public class Lexer {
                              lastFoundStart = lastFoundEnd+1;
                              i = lastFoundEnd;
                          }
+
                      }
                      else{
                          System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
@@ -289,13 +299,32 @@ public class Lexer {
 
                 // check if an illegal symbol was entered in the quotes
                 else if(insideQuotes == true && longestMatch != ""){
-                    System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
-                            " Unrecognized Token inside string: " + line.charAt(i));
-                    longestMatch = "";
-                    lastFound = "";
-                    lastFoundStart = i+1;
-                    lastFoundEnd = i+1;
-                    numErrors++;
+
+                    if(line.charAt(i) != '\"'){
+                        System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                                " Unrecognized Token inside string: " + line.charAt(i));
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = i+1;
+                        lastFoundEnd = i+1;
+                        numErrors++;
+                    }
+                    else{
+                        lastFound = "\"";
+                        Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
+                        System.out.println(tok.toString());
+
+                        longestMatch = "";
+                        lastFound = "";
+                        lastFoundStart = i+1;
+                        lastFoundEnd = i;
+                        i = lastFoundEnd;
+                        if(insideQuotes == false)
+                            insideQuotes = true;
+                        else
+                            insideQuotes = false;
+                    }
+
                 }
 
                 else if(longestMatch != "" && lastFound == "" && !longestMatch.equals("/")){
