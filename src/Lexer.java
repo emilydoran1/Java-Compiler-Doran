@@ -212,7 +212,7 @@ public class Lexer {
                         i = lastFoundEnd;
                     }
                     else{
-                        // create token for closing quote
+                        // create token for opening and closing quotes
                         if(line.charAt(i) == '\"'){
                             lastFound = "\"";
                             Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
@@ -220,8 +220,9 @@ public class Lexer {
 
                             longestMatch = "";
                             lastFound = "";
-                            lastFoundStart = i;
-                            i = lastFoundEnd+1;
+                            lastFoundStart = i+1;
+                            lastFoundEnd = i;
+                            i = lastFoundEnd;
                             if(insideQuotes == false)
                                 insideQuotes = true;
                             else
