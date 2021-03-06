@@ -23,8 +23,21 @@ public class Lexer {
 
                 currentLine++;
             }
+            
+            // check if EOP char is forgotten at end
+            if(newProgram == false){
+                System.out.println("WARNING Lexer - Missing EOP Character '$'");
+
+                // append $ to file so that compilation continues without error
+                FileWriter fileWriter = new FileWriter(file, true);
+                PrintWriter printWriter = new PrintWriter(fileWriter);
+                printWriter.println("$");
+                printWriter.close();
+            }
             scanner.close();
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -104,7 +117,7 @@ public class Lexer {
 
                         }
                         else if(insideQuotes == true){
-                            System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                            System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                     " Unrecognized Token inside string: " + line.charAt(i));
 
                             longestMatch = "";
@@ -141,7 +154,7 @@ public class Lexer {
                             i = lastFoundEnd;
                         }
                         else if (insideQuotes == true){
-                            System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                            System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                     " Unrecognized Token inside string: " + line.charAt(i));
 
                             longestMatch = "";
@@ -150,7 +163,7 @@ public class Lexer {
                             numErrors++;
                         }
                         else if (lastFound.equals("!")){
-                            System.out.println("Error Lexer - Error: " + currentLine + ":" + i +
+                            System.out.println("ERROR Lexer - Error: " + currentLine + ":" + i +
                                     " Unrecognized Token: " + lastFound);
 
                             longestMatch = "";
@@ -160,7 +173,7 @@ public class Lexer {
                             numErrors++;
                         }
                         else if (lastFound.equals("/")){
-                            System.out.println("Error Lexer - Error: " + currentLine + ":" + i +
+                            System.out.println("ERROR Lexer - Error: " + currentLine + ":" + i +
                                     " Unrecognized Token: " + lastFound);
 
                             longestMatch = "";
@@ -200,7 +213,7 @@ public class Lexer {
 
                      }
                      else{
-                         System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                         System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                  " Unrecognized Token inside string: " + line.charAt(i));
 
                          longestMatch = "";
@@ -311,7 +324,7 @@ public class Lexer {
                 else if(insideQuotes == true && longestMatch != ""){
 
                     if(line.charAt(i) != '\"'){
-                        System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                        System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                 " Unrecognized Token inside string: " + line.charAt(i));
                         longestMatch = "";
                         lastFound = "";
@@ -338,7 +351,7 @@ public class Lexer {
                 }
 
                 else if(longestMatch != "" && lastFound == "" && !longestMatch.equals("/")){
-                    System.out.println("Error Lexer - Error: " + currentLine + ":" + (i+1) +
+                    System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                             " Unrecognized Token: " + line.charAt(i));
 
                     longestMatch = "";
@@ -470,7 +483,7 @@ public class Lexer {
         if(numErrors == 0)
             return "INFO  Lexer - Lex completed with " + numErrors + " errors";
         else
-            return "Error Lexer - Lex failed with " + numErrors + " error(s)";
+            return "ERROR Lexer - Lex failed with " + numErrors + " error(s)";
     }
 
 }
