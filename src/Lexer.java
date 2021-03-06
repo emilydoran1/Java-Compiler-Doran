@@ -81,7 +81,7 @@ public class Lexer {
                 }
                 // check if longest match is a symbol or if it is stop point
                 else if (checkSymbol(line.charAt(i))) {
-                     if(lastFound == ""){
+                     if(lastFound == "" && longestMatch.length() < 2){
                         lastFound = longestMatch;
                         lastFoundStart = i;
                         lastFoundEnd = i;
@@ -131,7 +131,7 @@ public class Lexer {
                             }
                         }
 
-                        if(insideQuotes == false && !lastFound.equals("!")){
+                        if(insideQuotes == false && !lastFound.equals("!") && !lastFound.equals("/")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                             System.out.println(tok.toString());
 
@@ -150,6 +150,16 @@ public class Lexer {
                             numErrors++;
                         }
                         else if (lastFound.equals("!")){
+                            System.out.println("Error Lexer - Error: " + currentLine + ":" + i +
+                                    " Unrecognized Token: " + lastFound);
+
+                            longestMatch = "";
+                            lastFound = "";
+                            lastFoundStart = i;
+                            i = lastFoundEnd;
+                            numErrors++;
+                        }
+                        else if (lastFound.equals("/")){
                             System.out.println("Error Lexer - Error: " + currentLine + ":" + i +
                                     " Unrecognized Token: " + lastFound);
 
@@ -243,7 +253,7 @@ public class Lexer {
 
                 // check if we are in a comment
                 else if(checkComment(longestMatch) == true){
-                    if(lastFound != "") {
+                    if(lastFound != "" && !lastFound.equals("/")) {
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
 
@@ -382,7 +392,7 @@ public class Lexer {
     // symbol (3)
     private boolean checkSymbol(char charToCheck){
         // symbols allowed are {, }, !, =, +, (, ), $
-        String regexSymbol = "[{}!=+()$]";
+        String regexSymbol = "[{}!=+()$/]";
         boolean isSymbol = false;
 
         if (Pattern.matches(regexSymbol, Character.toString(charToCheck))) {
