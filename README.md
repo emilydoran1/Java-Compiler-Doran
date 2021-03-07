@@ -13,7 +13,7 @@ Compiler for Marist Spring 2021 Compilers Course
 * The program will prompt asking if you would like to run in verbose test mode. Respond Y/N.
   * If running in verbose test mode, you will see the detailed token output for each program as well as warnings, error messages, and a message letting you know if the program passed or failed. 
  ```
- ex: {}$
+ ex: Lexical Analysis for program: {}$
      INFO  Lexer - Lexing program 1...
      DEBUG Lexer - T_L_BRACE [ { ] found at (1:1)
      DEBUG Lexer - T_R_BRACE [ } ] found at (1:2)
