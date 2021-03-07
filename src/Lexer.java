@@ -23,7 +23,12 @@ public class Lexer {
     private int numErrors = 0;
     public boolean newProgram = true;
 
-    public Lexer(String passedFile) {
+    // store if we are in verbose test mode or not
+    boolean verboseTestMode;
+
+    public Lexer(String passedFile, boolean verboseMode) {
+        verboseTestMode = verboseMode;
+        System.out.println(verboseTestMode);
         try {
             File file = new File(passedFile);
             Scanner scanner = new Scanner(file);
