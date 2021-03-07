@@ -15,5 +15,6 @@ Compiler for Marist Spring 2021 Compilers Course
         DEBUG Lexer - T_L_BRACE [ { ] found at (1:1)
         DEBUG Lexer - T_R_BRACE [ } ] found at (1:2)
         DEBUG Lexer - T_EOP [ $ ] found at (1:3)
-        INFO  Lexer - Lex completed with 0 errors ```
+        INFO  Lexer - Lex completed with 0 errors 
+        ```
   * If not running in verbose test mode, you will only see messages letting you know when you are beginning a new program, any error messages or warnings, and a message letting you know if the program passed or failed. Each token will not be printed out.
