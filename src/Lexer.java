@@ -2,12 +2,23 @@ import java.io.*;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+/**
+ * This program lexes the file and prints out tokens based on longest match
+ * @author Emily Doran
+ *
+ */
 public class Lexer {
+
+    // store true/false value to know if we are inside a string
     private boolean insideQuotes = false;
+
+    // store true/false value to know if we are inside a comment
     private boolean insideComment = false;
 
+    // store current line number for printing token positions
     private int currentLine = 1;
 
+    // store current program info to print message after we finish lexing each program
     private int programNum = 1;
     private int numErrors = 0;
     public boolean newProgram = true;
@@ -23,7 +34,7 @@ public class Lexer {
 
                 currentLine++;
             }
-            
+
             // check if EOP char is forgotten at end
             if(newProgram == false){
                 System.out.println("WARNING Lexer - Missing EOP Character '$'");
@@ -43,19 +54,32 @@ public class Lexer {
 
     }
 
+    /**
+     * gets the tokens for each line of the file
+     * @param line of file
+     */
     private void getToken(String line){
+        // store the characters to find longest match until we hit a break
         String longestMatch = "";
+
+        // store the last found token as we continue for longest match
         String lastFound = "";
+
+        // store indices of last found so we can go back
         int lastFoundStart = 0;
         int lastFoundEnd = 0;
 
+        // loop through each character in the line to find the longest match
         for(int i = 0; i < line.length(); i++) {
+
+            // check if we have started a new program
             if(newProgram == true){
                 System.out.println();
                 System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
                 numErrors = 0;
                 newProgram = false;
             }
+
             longestMatch += line.charAt(i);
 
             // check if we are inside a comment
@@ -99,7 +123,7 @@ public class Lexer {
                         lastFoundStart = i;
                         lastFoundEnd = i;
 
-                        // check if we are at the end of the line
+                        // check if we are at the end of the line or end of program
                         if(i == line.length()-1 || lastFound.equals("$")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                             System.out.println(tok.toString());
@@ -116,6 +140,8 @@ public class Lexer {
                             i = lastFoundEnd;
 
                         }
+
+                        // a symbol inside of quotes should throw an error
                         else if(insideQuotes == true){
                             System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                     " Unrecognized Token inside string: " + line.charAt(i));
@@ -144,6 +170,8 @@ public class Lexer {
                             }
                         }
 
+                         // create token as long as not in quotes and last found wasn't part of a
+                         // two char symbol, which we didn't find
                         if(insideQuotes == false && !lastFound.equals("!") && !lastFound.equals("/")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                             System.out.println(tok.toString());
@@ -153,6 +181,7 @@ public class Lexer {
                             lastFoundStart = lastFoundEnd+1;
                             i = lastFoundEnd;
                         }
+                        // symbol inside quotes should throw an error
                         else if (insideQuotes == true){
                             System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                     " Unrecognized Token inside string: " + line.charAt(i));
@@ -162,6 +191,7 @@ public class Lexer {
                             lastFoundStart = i+1;
                             numErrors++;
                         }
+                        // we stored ! as last found incase !=, but that wasn't found - throw error
                         else if (lastFound.equals("!")){
                             System.out.println("ERROR Lexer - Error: " + currentLine + ":" + i +
                                     " Unrecognized Token: " + lastFound);
@@ -172,6 +202,7 @@ public class Lexer {
                             i = lastFoundEnd;
                             numErrors++;
                         }
+                        // we stored / as last found incase /*, but that wasn't found - throw error
                         else if (lastFound.equals("/")){
                             System.out.println("ERROR Lexer - Error: " + currentLine + ":" + i +
                                     " Unrecognized Token: " + lastFound);
@@ -188,7 +219,9 @@ public class Lexer {
                 }
                 // check if longest match is a digit - update positions
                 else if (checkDigit(line.charAt(i))) {
+                    // make sure we aren't in a string because digits aren't allowed in strings
                      if(insideQuotes == false){
+                         // store last found as longestMatch if we have a digit and nothing stored in lastFound
                          if(lastFound == ""){
                              lastFound = longestMatch;
                              lastFoundEnd = i;
@@ -202,6 +235,7 @@ public class Lexer {
                                  i = lastFoundEnd;
                              }
                          }
+                         // create a token for the last found if it already exists
                          else{
                              Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                              System.out.println(tok.toString());
@@ -212,6 +246,7 @@ public class Lexer {
                          }
 
                      }
+                     // digits aren't allowed in strings - throw error
                      else{
                          System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                  " Unrecognized Token inside string: " + line.charAt(i));
@@ -223,7 +258,7 @@ public class Lexer {
                      }
 
                 }
-                // check if we are in a string and we have a char
+                // check if we are in a string and we have a char - print token
                 else if (checkChar(line.charAt(i))) {
                     Token tok = new Token("T_CHAR", longestMatch, currentLine, i+1);
                     System.out.println(tok.toString());
@@ -236,6 +271,7 @@ public class Lexer {
                 // check if we are in a string
                 else if(checkString(longestMatch) == true){
                     if(lastFound != "") {
+                        // create token for last found before entering string
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
 
@@ -279,6 +315,7 @@ public class Lexer {
 
                 // check if current char is whitespace
                 else if (checkWhitespace(line.charAt(i))) {
+                    // whitespace is a stop point - create token for last found
                     if(lastFound != ""){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
@@ -310,7 +347,7 @@ public class Lexer {
 
                 }
 
-                // check if we are at the end of line and not inside string
+                // check if we are at the end of line and not inside string to create lastFound Token
                 else if (i == line.length()-1 && insideQuotes == false){
                     Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
                     System.out.println(tok.toString());
@@ -322,7 +359,7 @@ public class Lexer {
 
                 // check if an illegal symbol was entered in the quotes
                 else if(insideQuotes == true && longestMatch != ""){
-
+                    // check if invalid char is in string
                     if(line.charAt(i) != '\"'){
                         System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                                 " Unrecognized Token inside string: " + line.charAt(i));
@@ -333,6 +370,7 @@ public class Lexer {
                         numErrors++;
                     }
                     else{
+                        // create closing quote token
                         lastFound = "\"";
                         Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
                         System.out.println(tok.toString());
@@ -350,6 +388,7 @@ public class Lexer {
 
                 }
 
+                // invalid character is entered in program - throw error
                 else if(longestMatch != "" && lastFound == "" && !longestMatch.equals("/")){
                     System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
                             " Unrecognized Token: " + line.charAt(i));
@@ -363,7 +402,7 @@ public class Lexer {
 
             }
 
-            // we are inside of a comment
+            // inside of a comment - ignore
             else{
                 checkComment(longestMatch);
                 if(insideComment == false){
@@ -377,7 +416,11 @@ public class Lexer {
     }
 
     // define Rule Order
-    // keyword (1)
+    /**
+     * check if longest match is a keyword
+     * @param stringToCheck longest match search string
+     * @return True if longestMatch is a keyword, otherwise false
+     */
     private boolean checkKeyword(String stringToCheck){
         // keywords are: while, print, if, int, string, boolean, true, false
         String regexKeyword = "(while)|(print)|(string)|(if)|(int)|(boolean)|(true)|(false)";
@@ -389,7 +432,11 @@ public class Lexer {
         return isKeyword;
     }
 
-    // id (2)
+    /**
+     * check if longest match is an Identifier
+     * @param stringToCheck longest match search string
+     * @return True if longestMatch is an Id, otherwise false
+     */
     private boolean checkId(String stringToCheck){
         // an Id is a single character a-z
         String regexId = "[a-z]";
@@ -402,9 +449,13 @@ public class Lexer {
         return isId;
     }
 
-    // symbol (3)
+    /**
+     * check if current character is a symbol
+     * @param charToCheck current index char
+     * @return True if current char is a symbol, otherwise false
+     */
     private boolean checkSymbol(char charToCheck){
-        // symbols allowed are {, }, !, =, +, (, ), $
+        // symbols allowed are {, }, !, =, +, (, ), $, /
         String regexSymbol = "[{}!=+()$/]";
         boolean isSymbol = false;
 
@@ -415,7 +466,11 @@ public class Lexer {
         return isSymbol;
     }
 
-    // digit (4)
+    /**
+     * check if current character is a digit
+     * @param charToCheck current index char
+     * @return True if current char is a digit, otherwise false
+     */
     private boolean checkDigit(char charToCheck){
         // a digit is a single number 0-9
         String regexInteger = "[0-9]";
@@ -428,7 +483,11 @@ public class Lexer {
         return isDigit;
     }
 
-    // char (5)
+    /**
+     * check if current character is a char
+     * @param charToCheck current index char
+     * @return True if current character is a char, otherwise false
+     */
     private boolean checkChar(char charToCheck){
         // an char is a single character a-z that is inside a quote
         String regexCharacter = "[a-z]";
@@ -441,7 +500,11 @@ public class Lexer {
         return isChar;
     }
 
-    // check whitespace
+    /**
+     * check if current character is whitespace
+     * @param charToCheck current index char
+     * @return True if current char is a space, otherwise false
+     */
     private boolean checkWhitespace(char charToCheck){
         boolean isWhitespace = false;
         String regexWhitespace = "\\s";
@@ -451,7 +514,11 @@ public class Lexer {
         return isWhitespace;
     }
 
-    // check if we are inside a comment
+    /**
+     * check if longest match is a comment two character symbol
+     * @param stringToCheck longest match string
+     * @return True if longestMatch begins or ends a comment, otherwise false
+     */
     private boolean checkComment(String stringToCheck){
         boolean isComment = false;
 
@@ -468,7 +535,11 @@ public class Lexer {
         return isComment;
     }
 
-    // check if we are inside a string
+    /**
+     * check if longest match is beginning a string
+     * @param stringToCheck longest match string
+     * @return True if longestMatch contains quotes to start/end string, otherwise false
+     */
     private boolean checkString(String stringToCheck){
         boolean isString = false;
 
@@ -479,6 +550,10 @@ public class Lexer {
         return isString;
     }
 
+    /**
+     * print out the program complete/fail messages
+     * @return String with Lex complete or fail message with numErrors
+     */
     private String finishedProgram(){
         if(numErrors == 0)
             return "INFO  Lexer - Lex completed with " + numErrors + " errors";
