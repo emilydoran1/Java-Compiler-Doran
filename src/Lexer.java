@@ -28,7 +28,7 @@ public class Lexer {
 
     public Lexer(String passedFile, boolean verboseMode) {
         verboseTestMode = verboseMode;
-        System.out.println(verboseTestMode);
+
         try {
             File file = new File(passedFile);
             Scanner scanner = new Scanner(file);
@@ -98,7 +98,11 @@ public class Lexer {
                     // check if we are at the end of the line
                     if (i == line.length()-1){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+
+                        // if we are in verbose test mode, print token
+                        if(verboseTestMode)
+                            System.out.println(tok.toString());
+
                         longestMatch = "";
                         lastFound = "";
                         lastFoundStart = lastFoundEnd+1;
@@ -114,7 +118,11 @@ public class Lexer {
                     // check if we are at the end of the line
                     if (i == line.length()-1){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+
+                        // if we are in verbose test mode, print token
+                        if(verboseTestMode)
+                            System.out.println(tok.toString());
+
                         longestMatch = "";
                         lastFound = "";
                         lastFoundStart = lastFoundEnd+1;
@@ -131,7 +139,10 @@ public class Lexer {
                         // check if we are at the end of the line or end of program
                         if(i == line.length()-1 || lastFound.equals("$")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                            System.out.println(tok.toString());
+
+                            // if we are in verbose test mode, print token
+                            if(verboseTestMode)
+                                System.out.println(tok.toString());
 
                             if(lastFound.equals("$")){
                                 programNum++;
@@ -167,7 +178,11 @@ public class Lexer {
                             // check if we are at the end of the line
                             if (i == line.length()-1 && insideQuotes == false){
                                 Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                                System.out.println(tok.toString());
+
+                                // if we are in verbose test mode, print token
+                                if(verboseTestMode)
+                                    System.out.println(tok.toString());
+
                                 longestMatch = "";
                                 lastFound = "";
                                 lastFoundStart = lastFoundEnd+1;
@@ -179,7 +194,10 @@ public class Lexer {
                          // two char symbol, which we didn't find
                         if(insideQuotes == false && !lastFound.equals("!") && !lastFound.equals("/")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                            System.out.println(tok.toString());
+
+                            // if we are in verbose test mode, print token
+                            if(verboseTestMode)
+                                System.out.println(tok.toString());
 
                             longestMatch = "";
                             lastFound = "";
@@ -232,7 +250,11 @@ public class Lexer {
                              lastFoundEnd = i;
                              if(i == line.length() - 1){
                                  Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                                 System.out.println(tok.toString());
+
+                                 // if we are in verbose test mode, print token
+                                 if(verboseTestMode)
+                                    System.out.println(tok.toString());
+
                                  longestMatch = "";
                                  lastFound = "";
                                  lastFoundEnd = i;
@@ -243,7 +265,11 @@ public class Lexer {
                          // create a token for the last found if it already exists
                          else{
                              Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                             System.out.println(tok.toString());
+
+                             // if we are in verbose test mode, print token
+                             if(verboseTestMode)
+                                System.out.println(tok.toString());
+
                              longestMatch = "";
                              lastFound = "";
                              lastFoundStart = lastFoundEnd+1;
@@ -266,7 +292,11 @@ public class Lexer {
                 // check if we are in a string and we have a char - print token
                 else if (checkChar(line.charAt(i))) {
                     Token tok = new Token("T_CHAR", longestMatch, currentLine, i+1);
-                    System.out.println(tok.toString());
+
+                    // if we are in verbose test mode, print token
+                    if(verboseTestMode)
+                        System.out.println(tok.toString());
+
                     longestMatch = "";
                     lastFound = "";
                     lastFoundEnd = i;
@@ -278,7 +308,10 @@ public class Lexer {
                     if(lastFound != "") {
                         // create token for last found before entering string
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+
+                        // if we are in verbose test mode, print token
+                        if(verboseTestMode)
+                            System.out.println(tok.toString());
 
                         longestMatch = "";
                         lastFound = "";
@@ -290,7 +323,10 @@ public class Lexer {
                         if(line.charAt(i) == '\"'){
                             lastFound = "\"";
                             Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
-                            System.out.println(tok.toString());
+
+                            // if we are in verbose test mode, print token
+                            if(verboseTestMode)
+                                System.out.println(tok.toString());
 
                             longestMatch = "";
                             lastFound = "";
@@ -309,7 +345,10 @@ public class Lexer {
                 else if(checkComment(longestMatch) == true){
                     if(lastFound != "" && !lastFound.equals("/")) {
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+
+                        // if we are in verbose test mode, print token
+                        if(verboseTestMode)
+                            System.out.println(tok.toString());
 
                         longestMatch = "";
                         lastFound = "";
@@ -323,7 +362,10 @@ public class Lexer {
                     // whitespace is a stop point - create token for last found
                     if(lastFound != ""){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+
+                        // if we are in verbose test mode, print token
+                        if(verboseTestMode)
+                            System.out.println(tok.toString());
 
                         longestMatch = "";
                         lastFound = "";
@@ -335,7 +377,10 @@ public class Lexer {
                         if(insideQuotes == true){
                             lastFound = " ";
                             Token tok = new Token("T_CHAR", lastFound, currentLine, i+1);
-                            System.out.println(tok.toString());
+
+                            // if we are in verbose test mode, print token
+                            if(verboseTestMode)
+                                System.out.println(tok.toString());
 
                             longestMatch = "";
                             lastFound = "";
@@ -355,7 +400,11 @@ public class Lexer {
                 // check if we are at the end of line and not inside string to create lastFound Token
                 else if (i == line.length()-1 && insideQuotes == false){
                     Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
-                    System.out.println(tok.toString());
+
+                    // if we are in verbose test mode, print token
+                    if(verboseTestMode)
+                        System.out.println(tok.toString());
+
                     longestMatch = "";
                     lastFound = "";
                     lastFoundStart = lastFoundEnd+1;
@@ -378,7 +427,10 @@ public class Lexer {
                         // create closing quote token
                         lastFound = "\"";
                         Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
-                        System.out.println(tok.toString());
+
+                        // if we are in verbose test mode, print token
+                        if(verboseTestMode)
+                            System.out.println(tok.toString());
 
                         longestMatch = "";
                         lastFound = "";
