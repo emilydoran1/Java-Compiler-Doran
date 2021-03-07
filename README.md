@@ -4,9 +4,10 @@ Compiler for Marist Spring 2021 Compilers Course
 ## Clone Repository
 `git clone https://github.com/emilydoran1/Java-Compiler-Doran.git` 
 
-## Running Compiler 
+## Running Lexical Analysis 
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile Compiler.java `javac Compiler.java`
 * Run program with test cases as parameter `java Compiler pathToFile` 
-  * ex: `java Compiler ../testCases.txt`
-* You should see the output "Welcome to my compilers repository!" as well as the contents of the file printed out for testing purposes thus far.
+  * ex: `java Compiler ../testCasesLexWithoutSpaces.txt`
+* The program will prompt asking if you would like to run in verbose test mode. Respond Y/N.
+  * If running in verbose test mode, you will see the detailed token output for each program as well as warnings, error messages, and a message letting you know if the program passed or failed. 
