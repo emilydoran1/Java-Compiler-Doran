@@ -3,7 +3,9 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 /**
- * This program lexes the file and prints out tokens based on longest match
+ * This program provides lexical analysis on the passed file and
+ * prints out tokens, errors, and warnings according to our grammar.
+ *
  * @author Emily Doran
  *
  */
@@ -49,6 +51,14 @@ public class Lexer {
                 PrintWriter printWriter = new PrintWriter(fileWriter);
                 printWriter.println("$");
                 printWriter.close();
+            }
+            // check if comment is left open at end of program
+            if(insideComment == true){
+                System.out.println("WARNING Lexer - Unclosed Comment at End of Program");
+            }
+            // check if quote is left open at end of program
+            if(insideQuotes == true){
+                System.out.println("WARNING Lexer - Unclosed String at End of Program");
             }
             scanner.close();
         } catch (FileNotFoundException e) {
@@ -137,7 +147,7 @@ public class Lexer {
                         lastFoundEnd = i;
 
                         // check if we are at the end of the line or end of program
-                        if(i == line.length()-1 || lastFound.equals("$")){
+                        if((i == line.length()-1 || lastFound.equals("$")) && insideQuotes == false){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
                             // if we are in verbose test mode, print token
