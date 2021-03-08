@@ -8,7 +8,7 @@ Compiler for Marist Spring 2021 Compilers Course
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile Compiler.java `javac Compiler.java`
 * Run program with test cases as parameter `java Compiler pathToFile` 
-  * ex: `java Compiler ../testCasesLexWithoutSpaces.txt`
+  * ex: `java Compiler ../testCases/testCasesLexWithoutSpaces.txt`
 * The compiler will call the lexer to provide the lexical analysis
 * The program will prompt asking if you would like to run in verbose test mode. Respond Y/N.
   * If running in verbose test mode, you will see the detailed token output for each program as well as warnings, error messages, and a message letting you know if the program passed or failed. 
