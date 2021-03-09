@@ -1,4 +1,4 @@
 {"this is a string"}$
 
 {if(x==1)b="test"
-if(x!=1)b="symbols in strings throw errors!!"}$
+if(x!=1)b="symbols in strings throw errors!!"}${"digits in strings throw errors2"}$
