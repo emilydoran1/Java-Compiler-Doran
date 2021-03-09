@@ -29,3 +29,6 @@ Compiler for Marist Spring 2021 Compilers Course
      ERROR Lexer - Error: 1:40 Unrecognized Token: @
      ERROR Lexer - Lex failed with 1 error(s)
 ```
+### Sample Test Cases
+* Sample test case .txt files can be found in the testCases folder
+* A PDF with a write up of the testing results can also be found in the testCases folder. The document is titled LexerTestingResults.pdf
