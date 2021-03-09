@@ -46,11 +46,14 @@ public class Lexer {
             if(newProgram == false){
                 System.out.println("WARNING Lexer - Missing EOP Character '$'");
 
-                // append $ to file so that compilation continues without error
-                FileWriter fileWriter = new FileWriter(file, true);
-                PrintWriter printWriter = new PrintWriter(fileWriter);
-                printWriter.println("$");
-                printWriter.close();
+                // append $ to file so that compilation continues without error if we aren't in comment or string still
+                if(insideComment == false && insideQuotes == false){
+                    FileWriter fileWriter = new FileWriter(file, true);
+                    PrintWriter printWriter = new PrintWriter(fileWriter);
+                    printWriter.println("$");
+                    printWriter.close();
+                }
+
             }
             // check if comment is left open at end of program
             if(insideComment == true){

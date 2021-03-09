@@ -10,4 +10,4 @@
   a = b
 }$
 
-{\* this is an unclosed comment}$
+{/* this is an unclosed comment }$
