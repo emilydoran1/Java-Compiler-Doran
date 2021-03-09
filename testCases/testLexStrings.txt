@@ -1,8 +1,12 @@
 {"this is a string"}$
 
-{if(x==1)b="test"
-if(x!=1)b="symbols in strings throw errors!!"}${"digits in strings throw errors2"}$
+{if(x==1)b="test"}
+
+{if(x!=1)b="symbols throw errors!!"}$
+
+{"digits throw errors2"}$
 
 {"testing /* comment inside string /* "}$
 
 {"this is an unclosed string}$
+

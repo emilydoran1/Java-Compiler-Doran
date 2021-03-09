@@ -22,5 +22,6 @@
     b = 0
     a = 1 + a
   }
-}
-$
+}$
+
+{int a=2 print("i am missing the eop char")}
