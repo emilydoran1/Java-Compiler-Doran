@@ -4,3 +4,4 @@
 if(x!=1)b="symbols in strings throw errors!!"}${"digits in strings throw errors2"}$
 
 {"testing \* comment inside string *\ "}$
+{"this is an unclosed string}$$

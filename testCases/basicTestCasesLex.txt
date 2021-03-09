@@ -9,3 +9,5 @@
   string b 
   a = b
 }$
+
+{\* this is an unclosed comment}$
