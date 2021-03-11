@@ -277,16 +277,31 @@ public class Lexer {
                          }
                          // create a token for the last found if it already exists
                          else{
-                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
-                             // if we are in verbose test mode, print token
-                             if(verboseTestMode)
-                                System.out.println(tok.toString());
+                             // we can confirm we don't have a 2 char symbol, so print error
+                             if(lastFound.equals("!") || lastFound.equals("/")){
+                                 System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i) +
+                                         " Unrecognized Token: " + lastFound);
 
-                             longestMatch = "";
-                             lastFound = "";
-                             lastFoundStart = lastFoundEnd+1;
-                             i = lastFoundEnd;
+                                 longestMatch = "";
+                                 lastFound = "";
+                                 lastFoundStart = i;
+                                 i = lastFoundEnd;
+                                 numErrors++;
+                             }
+                             else{
+                                 Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+
+                                 // if we are in verbose test mode, print token
+                                 if(verboseTestMode)
+                                     System.out.println(tok.toString());
+
+                                 longestMatch = "";
+                                 lastFound = "";
+                                 lastFoundStart = lastFoundEnd+1;
+                                 i = lastFoundEnd;
+                             }
+
                          }
 
                      }

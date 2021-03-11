@@ -25,3 +25,4 @@
 }$
 
 {int a=2 print("i am missing the eop char")}
+$
