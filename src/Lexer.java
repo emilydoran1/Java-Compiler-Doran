@@ -28,6 +28,8 @@ public class Lexer {
     // store if we are in verbose test mode or not
     boolean verboseTestMode;
 
+    boolean twoLineString = false;
+
     public Lexer(String passedFile, boolean verboseMode) {
         verboseTestMode = verboseMode;
 
@@ -40,6 +42,9 @@ public class Lexer {
                 getToken(line);
 
                 currentLine++;
+                if(insideQuotes ==  true){
+                    twoLineString = true;
+                }
             }
 
             // check if EOP char is forgotten at end
@@ -96,6 +101,13 @@ public class Lexer {
                 System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
                 numErrors = 0;
                 newProgram = false;
+            }
+
+            if(twoLineString == true){
+                System.out.println("ERROR Lexer - Error: " + currentLine + ":" + (i+1) +
+                        " Unrecognized Token inside string: \\" + "n");
+                numErrors++;
+                twoLineString = false;
             }
 
             longestMatch += line.charAt(i);
