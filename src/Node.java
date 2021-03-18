@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Node {
     private String name;
-    private ArrayList<Node> children;
+    private ArrayList<Node> children = new ArrayList<Node>();
     private Node parent;
 
     /**
@@ -29,6 +29,8 @@ public class Node {
     public Node(String name) {
         this.name = name;
     }
+
+    public Node() {}
 
     /**
      * Returns the Node's name
