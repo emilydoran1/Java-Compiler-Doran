@@ -2,6 +2,7 @@ import java.util.ArrayList;
 
 /**
  * This program stores the information for node creation
+ *
  * @author Emily Doran
  *
  */
@@ -57,7 +58,7 @@ public class Node {
      * Sets the Node's parent if it wasn't set when Node was created
      * @param parent of Node
      */
-    public void addParent(Node parent){
+    public void setParent(Node parent){
         this.parent = parent;
     }
 
