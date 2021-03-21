@@ -85,7 +85,7 @@ public class Token {
             if(value.equals("while"))
                 tokenKind = "T_WHILE";
             else if(value.equals("print"))
-                tokenKind = "T_PRINT]";
+                tokenKind = "T_PRINT";
             else if(value.equals("string") || value.equals("int") || value.equals("boolean"))
                 tokenKind = "T_VARIABLE_TYPE";
             else if(value.equals("if"))

@@ -1,7 +1,7 @@
 /**
  * This program creates a CST (concrete syntax tree)
  *
- * @authors Emily Doran modified Alan G. Labouseur's implementation,
+ * @author Emily Doran, modified Alan G. Labouseur's implementation,
  * based on the 2009 work by Michael Ardizzone and Tim Smith.
  *
  */
@@ -96,15 +96,25 @@ public class ConcreteSyntaxTree {
         return traversalResult;
     }
 
-    public static void main(String[] args){
-        ConcreteSyntaxTree test = new ConcreteSyntaxTree();
-        test.addNode("root", "root");
-
-        test.addNode("branch1", "");
-        test.addNode("branch2", "branch");
-
-        test.addNode("child", "child");
-
-        System.out.println(test.toString());
-    }
+//    public static void main(String[] args){
+//        ConcreteSyntaxTree test = new ConcreteSyntaxTree();
+//        test.addNode("S", "root");
+//
+//        test.addNode("Stmt", "branch");
+//        test.addNode("if", "child");
+//        test.addNode("expr", "child");
+//        test.addNode("then", "child");
+//        test.addNode("Stmt", "branch");
+//        test.addNode("if", "child");
+//        test.addNode("expr", "child");
+//        test.addNode("then", "child");
+//        test.addNode("Stmt", "branch");
+//        test.addNode("other", "child");
+//        test.addNode("else", "branch");
+//        test.addNode("Stmt", "branch");
+//        test.addNode("other", "child");
+//        test.addNode("$", "child");
+//
+//        System.out.println(test.toString());
+//    }
 }
