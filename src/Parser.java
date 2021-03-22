@@ -12,7 +12,7 @@ public class Parser {
     private boolean verboseMode;
     private int tokIndex = 0;
 
-    private ConcreteSyntaxTree cst;
+    private ConcreteSyntaxTree cst = new ConcreteSyntaxTree();
 
     int errorCount = 0;
 
@@ -23,7 +23,12 @@ public class Parser {
         if(passLex){
             System.out.println("\nPARSER: Parsing program " + programNum + " ...");
             parse();
-            System.out.println("PARSER: Parse completed successfully");
+
+            if(errorCount == 0) {
+                System.out.println("PARSER: Parse completed successfully");
+                System.out.println("\nCST for program " + programNum + " ...");
+                System.out.println(cst.toString());
+            }
         }
         else{
             System.out.println("\nPARSER: Skipped due to LEXER error(s)");
@@ -43,18 +48,27 @@ public class Parser {
 
     public void parseProgram(){
         System.out.println("PARSER: parseProgram()");
+        cst.addNode("Program","root");
         parseBlock();
+        checkToken("T_EOP");
+        cst.addNode("$","child");
     }
 
     public void parseBlock(){
         System.out.println("PARSER: parseBlock()");
+        cst.addNode("Block","branch");
         checkToken("T_L_BRACE");
+        cst.addNode("{","child");
         parseStatementList();
         checkToken("T_R_BRACE");
+        cst.addNode("}","child");
+        cst.moveParent();
     }
 
     public void parseStatementList(){
         System.out.println("PARSER: parseStatementList()");
+        cst.addNode("StatementList","branch");
+        cst.moveParent();
         if(tokens.get(tokIndex).getKind() != "T_R_BRACE"){
             parseStatement();
             parseStatementList();
@@ -167,12 +181,6 @@ public class Parser {
             if(tokens.get(tokIndex).getKind().equals(expectedKind)) {
                 tokenMatch = true;
                 tokIndex++;
-
-                if(tokens.get(tokIndex).getKind().equals("T_EOP")) {
-                    tokenMatch = true;
-                    tokIndex++;
-
-                }
 
             }
             else{
