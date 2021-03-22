@@ -16,6 +16,8 @@ public class Parser {
 
     int errorCount = 0;
 
+    private boolean lastResult = false;
+
     public Parser(ArrayList<Token> tokens, boolean verboseMode, boolean passLex, int programNum) {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
@@ -29,6 +31,10 @@ public class Parser {
                 System.out.println("\nCST for program " + programNum + " ...");
                 System.out.println(cst.toString());
             }
+            else{
+                System.out.println("PARSER: Parse failed with " +  errorCount + " error(s)");
+                System.out.println("\nCST for program " + programNum + ": Skipped due to PARSER error(s)");
+            }
         }
         else{
             System.out.println("\nPARSER: Skipped due to LEXER error(s)");
@@ -41,15 +47,13 @@ public class Parser {
 
         parseProgram();
 
-        // output error count
-        if(errorCount > 0)
-            System.out.println("Parsing found " + errorCount + " error(s).");
     }
 
     public void parseProgram(){
         System.out.println("PARSER: parseProgram()");
         cst.addNode("Program","root");
         parseBlock();
+        lastResult = true;
         checkToken("T_EOP");
         cst.addNode("$","child");
     }
@@ -188,8 +192,12 @@ public class Parser {
                 tokIndex++;
 
             }
-            else{
-                // TODO: throw error
+            else if (lastResult == true){
+                System.out.println("PARSER: ERROR: Expected [" + expectedKind + "] got [" +
+                        tokens.get(tokIndex).getKind() + "] with value '" + tokens.get(tokIndex).getValue()
+                                + "' on line " + tokens.get(tokIndex).getLine());
+
+                errorCount++;
             }
         }
 

@@ -96,25 +96,4 @@ public class ConcreteSyntaxTree {
         return traversalResult;
     }
 
-//    public static void main(String[] args){
-//        ConcreteSyntaxTree test = new ConcreteSyntaxTree();
-//        test.addNode("S", "root");
-//
-//        test.addNode("Stmt", "branch");
-//        test.addNode("if", "child");
-//        test.addNode("expr", "child");
-//        test.addNode("then", "child");
-//        test.addNode("Stmt", "branch");
-//        test.addNode("if", "child");
-//        test.addNode("expr", "child");
-//        test.addNode("then", "child");
-//        test.addNode("Stmt", "branch");
-//        test.addNode("other", "child");
-//        test.addNode("else", "branch");
-//        test.addNode("Stmt", "branch");
-//        test.addNode("other", "child");
-//        test.addNode("$", "child");
-//
-//        System.out.println(test.toString());
-//    }
 }
