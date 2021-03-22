@@ -22,7 +22,7 @@ public class Lexer {
     // store current line number for printing token positions
     private int currentLine = 1;
 
-    ArrayList<Token> programTokens = new ArrayList<Token>();
+    ArrayList<Token> programTokens = new ArrayList<>();
 
     // store current program info to print message after we finish lexing each program
     private int programNum = 1;

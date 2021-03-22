@@ -10,7 +10,6 @@ import java.util.List;
 public class Parser {
     private ArrayList<Token> tokens;
     private boolean verboseMode;
-    private Token currentToken;
     private int tokIndex = 0;
 
     private ConcreteSyntaxTree cst;
@@ -23,7 +22,6 @@ public class Parser {
 
         if(passLex){
             System.out.println("\nPARSER: Parsing program " + programNum + " ...");
-            currentToken = tokens.get(tokIndex);
             parse();
             System.out.println("PARSER: Parse completed successfully");
         }
@@ -34,13 +32,13 @@ public class Parser {
     }
 
     public void parse(){
-        Token tok = currentToken;
         System.out.println("PARSER: parse()");
 
         parseProgram();
 
         // output error count
-        System.out.println("Parsing found " + errorCount + " error(s).");
+        if(errorCount > 0)
+            System.out.println("Parsing found " + errorCount + " error(s).");
     }
 
     public void parseProgram(){
@@ -57,8 +55,10 @@ public class Parser {
 
     public void parseStatementList(){
         System.out.println("PARSER: parseStatementList()");
-        parseStatement();
-        parseStatementList();
+        if(tokens.get(tokIndex).getKind() != "T_R_BRACE"){
+            parseStatement();
+            parseStatementList();
+        }
 
     }
 
@@ -99,13 +99,17 @@ public class Parser {
 
     public void parseWhileStatement(){
         System.out.println("PARSER: parseWhileStatement()");
-        parseBooleanExpr();
+        if(checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){}
+        else if(checkToken("T_L_PAREN"))
+            parseBooleanExpr();
         parseBlock();
     }
 
     public void parseIfStatement(){
         System.out.println("PARSER: parseIfStatement()");
-        parseBooleanExpr();
+        if(checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){}
+        else if(checkToken("T_L_PAREN"))
+            parseBooleanExpr();
         parseBlock();
     }
 
@@ -140,8 +144,8 @@ public class Parser {
         System.out.println("PARSER: parseBooleanExpr()");
         checkToken("T_L_PAREN");
         parseExpr();
-        checkToken("T_BOOL_TRUE");
-        checkToken("T_BOOL_FALSE");
+        checkToken("T_EQUALITY_OP");
+        checkToken("T_INEQUALITY_OP");
         parseExpr();
     }
 
@@ -156,12 +160,20 @@ public class Parser {
 
         if (tokens.size() <= tokIndex) {
             System.out.println("PARSER: ERROR: Expected [" + expectedKind + "] got end of stream.");
+            errorCount++;
         }
 
         else{
             if(tokens.get(tokIndex).getKind().equals(expectedKind)) {
                 tokenMatch = true;
                 tokIndex++;
+
+                if(tokens.get(tokIndex).getKind().equals("T_EOP")) {
+                    tokenMatch = true;
+                    tokIndex++;
+
+                }
+
             }
             else{
                 // TODO: throw error
