@@ -67,18 +67,21 @@ public class Parser {
 
     public void parseStatementList(){
         System.out.println("PARSER: parseStatementList()");
-        cst.addNode("StatementList","branch");
-        cst.moveParent();
         if(tokens.get(tokIndex).getKind() != "T_R_BRACE"){
+            cst.addNode("StatementList","branch");
             parseStatement();
             parseStatementList();
+            cst.moveParent();
         }
-
+        else if(tokens.get(tokIndex).getKind() == "T_R_BRACE" && tokens.get(tokIndex-1).getKind() == "T_L_BRACE"){
+            cst.addNode("StatementList","branch");
+            cst.moveParent();
+        }
     }
 
     public void parseStatement(){
         System.out.println("PARSER: parseStatement()");
-
+        cst.addNode("Statement","branch");
         if(checkToken("T_PRINT"))
             parsePrintStatement();
         else if(checkToken("T_ID"))
@@ -91,6 +94,8 @@ public class Parser {
             parseIfStatement();
         else
             parseBlock();
+
+        cst.moveParent();
     }
 
     public void parsePrintStatement(){
