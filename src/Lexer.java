@@ -61,6 +61,7 @@ public class Lexer {
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.println("$");
                     printWriter.close();
+
                 }
 
             }
@@ -102,7 +103,7 @@ public class Lexer {
             // check if we have started a new program
             if(newProgram == true){
                 System.out.println();
-                System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
+                System.out.println("\nINFO  Lexer - Lexing program " + programNum + "...");
                 numErrors = 0;
                 newProgram = false;
 

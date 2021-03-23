@@ -5,7 +5,6 @@
  */
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Parser {
     private ArrayList<Token> tokens;
@@ -38,6 +37,8 @@ public class Parser {
         }
         else{
             System.out.println("\nPARSER: Skipped due to LEXER error(s)");
+
+            System.out.println("\nCST for program " + programNum + ": Skipped due to LEXER error(s)");
         }
 
     }
@@ -90,8 +91,9 @@ public class Parser {
             parsePrintStatement();
         else if(checkToken("T_ID"))
             parseAssignStatement();
-        else if(checkToken("T_VARIABLE_TYPE"))
+        else if(checkToken("T_VARIABLE_TYPE")){
             parseVarDecl();
+        }
         else if(checkToken("T_WHILE"))
             parseWhileStatement();
         else if(checkToken("T_IF"))
@@ -111,13 +113,33 @@ public class Parser {
 
     public void parseAssignStatement(){
         System.out.println("PARSER: parseAssignStatement()");
+        cst.addNode("AssignStatement","branch");
+        cst.addNode("Id","branch");
+        cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        cst.moveParent();
         checkToken("T_ASSIGN_OP");
+        cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
         parseExpr();
+        cst.moveParent();
     }
 
     public void parseVarDecl(){
         System.out.println("PARSER: parseVarDecl()");
-        checkToken("T_ID");
+        cst.addNode("VarDecl","branch");
+        parseType();
+        cst.moveParent();
+    }
+
+    public void parseType(){
+        System.out.println("PARSER: parseType()");
+        cst.addNode("Type","branch");
+        cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+        cst.moveParent();
+        if(checkToken("T_ID")){
+            cst.addNode("Id","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+            cst.moveParent();
+        }
     }
 
     public void parseWhileStatement(){
@@ -138,8 +160,11 @@ public class Parser {
 
     public void parseExpr(){
         System.out.println("PARSER: parseExpr()");
-        if(checkToken("T_DIGIT"))
+        cst.addNode("Expression", "branch");
+        if(checkToken("T_DIGIT")){
+            cst.addNode("Digit","child");
             parseIntExpr();
+        }
         else if(checkToken("T_QUOTE"))
             parseStringExpr();
         else if(checkToken("T_L_PAREN"))
@@ -148,7 +173,13 @@ public class Parser {
         // TODO: what do I need to add for these two?
         else if(checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){}
 
-        else if(checkToken("T_ID")){}
+        else if(checkToken("T_ID")){
+            cst.addNode("Id","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+            cst.moveParent();
+        }
+
+        cst.moveParent();
     }
 
     public void parseIntExpr(){
