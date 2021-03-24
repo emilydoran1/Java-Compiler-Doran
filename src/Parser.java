@@ -90,8 +90,12 @@ public class Parser {
     public void parseStatement(){
         System.out.println("PARSER: parseStatement()");
         cst.addNode("Statement","branch");
-        if(checkToken("T_PRINT"))
+        if(checkToken("T_PRINT")) {
+            cst.addNode("PrintStatement","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+            cst.addNode("(","child");
             parsePrintStatement();
+        }
         else if(checkToken("T_ID"))
             parseAssignStatement();
         else if(checkToken("T_VARIABLE_TYPE"))
@@ -114,8 +118,11 @@ public class Parser {
         System.out.println("PARSER: parsePrintStatement()");
         if(checkToken("T_L_PAREN")) {
             parseExpr();
-            checkToken("T_R_PAREN");
+            if(checkToken("T_R_PAREN")) {
+                cst.addNode(")", "child");
+            }
         }
+        cst.moveParent();
     }
 
     public void parseAssignStatement(){
@@ -174,8 +181,11 @@ public class Parser {
             cst.addNode("Digit","child");
             parseIntExpr();
         }
-        else if(checkToken("T_QUOTE"))
+        else if(checkToken("T_QUOTE")) {
+            cst.addNode("StringExpression","branch");
+            cst.addNode("\"","child");
             parseStringExpr();
+        }
         else if(checkToken("T_L_PAREN"))
             parseBooleanExpr();
 
@@ -199,8 +209,11 @@ public class Parser {
 
     public void parseStringExpr(){
         System.out.println("PARSER: parseStringExpr()");
-        parseCharList();
+        if(tokens.get(tokIndex).getKind().equals("T_CHAR"))
+            parseCharList();
         checkToken("T_QUOTE");
+        cst.addNode("\"","child");
+        cst.moveParent();
     }
 
     public void parseBooleanExpr(){
@@ -214,8 +227,15 @@ public class Parser {
 
     public void parseCharList(){
         System.out.println("PARSER: parseCharList()");
-        checkToken("T_CHAR");
-        parseCharList();
+        cst.addNode("CharList","branch");
+        if(checkToken("T_CHAR")){
+            cst.addNode("Char","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+            cst.moveParent();
+            if(tokens.get(tokIndex).getKind().equals("T_CHAR"))
+                parseCharList();
+        }
+        cst.moveParent();
     }
 
     public boolean checkToken(String expectedKind){
