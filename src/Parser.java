@@ -163,18 +163,20 @@ public class Parser {
 
     public void parseWhileStatement(){
         System.out.println("PARSER: parseWhileStatement()");
-        if(checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){}
-        else if(checkToken("T_L_PAREN"))
-            parseBooleanExpr();
+        cst.addNode("WhileStatement","branch");
+        cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        parseBooleanExpr();
         parseBlock();
+        cst.moveParent();
     }
 
     public void parseIfStatement(){
         System.out.println("PARSER: parseIfStatement()");
-        if(checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){}
-        else if(checkToken("T_L_PAREN"))
-            parseBooleanExpr();
+        cst.addNode("IfStatement","branch");
+        cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        parseBooleanExpr();
         parseBlock();
+        cst.moveParent();
     }
 
     public void parseExpr(){
@@ -188,13 +190,13 @@ public class Parser {
             cst.addNode("\"","child");
             parseStringExpr();
         }
-        else if(checkToken("T_L_PAREN") || checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){
-            parseBooleanExpr();
-        }
         else if(checkToken("T_ID")){
             cst.addNode("Id","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
             cst.moveParent();
+        }
+        else{
+            parseBooleanExpr();
         }
 
         cst.moveParent();
@@ -227,15 +229,16 @@ public class Parser {
     public void parseBooleanExpr(){
         System.out.println("PARSER: parseBooleanExpr()");
         cst.addNode("BooleanExpression", "branch");
-        tokIndex--;
+//        tokIndex--;
 
         if(tokens.get(tokIndex).getKind().equals("T_L_PAREN")){
             checkToken("T_L_PAREN");
+            cst.addNode("(","child");
             parseExpr();
-            checkToken("T_EQUALITY_OP");
-            checkToken("T_INEQUALITY_OP");
+            parseBoolOp();
             parseExpr();
             checkToken("T_R_PAREN");
+            cst.addNode(")","child");
         }
         else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
             checkToken("T_BOOL_TRUE");
@@ -265,6 +268,21 @@ public class Parser {
         cst.moveParent();
     }
 
+    public void parseBoolOp(){
+        System.out.println("PARSER: parseBoolOp()");
+        cst.addNode("BoolOp","branch");
+
+        if(tokens.get(tokIndex).getKind().equals("T_EQUALITY_OP")){
+            checkToken("T_EQUALITY_OP");
+            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        }
+        else if(tokens.get(tokIndex).getKind().equals("T_INEQUALITY_OP")){
+            checkToken("T_INEQUALITY_OP");
+            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        }
+        cst.moveParent();
+    }
+
     public boolean checkToken(String expectedKind){
         boolean tokenMatch = false;
 
@@ -281,6 +299,7 @@ public class Parser {
 
             }
             else if (lastResult == true && errorCount == 0){
+
                 System.out.println("PARSER: ERROR: Expected [" + expectedKind + "] got [" +
                         tokens.get(tokIndex).getKind() + "] with value '" + tokens.get(tokIndex).getValue()
                                 + "' on line " + tokens.get(tokIndex).getLine());

@@ -2,4 +2,10 @@
 
 {intabooleanba=0b=false}$
 
+{int a = 3}$
+
+{boolean b = true}$
+
+{int aa}$
+
 {/* this is an unclosed comment }$
