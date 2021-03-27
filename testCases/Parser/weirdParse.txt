@@ -1,1 +1,5 @@
+{a!=2 int b}$
+
+{intabooleanba=0b=false}$
+
 {/* this is an unclosed comment }$

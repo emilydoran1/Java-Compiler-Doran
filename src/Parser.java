@@ -133,6 +133,7 @@ public class Parser {
         cst.addNode("Id","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
         cst.moveParent();
+        lastResult = true;
         if(checkToken("T_ASSIGN_OP")) {
             cst.addNode(tokens.get(tokIndex - 1).getValue(), "child");
             parseExpr();
@@ -180,7 +181,6 @@ public class Parser {
         System.out.println("PARSER: parseExpr()");
         cst.addNode("Expression", "branch");
         if(checkToken("T_DIGIT")){
-            cst.addNode("Digit","child");
             parseIntExpr();
         }
         else if(checkToken("T_QUOTE")) {
@@ -188,12 +188,9 @@ public class Parser {
             cst.addNode("\"","child");
             parseStringExpr();
         }
-        else if(checkToken("T_L_PAREN"))
+        else if(checkToken("T_L_PAREN") || checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){
             parseBooleanExpr();
-
-        // TODO: what do I need to add for these two?
-        else if(checkToken("T_BOOL_TRUE") || checkToken("T_BOOL_FALSE")){}
-
+        }
         else if(checkToken("T_ID")){
             cst.addNode("Id","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
@@ -205,8 +202,17 @@ public class Parser {
 
     public void parseIntExpr(){
         System.out.println("PARSER: parseIntExpr()");
-        checkToken("T_ADDITION_OP");
-        parseExpr();
+        cst.addNode("IntegerExpression", "branch");
+        if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
+            checkToken("T_ADDITION_OP");
+            parseExpr();
+        }
+        else{
+            cst.addNode("Digit","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+            cst.moveParent();
+        }
+        cst.moveParent();
     }
 
     public void parseStringExpr(){
@@ -220,11 +226,30 @@ public class Parser {
 
     public void parseBooleanExpr(){
         System.out.println("PARSER: parseBooleanExpr()");
-        checkToken("T_L_PAREN");
-        parseExpr();
-        checkToken("T_EQUALITY_OP");
-        checkToken("T_INEQUALITY_OP");
-        parseExpr();
+        cst.addNode("BooleanExpression", "branch");
+        tokIndex--;
+
+        if(tokens.get(tokIndex).getKind().equals("T_L_PAREN")){
+            checkToken("T_L_PAREN");
+            parseExpr();
+            checkToken("T_EQUALITY_OP");
+            checkToken("T_INEQUALITY_OP");
+            parseExpr();
+            checkToken("T_R_PAREN");
+        }
+        else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
+            checkToken("T_BOOL_TRUE");
+            cst.addNode("BoolVal","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+            cst.moveParent();
+        }
+        else {
+            checkToken("T_BOOL_FALSE");
+            cst.addNode("BoolVal","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+            cst.moveParent();
+        }
+        cst.moveParent();
     }
 
     public void parseCharList(){

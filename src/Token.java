@@ -93,9 +93,9 @@ public class Token {
             else if(value.equals("while"))
                 tokenKind = "T_WHILE]";
             else if(value.equals("true"))
-                tokenKind = "T_BOOL_TRUE]";
+                tokenKind = "T_BOOL_TRUE";
             else if(value.equals("false"))
-                tokenKind = "T_BOOL_FALSE]";
+                tokenKind = "T_BOOL_FALSE";
         }
 
         // token kind for Ids is always T_ID
