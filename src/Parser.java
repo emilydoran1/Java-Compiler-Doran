@@ -55,8 +55,10 @@ public class Parser {
         cst.addNode("Program","root");
         parseBlock();
         lastResult = true;
-        checkToken("T_EOP");
-        cst.addNode("$","child");
+        if(errorCount == 0) {
+            checkToken("T_EOP");
+            cst.addNode("$", "child");
+        }
     }
 
     public void parseBlock(){
@@ -74,14 +76,14 @@ public class Parser {
 
     public void parseStatementList(){
         System.out.println("PARSER: parseStatementList()");
-        if(tokens.get(tokIndex).getKind() != "T_R_BRACE"){
+        if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() != "T_R_BRACE"){
             cst.addNode("StatementList","branch");
             parseStatement();
             if(errorCount == 0)
                 parseStatementList();
             cst.moveParent();
         }
-        else if(tokens.get(tokIndex).getKind() == "T_R_BRACE" && tokens.get(tokIndex-1).getKind() == "T_L_BRACE"){
+        else if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() == "T_R_BRACE" && tokens.get(tokIndex-1).getKind() == "T_L_BRACE"){
             cst.addNode("StatementList","branch");
             cst.moveParent();
         }

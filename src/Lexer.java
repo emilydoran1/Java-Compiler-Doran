@@ -62,16 +62,46 @@ public class Lexer {
                     printWriter.println("$");
                     printWriter.close();
 
+                    Token tok = new Token("", "$", currentLine+1, 0);
+                    programTokens.add(tok);
+
+                    boolean passedLex = false;
+
+                    if(numErrors == 0)
+                        passedLex = true;
+
+                    // call parser
+                    Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                    programTokens.clear();
+
                 }
 
             }
             // check if comment is left open at end of program
             if(insideComment == true){
                 System.out.println("WARNING Lexer - Unclosed Comment at End of Program");
+
+                boolean passedLex = false;
+
+                if(numErrors == 0)
+                    passedLex = true;
+
+                // call parser
+                Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                programTokens.clear();
             }
             // check if quote is left open at end of program
             if(insideQuotes == true){
                 System.out.println("WARNING Lexer - Unclosed String at End of Program");
+
+                boolean passedLex = false;
+
+                if(numErrors == 0)
+                    passedLex = true;
+
+                // call parser
+                Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                programTokens.clear();
             }
             scanner.close();
         } catch (FileNotFoundException e) {
