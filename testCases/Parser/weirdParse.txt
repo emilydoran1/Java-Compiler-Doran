@@ -4,8 +4,8 @@
 
 {int a = 3}$
 
-{boolean b = true}$
-
 {int aa}$
+
+{$
 
 {/* this is an unclosed comment }$

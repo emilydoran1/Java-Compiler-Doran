@@ -89,9 +89,9 @@ public class Token {
             else if(value.equals("string") || value.equals("int") || value.equals("boolean"))
                 tokenKind = "T_VARIABLE_TYPE";
             else if(value.equals("if"))
-                tokenKind = "T_IF]";
+                tokenKind = "T_IF";
             else if(value.equals("while"))
-                tokenKind = "T_WHILE]";
+                tokenKind = "T_WHILE";
             else if(value.equals("true"))
                 tokenKind = "T_BOOL_TRUE";
             else if(value.equals("false"))

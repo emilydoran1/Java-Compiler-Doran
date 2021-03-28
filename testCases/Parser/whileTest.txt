@@ -3,3 +3,5 @@
 {while (a!=2){a = 3}}$
 
 {while (c==true){a = 3}}$
+
+{while (b){}}$

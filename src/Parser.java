@@ -15,8 +15,6 @@ public class Parser {
 
     int errorCount = 0;
 
-    private boolean lastResult = false;
-
     public Parser(ArrayList<Token> tokens, boolean verboseMode, boolean passLex, int programNum) {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
@@ -50,46 +48,76 @@ public class Parser {
 
     }
 
-    public void parseProgram(){
+    public boolean parseProgram(){
+        boolean passedProgram = true;
+
         System.out.println("PARSER: parseProgram()");
         cst.addNode("Program","root");
-        parseBlock();
-        lastResult = true;
-        if(errorCount == 0) {
-            checkToken("T_EOP");
-            cst.addNode("$", "child");
+        if(parseBlock()){
+            if(checkToken("T_EOP"))
+                cst.addNode("$", "child");
+            else{
+                throwErr("Expected [EOP] got '" + tokens.get(tokIndex).getValue());
+            }
         }
+        else{
+            passedProgram = false;
+        }
+
+        return passedProgram;
     }
 
-    public void parseBlock(){
+    public boolean parseBlock(){
+        boolean passedBlock = true;
+
         System.out.println("PARSER: parseBlock()");
         cst.addNode("Block","branch");
         checkToken("T_L_BRACE");
         cst.addNode("{","child");
-        parseStatementList();
-        if(errorCount == 0) {
+        if(parseStatementList()){
             checkToken("T_R_BRACE");
             cst.addNode("}", "child");
         }
+        else{
+            passedBlock = false;
+        }
         cst.moveParent();
+
+        return passedBlock;
     }
 
-    public void parseStatementList(){
+    public boolean parseStatementList(){
+        boolean passedStatementList = true;
+
         System.out.println("PARSER: parseStatementList()");
         if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() != "T_R_BRACE"){
             cst.addNode("StatementList","branch");
-            parseStatement();
-            if(errorCount == 0)
+            if(parseStatement()) {
                 parseStatementList();
+            }
+            else{
+                passedStatementList = false;
+            }
             cst.moveParent();
         }
         else if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() == "T_R_BRACE" && tokens.get(tokIndex-1).getKind() == "T_L_BRACE"){
             cst.addNode("StatementList","branch");
             cst.moveParent();
         }
+        else if(tokIndex >= tokens.size()){
+            throwErr("Expected [Statement] got 'end of stream");
+            passedStatementList = false;
+        }
+
+        if(errorCount > 0)
+            passedStatementList = false;
+
+        return passedStatementList;
     }
 
-    public void parseStatement(){
+    public boolean parseStatement(){
+        boolean passedStatement = true;
+
         System.out.println("PARSER: parseStatement()");
         cst.addNode("Statement","branch");
         if(checkToken("T_PRINT")) {
@@ -98,10 +126,16 @@ public class Parser {
             cst.addNode("(","child");
             parsePrintStatement();
         }
-        else if(checkToken("T_ID"))
-            parseAssignStatement();
-        else if(checkToken("T_VARIABLE_TYPE"))
-            parseVarDecl();
+        else if(checkToken("T_ID")) {
+            if(!parseAssignStatement()){
+                passedStatement = false;
+            }
+        }
+        else if(checkToken("T_VARIABLE_TYPE")){
+            if(!parseVarDecl()) {
+                passedStatement = false;
+            }
+        }
         else if(checkToken("T_WHILE"))
             parseWhileStatement();
         else if(checkToken("T_IF"))
@@ -109,11 +143,14 @@ public class Parser {
         else if(tokens.get(tokIndex).getKind() == "T_L_BRACE")
             parseBlock();
         else {
-            lastResult = true;
-            checkToken("T_R_BRACE");
+            throwErr("Expected [PrintStatement, AssignStatement, VarDecl, WhileStatement, " +
+                    "IfStatement, Block] got '" + tokens.get(tokIndex).getValue());
+            passedStatement = false;
         }
 
         cst.moveParent();
+
+        return passedStatement;
     }
 
     public void parsePrintStatement(){
@@ -127,59 +164,98 @@ public class Parser {
         cst.moveParent();
     }
 
-    public void parseAssignStatement(){
+    public boolean parseAssignStatement(){
+        boolean passedAssignStatement = true;
+
         System.out.println("PARSER: parseAssignStatement()");
         cst.addNode("AssignStatement","branch");
         cst.addNode("Id","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
         cst.moveParent();
-        lastResult = true;
+
         if(checkToken("T_ASSIGN_OP")) {
             cst.addNode(tokens.get(tokIndex - 1).getValue(), "child");
             parseExpr();
         }
+        else{
+            throwErr("Expected [=] got '" + tokens.get(tokIndex).getValue());
+            passedAssignStatement = false;
+        }
         cst.moveParent();
+
+        return passedAssignStatement;
     }
 
-    public void parseVarDecl(){
+    public boolean parseVarDecl(){
+        boolean passedVarDecl = true;
+
         System.out.println("PARSER: parseVarDecl()");
         cst.addNode("VarDecl","branch");
-        parseType();
+        if(!parseType())
+            passedVarDecl = false;
         cst.moveParent();
+
+        return passedVarDecl;
     }
 
-    public void parseType(){
+    public boolean parseType(){
+        boolean passedType = true;
+
         System.out.println("PARSER: parseType()");
         cst.addNode("Type","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
         cst.moveParent();
-        lastResult = true;
+
         if(checkToken("T_ID")){
             cst.addNode("Id","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
             cst.moveParent();
         }
+        else{
+            passedType = false;
+            throwErr("Expected [id] got '" + tokens.get(tokIndex).getValue());
+        }
+
+        return passedType;
     }
 
-    public void parseWhileStatement(){
+    public boolean parseWhileStatement(){
+        boolean passedWhileStatement = true;
+
         System.out.println("PARSER: parseWhileStatement()");
         cst.addNode("WhileStatement","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
-        parseBooleanExpr();
-        parseBlock();
+        if(parseBooleanExpr()){
+            parseBlock();
+        }
+        else{
+            passedWhileStatement = false;
+        }
         cst.moveParent();
+
+        return passedWhileStatement;
     }
 
-    public void parseIfStatement(){
+    public boolean parseIfStatement(){
+        boolean passedIfStatement = true;
+
         System.out.println("PARSER: parseIfStatement()");
         cst.addNode("IfStatement","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
-        parseBooleanExpr();
-        parseBlock();
+        if(parseBooleanExpr()){
+            parseBlock();
+        }
+        else{
+            passedIfStatement = false;
+        }
         cst.moveParent();
+
+        return passedIfStatement;
     }
 
-    public void parseExpr(){
+    public boolean parseExpr(){
+        boolean passedExpr = true;
+
         System.out.println("PARSER: parseExpr()");
         cst.addNode("Expression", "branch");
         if(checkToken("T_DIGIT")){
@@ -195,11 +271,19 @@ public class Parser {
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
             cst.moveParent();
         }
-        else{
+        else if(tokens.get(tokIndex).getKind().equals("T_L_PAREN") ||
+                tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE") ||
+                tokens.get(tokIndex).getKind().equals("T_BOOL_FALSE")){
             parseBooleanExpr();
+        }
+        else{
+            passedExpr = false;
+            throwErr("Expected [IntExpr, StringExpr, BooleanExpr, Id] got '" + tokens.get(tokIndex).getValue());
         }
 
         cst.moveParent();
+
+        return passedExpr;
     }
 
     public void parseIntExpr(){
@@ -226,19 +310,24 @@ public class Parser {
         cst.moveParent();
     }
 
-    public void parseBooleanExpr(){
+    public boolean parseBooleanExpr(){
+        boolean passedBooleanExpr = true;
+
         System.out.println("PARSER: parseBooleanExpr()");
         cst.addNode("BooleanExpression", "branch");
-//        tokIndex--;
 
         if(tokens.get(tokIndex).getKind().equals("T_L_PAREN")){
             checkToken("T_L_PAREN");
             cst.addNode("(","child");
             parseExpr();
-            parseBoolOp();
-            parseExpr();
-            checkToken("T_R_PAREN");
-            cst.addNode(")","child");
+            if(parseBoolOp()){
+                parseExpr();
+                checkToken("T_R_PAREN");
+                cst.addNode(")", "child");
+            }
+            else{
+                passedBooleanExpr = false;
+            }
         }
         else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
             checkToken("T_BOOL_TRUE");
@@ -247,12 +336,18 @@ public class Parser {
             cst.moveParent();
         }
         else {
-            checkToken("T_BOOL_FALSE");
-            cst.addNode("BoolVal","branch");
-            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
-            cst.moveParent();
+            if(checkToken("T_BOOL_FALSE")) {
+                cst.addNode("BoolVal", "branch");
+                cst.addNode(tokens.get(tokIndex - 1).getValue(), "child");
+                cst.moveParent();
+            }
+            else{
+                passedBooleanExpr = false;
+            }
         }
         cst.moveParent();
+
+        return passedBooleanExpr;
     }
 
     public void parseCharList(){
@@ -268,19 +363,27 @@ public class Parser {
         cst.moveParent();
     }
 
-    public void parseBoolOp(){
+    public boolean parseBoolOp(){
+        boolean passedBoolOp = true;
+
         System.out.println("PARSER: parseBoolOp()");
         cst.addNode("BoolOp","branch");
 
-        if(tokens.get(tokIndex).getKind().equals("T_EQUALITY_OP")){
-            checkToken("T_EQUALITY_OP");
+        if(checkToken("T_EQUALITY_OP")){
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
         }
-        else if(tokens.get(tokIndex).getKind().equals("T_INEQUALITY_OP")){
-            checkToken("T_INEQUALITY_OP");
-            cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        else{
+            if(checkToken("T_INEQUALITY_OP")){
+                cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+            }
+            else{
+                passedBoolOp = false;
+                throwErr("Expected BoolOp got '" + tokens.get(tokIndex).getValue());
+            }
         }
         cst.moveParent();
+
+        return passedBoolOp;
     }
 
     public boolean checkToken(String expectedKind){
@@ -295,21 +398,20 @@ public class Parser {
             if(tokens.get(tokIndex).getKind().equals(expectedKind)) {
                 tokenMatch = true;
                 tokIndex++;
-                lastResult = false;
 
             }
-            else if (lastResult == true && errorCount == 0){
 
-                System.out.println("PARSER: ERROR: Expected [" + expectedKind + "] got [" +
-                        tokens.get(tokIndex).getKind() + "] with value '" + tokens.get(tokIndex).getValue()
-                                + "' on line " + tokens.get(tokIndex).getLine());
-
-                errorCount++;
-                lastResult = false;
-            }
         }
 
         return tokenMatch;
+    }
+
+    public void throwErr(String expectedKind){
+        if(tokIndex < tokens.size())
+            System.out.println("PARSER: ERROR: " + expectedKind + "' on line " + tokens.get(tokIndex).getLine());
+        else
+            System.out.println("PARSER: ERROR: " + expectedKind + "' on line " + tokens.get(tokIndex-1).getLine());
+        errorCount++;
     }
 
 }
