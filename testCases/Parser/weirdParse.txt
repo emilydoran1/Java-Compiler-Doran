@@ -8,4 +8,6 @@
 
 {$
 
+int a$
+
 {/* this is an unclosed comment }$

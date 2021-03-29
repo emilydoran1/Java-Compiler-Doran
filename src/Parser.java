@@ -1,4 +1,7 @@
 /**
+ * This program validates the tokens produced by the lexical analysis and
+ * displays errors and warnings according to our grammar. If the parse is
+ * successful, it creates a Concrete Syntax Tree (CST).
  *
  * @author Emily Doran
  *
@@ -41,6 +44,9 @@ public class Parser {
 
     }
 
+    /**
+     * Calls parseProgram to begin parsing sequence
+     */
     public void parse(){
         System.out.println("PARSER: parse()");
 
@@ -48,11 +54,19 @@ public class Parser {
 
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Program
+     * Program ::== Block $
+     * @return boolean passedProgram token sequence matches that of Program and there are
+     * no errors in internal function calls
+     */
     public boolean parseProgram(){
         boolean passedProgram = true;
 
         System.out.println("PARSER: parseProgram()");
         cst.addNode("Program","root");
+
+        // check if there was an error in other grammar program call
         if(parseBlock()){
             if(checkToken("T_EOP"))
                 cst.addNode("$", "child");
@@ -60,6 +74,7 @@ public class Parser {
                 throwErr("Expected [EOP] got '" + tokens.get(tokIndex).getValue());
             }
         }
+        // error was thrown in other function, so we don't want to continue
         else{
             passedProgram = false;
         }
@@ -67,29 +82,54 @@ public class Parser {
         return passedProgram;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Block
+     * Block ::== { StatementList }
+     * @return boolean passedBlock token sequence matches that of Block and there are
+     * no errors in internal function calls
+     */
     public boolean parseBlock(){
         boolean passedBlock = true;
 
         System.out.println("PARSER: parseBlock()");
         cst.addNode("Block","branch");
-        checkToken("T_L_BRACE");
-        cst.addNode("{","child");
-        if(parseStatementList()){
-            checkToken("T_R_BRACE");
-            cst.addNode("}", "child");
+
+        // check that first token is left brace
+        if(checkToken("T_L_BRACE")){
+            cst.addNode("{","child");
+            if(parseStatementList()){
+                checkToken("T_R_BRACE");
+                cst.addNode("}", "child");
+            }
+            // error was thrown in other function, so we don't want to continue
+            else{
+                passedBlock = false;
+            }
         }
+        // left brace was not entered, we don't have a block
         else{
+            throwErr("Expected [{] got '" + tokens.get(tokIndex).getValue());
             passedBlock = false;
         }
+
         cst.moveParent();
 
         return passedBlock;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a StatementList
+     * StatementList ::== Statement StatementList
+     *               ::== Epsilon
+     * @return boolean passedStatementList token sequence matches that of StatementList and there are
+     * no errors in internal function calls
+     */
     public boolean parseStatementList(){
         boolean passedStatementList = true;
 
         System.out.println("PARSER: parseStatementList()");
+
+        // we haven't reached end of stream and don't have right brace
         if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() != "T_R_BRACE"){
             cst.addNode("StatementList","branch");
             if(parseStatement()) {
@@ -100,48 +140,80 @@ public class Parser {
             }
             cst.moveParent();
         }
+        // we haven't reached end of stream and have nothing in StatementList
         else if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() == "T_R_BRACE" && tokens.get(tokIndex-1).getKind() == "T_L_BRACE"){
             cst.addNode("StatementList","branch");
             cst.moveParent();
         }
+        // we have reached end of stream
         else if(tokIndex >= tokens.size()){
-            throwErr("Expected [Statement] got 'end of stream");
+            throwErr("Expected [StatementList] got 'end of stream");
             passedStatementList = false;
         }
 
+        // check that we don't have any previous errors because we don't want to overwrite passedStatementList during
+        // recursive calls
         if(errorCount > 0)
             passedStatementList = false;
 
         return passedStatementList;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Statement
+     * Statement ::== PrintStatement | AssignStatement | VarDecl | WhileStatement | IfStatement | Block
+     * @return boolean passedStatement token sequence matches that of Statement and there are
+     * no errors in internal function calls
+     */
     public boolean parseStatement(){
         boolean passedStatement = true;
 
         System.out.println("PARSER: parseStatement()");
         cst.addNode("Statement","branch");
+
+        // we have a PrintStatement
         if(checkToken("T_PRINT")) {
             cst.addNode("PrintStatement","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
             cst.addNode("(","child");
             parsePrintStatement();
         }
+        // we have an AssignStatement (which begins with id)
         else if(checkToken("T_ID")) {
+            // make sure parseAssignStatement() didn't throw any errors
             if(!parseAssignStatement()){
                 passedStatement = false;
             }
         }
+        // we have a VarDecl (which begins with var type)
         else if(checkToken("T_VARIABLE_TYPE")){
+            // make sure parseVarDecl() didn't throw any errors
             if(!parseVarDecl()) {
                 passedStatement = false;
             }
         }
-        else if(checkToken("T_WHILE"))
-            parseWhileStatement();
-        else if(checkToken("T_IF"))
-            parseIfStatement();
-        else if(tokens.get(tokIndex).getKind() == "T_L_BRACE")
-            parseBlock();
+        // we have a WhileStatement
+        else if(checkToken("T_WHILE")) {
+            // make sure parseWhileStatement() didn't throw any errors
+            if(!parseWhileStatement()) {
+                passedStatement = false;
+            }
+        }
+        // we have an IfStatement
+        else if(checkToken("T_IF")) {
+            // make sure parseIfStatement() didn't throw any errors
+            if (!parseIfStatement()) {
+                passedStatement = false;
+            }
+        }
+        // we have a Block (which begins with left brace)
+        else if(tokens.get(tokIndex).getKind() == "T_L_BRACE"){
+            // make sure parseBlock() didn't throw any errors
+            if (!parseBlock()) {
+                passedStatement = false;
+            }
+        }
+        // current token does not match Statement -> throw error
         else {
             throwErr("Expected [PrintStatement, AssignStatement, VarDecl, WhileStatement, " +
                     "IfStatement, Block] got '" + tokens.get(tokIndex).getValue());
@@ -153,15 +225,25 @@ public class Parser {
         return passedStatement;
     }
 
-    public void parsePrintStatement(){
+    public boolean parsePrintStatement(){
+        boolean passedPrintStatement = true;
+
         System.out.println("PARSER: parsePrintStatement()");
         if(checkToken("T_L_PAREN")) {
             parseExpr();
             if(checkToken("T_R_PAREN")) {
                 cst.addNode(")", "child");
             }
+            else{
+                passedPrintStatement = false;
+            }
+        }
+        else{
+            passedPrintStatement = false;
         }
         cst.moveParent();
+
+        return passedPrintStatement;
     }
 
     public boolean parseAssignStatement(){
@@ -315,13 +397,24 @@ public class Parser {
         return passedIntExpr;
     }
 
-    public void parseStringExpr(){
+    public boolean parseStringExpr(){
+        boolean passedStringExpr = true;
+
         System.out.println("PARSER: parseStringExpr()");
-        if(tokens.get(tokIndex).getKind().equals("T_CHAR"))
-            parseCharList();
-        checkToken("T_QUOTE");
-        cst.addNode("\"","child");
+        if(tokens.get(tokIndex).getKind().equals("T_CHAR")){
+            if(!parseCharList()){
+                passedStringExpr = false;
+            }
+        }
+        if(checkToken("T_QUOTE")) {
+            cst.addNode("\"", "child");
+        }
+        else{
+            passedStringExpr = false;
+        }
         cst.moveParent();
+
+        return passedStringExpr;
     }
 
     public boolean parseBooleanExpr(){
@@ -364,7 +457,9 @@ public class Parser {
         return passedBooleanExpr;
     }
 
-    public void parseCharList(){
+    public boolean parseCharList(){
+        boolean passedCharList = true;
+
         System.out.println("PARSER: parseCharList()");
         cst.addNode("CharList","branch");
         if(checkToken("T_CHAR")){
@@ -374,7 +469,13 @@ public class Parser {
             if(tokens.get(tokIndex).getKind().equals("T_CHAR"))
                 parseCharList();
         }
+        else if(!tokens.get(tokIndex).getKind().equals("T_QUOTE")){
+            passedCharList = false;
+            throwErr("Expected [Char, CharList, Space, Nothing] got '" + tokens.get(tokIndex).getValue());
+        }
         cst.moveParent();
+
+        return passedCharList;
     }
 
     public boolean parseBoolOp(){

@@ -13,7 +13,9 @@ public class ConcreteSyntaxTree {
 
     private String traversalResult = "";
 
-
+    /**
+     * Add a node to our CST with name and kind passed in
+     */
     public void addNode(String name, String kind){
         Node node = new Node(name);
 
@@ -47,14 +49,6 @@ public class ConcreteSyntaxTree {
         else{
             // TODO: error logging
         }
-    }
-
-    /**
-     * Get our root node
-     * @return root node
-     */
-    public Node getRoot(){
-        return root;
     }
 
     /**
