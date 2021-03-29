@@ -4,6 +4,16 @@ Compiler for Marist Spring 2021 Compilers Course
 ## Clone Repository
 `git clone https://github.com/emilydoran1/Java-Compiler-Doran.git` 
 
+## Running Parser and CST
+* Redirect to the filepath `Java-Compiler-Doran/src`
+* Compile Parser.java `javac Parser.java`
+* Compile Compiler.java `javac Compiler.java`
+* Run program with test cases as parameter `java Compiler pathToFile` 
+  * ex: `java Compiler ../testCases/Parser/basicParse.txt`
+* The compiler will call the lexer to provide the lexical analysis.
+* After generating the token sequence for a program, the lexer will call the parser to verify the tokens
+  * If the lexer produced any errors, the parsing and CST will be skipped
+
 ## Running Lexical Analysis 
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile Compiler.java `javac Compiler.java`
