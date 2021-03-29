@@ -286,12 +286,24 @@ public class Parser {
         return passedExpr;
     }
 
-    public void parseIntExpr(){
+    public boolean parseIntExpr(){
+        boolean passedIntExpr = true;
+
         System.out.println("PARSER: parseIntExpr()");
         cst.addNode("IntegerExpression", "branch");
         if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
-            checkToken("T_ADDITION_OP");
-            parseExpr();
+            cst.addNode("Digit","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+            cst.moveParent();
+            if(checkToken("T_ADDITION_OP")){
+                cst.addNode("IntOp","branch");
+                cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+                cst.moveParent();
+                parseExpr();
+            }
+            else{
+                passedIntExpr = false;
+            }
         }
         else{
             cst.addNode("Digit","branch");
@@ -299,6 +311,8 @@ public class Parser {
             cst.moveParent();
         }
         cst.moveParent();
+
+        return passedIntExpr;
     }
 
     public void parseStringExpr(){

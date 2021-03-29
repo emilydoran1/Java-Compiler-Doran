@@ -14,3 +14,7 @@
 }$
 
 {int int}$
+
+{print(1+false)}$
+
+{a = 3 + 2}$
