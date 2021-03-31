@@ -360,7 +360,9 @@ public class Parser {
         // we already matched "while", so check if we have a boolean expression next
         // if this is true, we check for block
         if(parseBooleanExpr()){
-            parseBlock();
+            if(!parseBlock()){
+                passedWhileStatement = false;
+            }
         }
         // there was an error in parseBooleanExpr() or other internal function calls
         else{
@@ -398,15 +400,24 @@ public class Parser {
         return passedIfStatement;
     }
 
+    /**
+     * Verifies that the token sequence is correct for an Expression
+     * Expr ::== IntExpr | StringExpr | BooleanExpr | Id
+     * @return boolean passedExpr token sequence matches that of Expr and there are
+     * no errors in internal function calls
+     */
     public boolean parseExpr(){
         boolean passedExpr = true;
 
         System.out.println("PARSER: parseExpr()");
         cst.addNode("Expression", "branch");
+
+        // check if we have an IntExpr
         if(checkToken("T_DIGIT")){
             if(!parseIntExpr())
                 passedExpr = false;
         }
+        // check if we have a StringExpr
         else if(checkToken("T_QUOTE")) {
             cst.addNode("StringExpression","branch");
             cst.addNode("\"","child");
@@ -414,16 +425,19 @@ public class Parser {
                 passedExpr = false;
             }
         }
+        // check if we have an Id
         else if(checkToken("T_ID")){
             cst.addNode("Id","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
             cst.moveParent();
         }
+        // check if we have a BooleanExpr
         else if(tokens.get(tokIndex).getKind().equals("T_L_PAREN") ||
                 tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE") ||
                 tokens.get(tokIndex).getKind().equals("T_BOOL_FALSE")){
             parseBooleanExpr();
         }
+        // we don't have any matches ->  throw error
         else{
             passedExpr = false;
             throwErr("Expected [IntExpr, StringExpr, BooleanExpr, Id] got '" + tokens.get(tokIndex).getValue());
@@ -506,39 +520,72 @@ public class Parser {
         return passedStringExpr;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Boolean Expression
+     * BooleanExpr ::== ( Expr boolop Expr )
+     *             ::== boolVal
+     * @return boolean passedBooleanExpr token sequence matches that of BooleanExpr and there are
+     * no errors in internal function calls
+     */
     public boolean parseBooleanExpr(){
         boolean passedBooleanExpr = true;
 
         System.out.println("PARSER: parseBooleanExpr()");
         cst.addNode("BooleanExpression", "branch");
 
+        // check if we have a left parenthesis
         if(tokens.get(tokIndex).getKind().equals("T_L_PAREN")){
             checkToken("T_L_PAREN");
             cst.addNode("(","child");
-            parseExpr();
-            if(parseBoolOp()){
-                parseExpr();
-                checkToken("T_R_PAREN");
-                cst.addNode(")", "child");
+
+            // call parseExpr() to check for Expr, make sure no errors thrown there
+            if(parseExpr()){
+                // check for boolop, make sure no errors thrown there
+                if(parseBoolOp()){
+                    // check for expression, make sure no errors thrown there
+                    if(parseExpr()){
+                        // check for closing parenthesis
+                        if(checkToken("T_R_PAREN"))
+                            cst.addNode(")", "child");
+                        else{
+                            passedBooleanExpr = false;
+                            throwErr("Expected [)] got '" + tokens.get(tokIndex).getValue());
+                        }
+                    }
+                    // error thrown in parseExpr() or one of it's function calls
+                    else{
+                        passedBooleanExpr = false;
+                    }
+                }
+                // error thrown in parseBoolOp() or one of it's function calls
+                else{
+                    passedBooleanExpr = false;
+                }
             }
+            // error thrown in parseExpr() or one of it's function calls
             else{
                 passedBooleanExpr = false;
             }
+
         }
+        // check if we have boolval true
         else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
             checkToken("T_BOOL_TRUE");
             cst.addNode("BoolVal","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
             cst.moveParent();
         }
+        // check if we have boolval false
         else {
             if(checkToken("T_BOOL_FALSE")) {
                 cst.addNode("BoolVal", "branch");
                 cst.addNode(tokens.get(tokIndex - 1).getValue(), "child");
                 cst.moveParent();
             }
+            // no boolean expression was found
             else{
                 passedBooleanExpr = false;
+                throwErr("Expected [BooleanExpression] got '" + tokens.get(tokIndex).getValue());
             }
         }
         cst.moveParent();
@@ -557,10 +604,7 @@ public class Parser {
             cst.moveParent();
             if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind().equals("T_CHAR"))
                 parseCharList();
-            else{
-                passedCharList = false;
-                throwErr("Expected [char, space, nothing] got 'end of stream");
-            }
+
         }
         else if(tokIndex < tokens.size() && !tokens.get(tokIndex).getKind().equals("T_QUOTE")){
             passedCharList = false;

@@ -7,3 +7,7 @@
 {while (c==true){print(a)}}$
 {while (b){}}$
 {while ("hi" == 2)}}$
+
+{while (a == 5 {}}$
+
+{while a == 5 {}}$

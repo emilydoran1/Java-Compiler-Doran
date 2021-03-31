@@ -6,4 +6,4 @@
 
 {boolean b}$
 
-{a = "
+{a = "b
