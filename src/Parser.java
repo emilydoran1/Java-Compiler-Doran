@@ -282,11 +282,14 @@ public class Parser {
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
         cst.moveParent();
 
+        // we already matched Id in prev function, so next item to match is "="
         if(checkToken("T_ASSIGN_OP")) {
             cst.addNode(tokens.get(tokIndex - 1).getValue(), "child");
+            // parseExpr() or other function calls threw an error
             if(!parseExpr())
                 passedAssignStatement = false;
         }
+        // current token is not "=", throw error
         else{
             throwErr("Expected [=] got '" + tokens.get(tokIndex).getValue());
             passedAssignStatement = false;
@@ -296,48 +299,70 @@ public class Parser {
         return passedAssignStatement;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Variable Declaration
+     * VarDecl ::== type Id
+     * @return boolean passedVarDecl token sequence matches that of VarDecl and there are
+     * no errors in internal function calls
+     */
     public boolean parseVarDecl(){
         boolean passedVarDecl = true;
 
         System.out.println("PARSER: parseVarDecl()");
         cst.addNode("VarDecl","branch");
-        if(!parseType())
-            passedVarDecl = false;
-        cst.moveParent();
 
-        return passedVarDecl;
-    }
+        // we already matched that current token is type to get here, but call parseType()
+        // to get the token printed
+        parseType();
 
-    public boolean parseType(){
-        boolean passedType = true;
-
-        System.out.println("PARSER: parseType()");
-        cst.addNode("Type","branch");
-        cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
-        cst.moveParent();
-
+        // check that current token following type is Id
         if(checkToken("T_ID")){
             cst.addNode("Id","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
             cst.moveParent();
         }
+        // token was not an Id -> throw error
         else{
-            passedType = false;
+            passedVarDecl = false;
             throwErr("Expected [id] got '" + tokens.get(tokIndex).getValue());
         }
 
-        return passedType;
+        cst.moveParent();
+
+        return passedVarDecl;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a type
+     * type ::== int | string | boolean
+     */
+    public void parseType(){
+        System.out.println("PARSER: parseType()");
+        cst.addNode("Type","branch");
+        cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+        cst.moveParent();
+
+    }
+
+    /**
+     * Verifies that the token sequence is correct for a While Statement
+     * WhileStatement ::== while BooleanExpr Block
+     * @return boolean passedWhileStatement token sequence matches that of WhileStatement and there are
+     * no errors in internal function calls
+     */
     public boolean parseWhileStatement(){
         boolean passedWhileStatement = true;
 
         System.out.println("PARSER: parseWhileStatement()");
         cst.addNode("WhileStatement","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+
+        // we already matched "while", so check if we have a boolean expression next
+        // if this is true, we check for block
         if(parseBooleanExpr()){
             parseBlock();
         }
+        // there was an error in parseBooleanExpr() or other internal function calls
         else{
             passedWhileStatement = false;
         }
@@ -346,15 +371,25 @@ public class Parser {
         return passedWhileStatement;
     }
 
+    /**
+     * Verifies that the token sequence is correct for an If Statement
+     * IfStatement ::== if BooleanExpr Block
+     * @return boolean passedIfStatement token sequence matches that of IfStatement and there are
+     * no errors in internal function calls
+     */
     public boolean parseIfStatement(){
         boolean passedIfStatement = true;
 
         System.out.println("PARSER: parseIfStatement()");
         cst.addNode("IfStatement","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
+
+        // we already matched "if", so check if we have a boolean expression next
+        // if this is true, we check for block
         if(parseBooleanExpr()){
             parseBlock();
         }
+        // there was an error in parseBooleanExpr() or other internal function calls
         else{
             passedIfStatement = false;
         }
@@ -375,7 +410,9 @@ public class Parser {
         else if(checkToken("T_QUOTE")) {
             cst.addNode("StringExpression","branch");
             cst.addNode("\"","child");
-            parseStringExpr();
+            if(!parseStringExpr()){
+                passedExpr = false;
+            }
         }
         else if(checkToken("T_ID")){
             cst.addNode("Id","branch");
@@ -397,26 +434,35 @@ public class Parser {
         return passedExpr;
     }
 
+    /**
+     * Verifies that the token sequence is correct for an Int Expression
+     * IntExpr ::== digit intop Expr
+     *         ::== digit
+     * @return boolean passedIntExpr token sequence matches that of IntExpr and there are
+     * no errors in internal function calls
+     */
     public boolean parseIntExpr(){
         boolean passedIntExpr = true;
 
         System.out.println("PARSER: parseIntExpr()");
         cst.addNode("IntegerExpression", "branch");
+
+        // we already matched the digit to get here, so check if next token is an intop
+        // intop ::== +
         if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
             cst.addNode("Digit","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
             cst.moveParent();
-            if(checkToken("T_ADDITION_OP")){
-                cst.addNode("IntOp","branch");
-                cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
-                cst.moveParent();
-                if(!parseExpr())
-                    passedIntExpr = false;
-            }
-            else{
+            checkToken("T_ADDITION_OP");
+            cst.addNode("IntOp","branch");
+            cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
+            cst.moveParent();
+            // make sure no errors were thrown in parseExpr
+            if(!parseExpr())
                 passedIntExpr = false;
-            }
+
         }
+        // we do not have an intop, so add node for just digit
         else{
             cst.addNode("Digit","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
@@ -427,19 +473,32 @@ public class Parser {
         return passedIntExpr;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a String Expression
+     * StringExpr ::== " CharList "
+     * @return boolean passedStringExpr token sequence matches that of StringExpr and there are
+     * no errors in internal function calls
+     */
     public boolean parseStringExpr(){
         boolean passedStringExpr = true;
 
         System.out.println("PARSER: parseStringExpr()");
-        if(tokens.get(tokIndex).getKind().equals("T_CHAR")){
+
+        // we already matched the opening quote, so check if next token is a char
+        if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind().equals("T_CHAR")){
             if(!parseCharList()){
                 passedStringExpr = false;
             }
         }
-        if(checkToken("T_QUOTE")) {
+        // check we don't have unclosed string and if next token is quote
+        if(tokIndex < tokens.size() && checkToken("T_QUOTE")) {
             cst.addNode("\"", "child");
         }
+        // we have an unclosed string
         else{
+            if(errorCount == 0)
+                throwErr("Expected [\"] got 'end of stream");
+
             passedStringExpr = false;
         }
         cst.moveParent();
@@ -496,13 +555,18 @@ public class Parser {
             cst.addNode("Char","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
             cst.moveParent();
-            if(tokens.get(tokIndex).getKind().equals("T_CHAR"))
+            if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind().equals("T_CHAR"))
                 parseCharList();
+            else{
+                passedCharList = false;
+                throwErr("Expected [char, space, nothing] got 'end of stream");
+            }
         }
-        else if(!tokens.get(tokIndex).getKind().equals("T_QUOTE")){
+        else if(tokIndex < tokens.size() && !tokens.get(tokIndex).getKind().equals("T_QUOTE")){
             passedCharList = false;
-            throwErr("Expected [Char, CharList, Space, Nothing] got '" + tokens.get(tokIndex).getValue());
+            throwErr("Expected [Char, CharList, Space, \"] got '" + tokens.get(tokIndex).getValue());
         }
+
         cst.moveParent();
 
         return passedCharList;
@@ -534,7 +598,7 @@ public class Parser {
     public boolean checkToken(String expectedKind){
         boolean tokenMatch = false;
 
-        if (tokens.size() <= tokIndex && errorCount == 0) {
+        if (tokIndex >= tokens.size() && errorCount == 0) {
             System.out.println("PARSER: ERROR: Expected [" + expectedKind + "] got end of stream.");
             errorCount++;
         }
