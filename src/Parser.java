@@ -175,8 +175,10 @@ public class Parser {
         if(checkToken("T_PRINT")) {
             cst.addNode("PrintStatement","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
-            cst.addNode("(","child");
-            parsePrintStatement();
+            if(!parsePrintStatement()){
+                passedStatement = false;
+            }
+
         }
         // we have an AssignStatement (which begins with id)
         else if(checkToken("T_ID")) {
@@ -225,27 +227,52 @@ public class Parser {
         return passedStatement;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a PrintStatement
+     * PrintStatement ::== print ( Expr )
+     * @return boolean passedPrintStatement token sequence matches that of PrintStatement and there are
+     * no errors in internal function calls
+     */
     public boolean parsePrintStatement(){
         boolean passedPrintStatement = true;
 
         System.out.println("PARSER: parsePrintStatement()");
+
+        // we already matched print in previous function call to call this method, so next thing to match
+        // is the left parenthesis
         if(checkToken("T_L_PAREN")) {
-            parseExpr();
-            if(checkToken("T_R_PAREN")) {
-                cst.addNode(")", "child");
+            cst.addNode("(","child");
+            // make sure parseExpr() didn't throw any errors
+            if(parseExpr()) {
+                // match closing parenthesis
+                if (checkToken("T_R_PAREN")) {
+                    cst.addNode(")", "child");
+                } else {
+                    passedPrintStatement = false;
+                    throwErr("Expected [)] got '" + tokens.get(tokIndex).getValue());
+                }
             }
+            // parseExpr() or other function calls threw an error
             else{
                 passedPrintStatement = false;
             }
         }
+        // we don't have a left parenthesis, throw error
         else{
             passedPrintStatement = false;
+            throwErr("Expected [(] got '" + tokens.get(tokIndex).getValue());
         }
         cst.moveParent();
 
         return passedPrintStatement;
     }
 
+    /**
+     * Verifies that the token sequence is correct for an AssignStatement
+     * AssignStatement ::== Id = Expr
+     * @return boolean passedAssignStatement token sequence matches that of AssignStatement and there are
+     * no errors in internal function calls
+     */
     public boolean parseAssignStatement(){
         boolean passedAssignStatement = true;
 
@@ -257,7 +284,8 @@ public class Parser {
 
         if(checkToken("T_ASSIGN_OP")) {
             cst.addNode(tokens.get(tokIndex - 1).getValue(), "child");
-            parseExpr();
+            if(!parseExpr())
+                passedAssignStatement = false;
         }
         else{
             throwErr("Expected [=] got '" + tokens.get(tokIndex).getValue());
@@ -341,7 +369,8 @@ public class Parser {
         System.out.println("PARSER: parseExpr()");
         cst.addNode("Expression", "branch");
         if(checkToken("T_DIGIT")){
-            parseIntExpr();
+            if(!parseIntExpr())
+                passedExpr = false;
         }
         else if(checkToken("T_QUOTE")) {
             cst.addNode("StringExpression","branch");
@@ -381,7 +410,8 @@ public class Parser {
                 cst.addNode("IntOp","branch");
                 cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
                 cst.moveParent();
-                parseExpr();
+                if(!parseExpr())
+                    passedIntExpr = false;
             }
             else{
                 passedIntExpr = false;
@@ -513,7 +543,6 @@ public class Parser {
             if(tokens.get(tokIndex).getKind().equals(expectedKind)) {
                 tokenMatch = true;
                 tokIndex++;
-
             }
 
         }

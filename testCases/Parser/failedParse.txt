@@ -1,7 +1,5 @@
-{
-  int a
-  a = 3 + 
-}$
-
+{intaa=3+}$
 {int a a=2 print("abc")$
+{x = }$
 
+{print x = 3}$

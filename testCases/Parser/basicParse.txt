@@ -1,11 +1,7 @@
 {}$
-
 {{{{{{}}}}}}$
-
 {{{{{{}}} /* comments are ignored */ }}}}$
-
 {/* comments are still ignored */  int @}$
-
 {
   int a 
   a = a 
