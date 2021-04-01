@@ -593,11 +593,21 @@ public class Parser {
         return passedBooleanExpr;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Char List
+     * CharList ::== char CharList
+     *          ::== space CharList
+     *          ::==
+     * @return boolean passedCharList token sequence matches that of CharList and there are
+     * no errors in internal function calls
+     */
     public boolean parseCharList(){
         boolean passedCharList = true;
 
         System.out.println("PARSER: parseCharList()");
         cst.addNode("CharList","branch");
+
+        // check if we have a character (or space)
         if(checkToken("T_CHAR")){
             cst.addNode("Char","branch");
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
@@ -606,6 +616,7 @@ public class Parser {
                 parseCharList();
 
         }
+        // check if we have nothing (closing quote)
         else if(tokIndex < tokens.size() && !tokens.get(tokIndex).getKind().equals("T_QUOTE")){
             passedCharList = false;
             throwErr("Expected [Char, CharList, Space, \"] got '" + tokens.get(tokIndex).getValue());
@@ -616,19 +627,28 @@ public class Parser {
         return passedCharList;
     }
 
+    /**
+     * Verifies that the token sequence is correct for a Bool Op
+     * boolop    ::== == | !=
+     * @return boolean passedBoolOp token sequence matches that of boolop and there are
+     * no errors in internal function calls
+     */
     public boolean parseBoolOp(){
         boolean passedBoolOp = true;
 
         System.out.println("PARSER: parseBoolOp()");
         cst.addNode("BoolOp","branch");
 
+        // check if we have "=="
         if(checkToken("T_EQUALITY_OP")){
             cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
         }
         else{
+            // check if we have "!="
             if(checkToken("T_INEQUALITY_OP")){
                 cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
             }
+            // we don't have a boolop -> throw error
             else{
                 passedBoolOp = false;
                 throwErr("Expected BoolOp got '" + tokens.get(tokIndex).getValue());
@@ -639,31 +659,42 @@ public class Parser {
         return passedBoolOp;
     }
 
+    /**
+     * Checks if the expected token is equal to the current token
+     * @param expectedKind expected token kind
+     * @return boolean if current token matches the expected token
+     */
     public boolean checkToken(String expectedKind){
         boolean tokenMatch = false;
 
+        // checks if we have reached end of stream and are still expecting a token
         if (tokIndex >= tokens.size() && errorCount == 0) {
             System.out.println("PARSER: ERROR: Expected [" + expectedKind + "] got end of stream.");
             errorCount++;
         }
 
+        // check if current token == expected token
         else{
             if(tokens.get(tokIndex).getKind().equals(expectedKind)) {
                 tokenMatch = true;
                 tokIndex++;
             }
-
         }
 
         return tokenMatch;
     }
 
+    /**
+     * Throws an error message that the expected token was not equal to the current
+     * and updates the errorCount
+     * @param expectedKind expected token kind
+     */
     public void throwErr(String expectedKind){
+        // check for out of bounds 
         if(tokIndex < tokens.size())
             System.out.println("PARSER: ERROR: " + expectedKind + "' on line " + tokens.get(tokIndex).getLine());
         else
             System.out.println("PARSER: ERROR: " + expectedKind + "' on line " + tokens.get(tokIndex-1).getLine());
         errorCount++;
     }
-
 }
