@@ -48,7 +48,8 @@ public class Parser {
      * Calls parseProgram to begin parsing sequence
      */
     public void parse(){
-        System.out.println("PARSER: parse()");
+        if(verboseMode)
+            System.out.println("PARSER: parse()");
 
         parseProgram();
 
@@ -63,7 +64,8 @@ public class Parser {
     public boolean parseProgram(){
         boolean passedProgram = true;
 
-        System.out.println("PARSER: parseProgram()");
+        if(verboseMode)
+            System.out.println("PARSER: parseProgram()");
         cst.addNode("Program","root");
 
         // check if there was an error in other grammar program call
@@ -91,7 +93,8 @@ public class Parser {
     public boolean parseBlock(){
         boolean passedBlock = true;
 
-        System.out.println("PARSER: parseBlock()");
+        if(verboseMode)
+            System.out.println("PARSER: parseBlock()");
         cst.addNode("Block","branch");
 
         // check that first token is left brace
@@ -127,7 +130,8 @@ public class Parser {
     public boolean parseStatementList(){
         boolean passedStatementList = true;
 
-        System.out.println("PARSER: parseStatementList()");
+        if(verboseMode)
+            System.out.println("PARSER: parseStatementList()");
 
         // we haven't reached end of stream and don't have right brace
         if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind() != "T_R_BRACE"){
@@ -168,7 +172,8 @@ public class Parser {
     public boolean parseStatement(){
         boolean passedStatement = true;
 
-        System.out.println("PARSER: parseStatement()");
+        if(verboseMode)
+            System.out.println("PARSER: parseStatement()");
         cst.addNode("Statement","branch");
 
         // we have a PrintStatement
@@ -236,7 +241,8 @@ public class Parser {
     public boolean parsePrintStatement(){
         boolean passedPrintStatement = true;
 
-        System.out.println("PARSER: parsePrintStatement()");
+        if(verboseMode)
+            System.out.println("PARSER: parsePrintStatement()");
 
         // we already matched print in previous function call to call this method, so next thing to match
         // is the left parenthesis
@@ -276,7 +282,8 @@ public class Parser {
     public boolean parseAssignStatement(){
         boolean passedAssignStatement = true;
 
-        System.out.println("PARSER: parseAssignStatement()");
+        if(verboseMode)
+            System.out.println("PARSER: parseAssignStatement()");
         cst.addNode("AssignStatement","branch");
         cst.addNode("Id","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
@@ -308,7 +315,8 @@ public class Parser {
     public boolean parseVarDecl(){
         boolean passedVarDecl = true;
 
-        System.out.println("PARSER: parseVarDecl()");
+        if(verboseMode)
+            System.out.println("PARSER: parseVarDecl()");
         cst.addNode("VarDecl","branch");
 
         // we already matched that current token is type to get here, but call parseType()
@@ -337,7 +345,8 @@ public class Parser {
      * type ::== int | string | boolean
      */
     public void parseType(){
-        System.out.println("PARSER: parseType()");
+        if(verboseMode)
+            System.out.println("PARSER: parseType()");
         cst.addNode("Type","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(), "child");
         cst.moveParent();
@@ -353,7 +362,8 @@ public class Parser {
     public boolean parseWhileStatement(){
         boolean passedWhileStatement = true;
 
-        System.out.println("PARSER: parseWhileStatement()");
+        if(verboseMode)
+            System.out.println("PARSER: parseWhileStatement()");
         cst.addNode("WhileStatement","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
@@ -382,7 +392,8 @@ public class Parser {
     public boolean parseIfStatement(){
         boolean passedIfStatement = true;
 
-        System.out.println("PARSER: parseIfStatement()");
+        if(verboseMode)
+            System.out.println("PARSER: parseIfStatement()");
         cst.addNode("IfStatement","branch");
         cst.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
@@ -409,7 +420,8 @@ public class Parser {
     public boolean parseExpr(){
         boolean passedExpr = true;
 
-        System.out.println("PARSER: parseExpr()");
+        if(verboseMode)
+            System.out.println("PARSER: parseExpr()");
         cst.addNode("Expression", "branch");
 
         // check if we have an IntExpr
@@ -458,7 +470,8 @@ public class Parser {
     public boolean parseIntExpr(){
         boolean passedIntExpr = true;
 
-        System.out.println("PARSER: parseIntExpr()");
+        if(verboseMode)
+            System.out.println("PARSER: parseIntExpr()");
         cst.addNode("IntegerExpression", "branch");
 
         // we already matched the digit to get here, so check if next token is an intop
@@ -496,7 +509,8 @@ public class Parser {
     public boolean parseStringExpr(){
         boolean passedStringExpr = true;
 
-        System.out.println("PARSER: parseStringExpr()");
+        if(verboseMode)
+            System.out.println("PARSER: parseStringExpr()");
 
         // we already matched the opening quote, so check if next token is a char
         if(tokIndex < tokens.size() && tokens.get(tokIndex).getKind().equals("T_CHAR")){
@@ -530,7 +544,8 @@ public class Parser {
     public boolean parseBooleanExpr(){
         boolean passedBooleanExpr = true;
 
-        System.out.println("PARSER: parseBooleanExpr()");
+        if(verboseMode)
+            System.out.println("PARSER: parseBooleanExpr()");
         cst.addNode("BooleanExpression", "branch");
 
         // check if we have a left parenthesis
@@ -604,7 +619,8 @@ public class Parser {
     public boolean parseCharList(){
         boolean passedCharList = true;
 
-        System.out.println("PARSER: parseCharList()");
+        if(verboseMode)
+            System.out.println("PARSER: parseCharList()");
         cst.addNode("CharList","branch");
 
         // check if we have a character (or space)
@@ -636,7 +652,8 @@ public class Parser {
     public boolean parseBoolOp(){
         boolean passedBoolOp = true;
 
-        System.out.println("PARSER: parseBoolOp()");
+        if(verboseMode)
+            System.out.println("PARSER: parseBoolOp()");
         cst.addNode("BoolOp","branch");
 
         // check if we have "=="
@@ -690,7 +707,7 @@ public class Parser {
      * @param expectedKind expected token kind
      */
     public void throwErr(String expectedKind){
-        // check for out of bounds 
+        // check for out of bounds
         if(tokIndex < tokens.size())
             System.out.println("PARSER: ERROR: " + expectedKind + "' on line " + tokens.get(tokIndex).getLine());
         else
