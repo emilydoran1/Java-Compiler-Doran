@@ -400,7 +400,8 @@ public class Parser {
         // we already matched "if", so check if we have a boolean expression next
         // if this is true, we check for block
         if(parseBooleanExpr()){
-            parseBlock();
+            if(!parseBlock())
+                passedIfStatement = false;
         }
         // there was an error in parseBooleanExpr() or other internal function calls
         else{

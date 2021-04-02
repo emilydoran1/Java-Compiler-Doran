@@ -6,4 +6,6 @@
 
 {boolean b}$
 
+{print (while)}$
+
 {a = "b
