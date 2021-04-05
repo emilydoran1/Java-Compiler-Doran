@@ -8,4 +8,6 @@
 
 {print (while)}$
 
-{a = "b
+{}print()whileif""intstringbooleanabc123==!=falsetrue+/**/=$
+
+{int a/*unclosed comment}$

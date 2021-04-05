@@ -5,3 +5,5 @@
 {print ("@")}$
 
 {int a a=2 print("abc")}$
+
+{a = "print str
