@@ -1,13 +1,7 @@
 {intaa=3+}$
 {int a a=2 print("abc")$
 {x = }$
-
 {print x)}$
-
-{boolean b}$
-
 {print (while)}$
-
 {}print()whileif""intstringbooleanabc123==!=falsetrue+/**/=$
-
 {int a/*unclosed comment}$
