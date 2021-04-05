@@ -32,3 +32,6 @@ Compiler for Marist Spring 2021 Compilers Course
 ### Sample Test Cases
 * Sample test case .txt files can be found in the testCases folder
 * A PDF with a write up of the testing results can also be found in the testCases folder. The document is titled LexerTestingResults.pdf
+
+## Running Parser and CST
+* Go to 'Parser' branch and follow instructions in README there.
