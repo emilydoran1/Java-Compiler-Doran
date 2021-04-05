@@ -83,5 +83,5 @@ Compiler for Marist Spring 2021 Compilers Course
      ERROR Lexer - Lex failed with 1 error(s)
 ```
 ### Sample Test Cases
-* Sample test case .txt files can be found in the testCases folder
-* A PDF with a write up of the testing results can also be found in the testCases folder. The document is titled LexerTestingResults.pdf
+* Sample test case .txt files can be found in the testCases folder. Programs that throw lex-specific errors can be found within the testCases/Lexer folder
+* A PDF with a write up of the testing results can also be found in the testCases/Lexer folder. The document is titled LexerTestingResults.pdf
