@@ -56,12 +56,14 @@ Compiler for Marist Spring 2021 Compilers Course
 ### Sample Test Cases
 * Sample test case .txt files can be found in the testCases folder. Programs that throw parse-specific errors can be found within the testCases/Parser folder
 * A PDF with a write up of the testing results can also be found in the testCases/Parser folder. The document is titled ParserTestingResults.pdf
+=======
+* Go to 'Parser' branch and follow instructions in README there.
 
 ## Running Lexical Analysis 
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile Compiler.java `javac Compiler.java`
 * Run program with test cases as parameter `java Compiler pathToFile` 
-  * ex: `java Compiler ../testCases/testCasesLexWithoutSpaces.txt`
+  * ex: `java Compiler ../testCases/Lexer/testCasesLexWithoutSpaces.txt`
 * The compiler will call the lexer to provide the lexical analysis
 * The program will prompt asking if you would like to run in verbose test mode. Respond Y/N.
   * If running in verbose test mode, you will see the detailed token output for each program as well as warnings, error messages, and a message letting you know if the program passed or failed. 
