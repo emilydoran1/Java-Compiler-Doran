@@ -2,13 +2,14 @@ import java.util.ArrayList;
 
 /**
  * This program stores the information for node creation
+ *
  * @author Emily Doran
  *
  */
 
 public class Node {
     private String name;
-    private ArrayList<Node> children;
+    private ArrayList<Node> children = new ArrayList<Node>();
     private Node parent;
 
     /**
@@ -28,6 +29,8 @@ public class Node {
     public Node(String name) {
         this.name = name;
     }
+
+    public Node() {}
 
     /**
      * Returns the Node's name
@@ -57,7 +60,7 @@ public class Node {
      * Sets the Node's parent if it wasn't set when Node was created
      * @param parent of Node
      */
-    public void addParent(Node parent){
+    public void setParent(Node parent){
         this.parent = parent;
     }
 

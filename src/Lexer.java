@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.List;
@@ -20,6 +21,8 @@ public class Lexer {
 
     // store current line number for printing token positions
     private int currentLine = 1;
+
+    ArrayList<Token> programTokens = new ArrayList<>();
 
     // store current program info to print message after we finish lexing each program
     private int programNum = 1;
@@ -58,16 +61,47 @@ public class Lexer {
                     PrintWriter printWriter = new PrintWriter(fileWriter);
                     printWriter.println("$");
                     printWriter.close();
+
+                    Token tok = new Token("", "$", currentLine+1, 0);
+                    programTokens.add(tok);
+
+                    boolean passedLex = false;
+
+                    if(numErrors == 0)
+                        passedLex = true;
+
+                    // call parser
+                    Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                    programTokens.clear();
+
                 }
 
             }
             // check if comment is left open at end of program
             if(insideComment == true){
                 System.out.println("WARNING Lexer - Unclosed Comment at End of Program");
+
+                boolean passedLex = false;
+
+                if(numErrors == 0)
+                    passedLex = true;
+
+                // call parser
+                Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                programTokens.clear();
             }
             // check if quote is left open at end of program
             if(insideQuotes == true){
                 System.out.println("WARNING Lexer - Unclosed String at End of Program");
+
+                boolean passedLex = false;
+
+                if(numErrors == 0)
+                    passedLex = true;
+
+                // call parser
+                Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                programTokens.clear();
             }
             scanner.close();
         } catch (FileNotFoundException e) {
@@ -99,9 +133,10 @@ public class Lexer {
             // check if we have started a new program
             if(newProgram == true){
                 System.out.println();
-                System.out.println("INFO  Lexer - Lexing program " + programNum + "...");
+                System.out.println("\nINFO  Lexer - Lexing program " + programNum + "...");
                 numErrors = 0;
                 newProgram = false;
+
             }
 
             if(twoLineString == true){
@@ -125,6 +160,8 @@ public class Lexer {
                     if (i == line.length()-1){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                        programTokens.add(tok);
+
                         // if we are in verbose test mode, print token
                         if(verboseTestMode)
                             System.out.println(tok.toString());
@@ -144,6 +181,8 @@ public class Lexer {
                     // check if we are at the end of the line
                     if (i == line.length()-1){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+
+                        programTokens.add(tok);
 
                         // if we are in verbose test mode, print token
                         if(verboseTestMode)
@@ -166,14 +205,25 @@ public class Lexer {
                         if((i == line.length()-1 || lastFound.equals("$")) && insideQuotes == false){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                            programTokens.add(tok);
+
                             // if we are in verbose test mode, print token
                             if(verboseTestMode)
                                 System.out.println(tok.toString());
 
                             if(lastFound.equals("$")){
-                                programNum++;
                                 newProgram = true;
                                 System.out.println(finishedProgram());
+
+                                boolean passedLex = false;
+
+                                if(numErrors == 0)
+                                    passedLex = true;
+
+                                Parser parseTokens = new Parser(programTokens, verboseTestMode, passedLex, programNum);
+                                programTokens.clear();
+
+                                programNum++;
                             }
 
                             longestMatch = "";
@@ -205,6 +255,8 @@ public class Lexer {
                             if (i == line.length()-1 && insideQuotes == false){
                                 Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                                programTokens.add(tok);
+
                                 // if we are in verbose test mode, print token
                                 if(verboseTestMode)
                                     System.out.println(tok.toString());
@@ -220,6 +272,8 @@ public class Lexer {
                          // two char symbol, which we didn't find
                         if(insideQuotes == false && !lastFound.equals("!") && !lastFound.equals("/")){
                             Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+
+                            programTokens.add(tok);
 
                             // if we are in verbose test mode, print token
                             if(verboseTestMode)
@@ -277,6 +331,8 @@ public class Lexer {
                              if(i == line.length() - 1){
                                  Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                                 programTokens.add(tok);
+
                                  // if we are in verbose test mode, print token
                                  if(verboseTestMode)
                                     System.out.println(tok.toString());
@@ -304,6 +360,8 @@ public class Lexer {
                              }
                              else{
                                  Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+
+                                 programTokens.add(tok);
 
                                  // if we are in verbose test mode, print token
                                  if(verboseTestMode)
@@ -334,6 +392,8 @@ public class Lexer {
                 else if (checkChar(line.charAt(i))) {
                     Token tok = new Token("T_CHAR", longestMatch, currentLine, i+1);
 
+                    programTokens.add(tok);
+
                     // if we are in verbose test mode, print token
                     if(verboseTestMode)
                         System.out.println(tok.toString());
@@ -350,6 +410,8 @@ public class Lexer {
                         // create token for last found before entering string
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                        programTokens.add(tok);
+
                         // if we are in verbose test mode, print token
                         if(verboseTestMode)
                             System.out.println(tok.toString());
@@ -364,6 +426,8 @@ public class Lexer {
                         if(line.charAt(i) == '\"'){
                             lastFound = "\"";
                             Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
+
+                            programTokens.add(tok);
 
                             // if we are in verbose test mode, print token
                             if(verboseTestMode)
@@ -387,6 +451,8 @@ public class Lexer {
                     if(lastFound != "" && !lastFound.equals("/")) {
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                        programTokens.add(tok);
+
                         // if we are in verbose test mode, print token
                         if(verboseTestMode)
                             System.out.println(tok.toString());
@@ -404,6 +470,8 @@ public class Lexer {
                     if(lastFound != ""){
                         Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
 
+                        programTokens.add(tok);
+
                         // if we are in verbose test mode, print token
                         if(verboseTestMode)
                             System.out.println(tok.toString());
@@ -418,6 +486,8 @@ public class Lexer {
                         if(insideQuotes == true){
                             lastFound = " ";
                             Token tok = new Token("T_CHAR", lastFound, currentLine, i+1);
+
+                            programTokens.add(tok);
 
                             // if we are in verbose test mode, print token
                             if(verboseTestMode)
@@ -441,6 +511,8 @@ public class Lexer {
                 // check if we are at the end of line and not inside string to create lastFound Token
                 else if (i == line.length()-1 && insideQuotes == false){
                     Token tok = new Token("", lastFound, currentLine, lastFoundStart+1);
+
+                    programTokens.add(tok);
 
                     // if we are in verbose test mode, print token
                     if(verboseTestMode)
@@ -468,6 +540,8 @@ public class Lexer {
                         // create closing quote token
                         lastFound = "\"";
                         Token tok = new Token("T_QUOTE", lastFound, currentLine, lastFoundStart+1);
+
+                        programTokens.add(tok);
 
                         // if we are in verbose test mode, print token
                         if(verboseTestMode)

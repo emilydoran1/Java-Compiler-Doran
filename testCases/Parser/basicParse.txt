@@ -1,0 +1,16 @@
+{}$
+{{{{{{}}}}}}$
+{{{{{{}}} /* comments are ignored */ }}}}$
+{/* comments are still ignored */  int @}$
+{
+  int a 
+  a = a 
+  string b 
+  a = b
+}$
+
+{int int}$
+
+{print(1+false)}$
+
+{a = 3 + 2}$

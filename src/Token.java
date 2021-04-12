@@ -85,17 +85,17 @@ public class Token {
             if(value.equals("while"))
                 tokenKind = "T_WHILE";
             else if(value.equals("print"))
-                tokenKind = "T_PRINT]";
+                tokenKind = "T_PRINT";
             else if(value.equals("string") || value.equals("int") || value.equals("boolean"))
                 tokenKind = "T_VARIABLE_TYPE";
             else if(value.equals("if"))
-                tokenKind = "T_IF]";
+                tokenKind = "T_IF";
             else if(value.equals("while"))
-                tokenKind = "T_WHILE]";
+                tokenKind = "T_WHILE";
             else if(value.equals("true"))
-                tokenKind = "T_BOOL_TRUE]";
+                tokenKind = "T_BOOL_TRUE";
             else if(value.equals("false"))
-                tokenKind = "T_BOOL_FALSE]";
+                tokenKind = "T_BOOL_FALSE";
         }
 
         // token kind for Ids is always T_ID

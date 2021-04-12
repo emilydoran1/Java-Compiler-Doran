@@ -1,0 +1,13 @@
+{a!=2 int b}$
+
+{intabooleanba=0b=false}$
+
+{int a = 3}$
+
+{int aa}$
+
+{$
+
+int a$
+
+{/* this is an unclosed comment }$
