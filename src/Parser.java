@@ -13,6 +13,7 @@ public class Parser {
     private ArrayList<Token> tokens;
     private boolean verboseMode;
     private int tokIndex = 0;
+    private boolean passLex;
 
     private ConcreteSyntaxTree cst = new ConcreteSyntaxTree();
 
@@ -21,6 +22,7 @@ public class Parser {
     public Parser(ArrayList<Token> tokens, boolean verboseMode, boolean passLex, int programNum) {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
+        this.passLex = passLex;
 
         if(passLex){
             System.out.println("\nPARSER: Parsing program " + programNum + " ...");
@@ -30,6 +32,8 @@ public class Parser {
                 System.out.println("PARSER: Parse completed successfully");
                 System.out.println("\nCST for program " + programNum + " ...");
                 System.out.println(cst.toString());
+
+                SemanticAnalyzer semantic = new SemanticAnalyzer(tokens, verboseMode, passLex, true, programNum);
             }
             else{
                 System.out.println("PARSER: Parse failed with " +  errorCount + " error(s)");
