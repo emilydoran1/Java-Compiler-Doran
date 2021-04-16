@@ -8,3 +8,9 @@
   string b 
   a = b
 }$
+{int int}$
+
+{print(1+false)}$
+
+{int a
+a = 3 + 2}$

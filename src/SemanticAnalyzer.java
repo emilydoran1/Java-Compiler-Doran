@@ -24,18 +24,19 @@ public class SemanticAnalyzer {
 
         if(passedLex && passedParse){
             block();
-            System.out.println("Program " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
+            System.out.println("\nAST for program " + programNum + " ...");
+            System.out.println(ast.toString());
+
+            System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
 
-            if(errorCount == 0) {
-                System.out.println("\nAST for program " + programNum + " ...");
-                System.out.println(ast.toString());
-            }
         }
         else if(!passedLex){
+            System.out.println("\nAST for program " + programNum + ": Skipped due to LEXER error(s)");
             System.out.println("\nCompilation stopped due to LEXER error(s) . . .");
         }
         else{
+            System.out.println("\nAST for program " + programNum + ": Skipped due to PARSER error(s)");
             System.out.println("\nCompilation stopped due to PARSER error(s) . . .");
         }
     }
@@ -79,9 +80,11 @@ public class SemanticAnalyzer {
 
     public void printStmt() {
         ast.addNode("Print Statement","branch");
-        ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-        ast.moveParent();
-        ast.moveParent();
+        // skip the opening parenthesis
+        tokIndex++;
+        expr();
+        // skip the closing parenthesis
+        tokIndex++;
     }
 
     public void assignStmt(){
@@ -149,9 +152,8 @@ public class SemanticAnalyzer {
     public void intExpr(){
         // check if it's an intop
         if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
-            ast.addNode("Add","branch");
+            ast.addNode("Addition","branch");
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-            ast.moveParent();
             tokIndex++;
             ast.addNode(tokens.get(tokIndex).getValue(), "child");
             tokIndex++;

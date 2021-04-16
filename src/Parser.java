@@ -33,17 +33,21 @@ public class Parser {
                 System.out.println("\nCST for program " + programNum + " ...");
                 System.out.println(cst.toString());
 
-                SemanticAnalyzer semantic = new SemanticAnalyzer(tokens, verboseMode, passLex, true, programNum);
+                SemanticAnalyzer semanticAnalysis = new SemanticAnalyzer(tokens, verboseMode, passLex, true, programNum);
             }
             else{
                 System.out.println("PARSER: Parse failed with " +  errorCount + " error(s)");
                 System.out.println("\nCST for program " + programNum + ": Skipped due to PARSER error(s)");
+
+                SemanticAnalyzer semanticAnalysis = new SemanticAnalyzer(tokens, verboseMode, passLex, false, programNum);
             }
         }
         else{
             System.out.println("\nPARSER: Skipped due to LEXER error(s)");
 
             System.out.println("\nCST for program " + programNum + ": Skipped due to LEXER error(s)");
+
+            SemanticAnalyzer semanticAnalysis = new SemanticAnalyzer(tokens, verboseMode, passLex, false, programNum);
         }
 
     }
