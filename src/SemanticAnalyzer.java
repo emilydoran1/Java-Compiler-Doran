@@ -11,7 +11,7 @@ public class SemanticAnalyzer {
 
     private ArrayList<Token> tokens;
     private boolean verboseMode;
-    private int tokIndex = 1;
+    private int tokIndex = 0;
 
     private ConcreteSyntaxTree ast = new ConcreteSyntaxTree();
 
@@ -43,6 +43,7 @@ public class SemanticAnalyzer {
 
     public void block() {
         ast.addNode("BLOCK","branch");
+        tokIndex++;
         stmt();
     }
 
@@ -69,6 +70,7 @@ public class SemanticAnalyzer {
         }
         // we have a Block (which begins with left brace)
         else if(checkToken("T_L_BRACE")){
+            tokIndex--;
             block();
         }
 
@@ -109,18 +111,13 @@ public class SemanticAnalyzer {
 
     public void whileStmt() {
         ast.addNode("While Statement","branch");
-        ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-        ast.moveParent();
-        ast.addNode(tokens.get(tokIndex).getValue(), "child");
-        tokIndex++;
-        ast.moveParent();
+        booleanExpr();
+        block();
         ast.moveParent();
     }
 
     public void ifStmt() {
         ast.addNode("If Statement","branch");
-        ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-        ast.moveParent();
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
         tokIndex++;
         ast.moveParent();
@@ -139,13 +136,14 @@ public class SemanticAnalyzer {
         // check if we have an Id
         else if(checkToken("T_ID")){
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-            ast.moveParent();
+//            ast.moveParent();
         }
         // check if we have a BooleanExpr
         else if(tokens.get(tokIndex).getKind().equals("T_L_PAREN") ||
                 tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE") ||
                 tokens.get(tokIndex).getKind().equals("T_BOOL_FALSE")){
             booleanExpr();
+            ast.moveParent();
         }
     }
 
@@ -155,8 +153,7 @@ public class SemanticAnalyzer {
             ast.addNode("Addition","branch");
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
             tokIndex++;
-            ast.addNode(tokens.get(tokIndex).getValue(), "child");
-            tokIndex++;
+            expr();
 
         }
         // we do not have an intop, so add node for just digit
@@ -186,28 +183,27 @@ public class SemanticAnalyzer {
             ast.addNode("Boolean Expression","branch");
             expr();
             if(checkToken("T_EQUALITY_OP")){
-                ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
+                ast.addNode("Equals","child");
             }
             else{
                 if(checkToken("T_INEQUALITY_OP")){
-                    ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
+                    ast.addNode("Not Equals","child");
                 }
             }
-            ast.moveParent();
             expr();
-
+            checkToken("T_R_PAREN");
         }
         // check if we have boolval true
         else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
             checkToken("T_BOOL_TRUE");
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
-            ast.moveParent();
+//            ast.moveParent();
         }
         // check if we have boolval false
         else {
             if(checkToken("T_BOOL_FALSE")) {
                 ast.addNode(tokens.get(tokIndex - 1).getValue(), "child");
-                ast.moveParent();
+//                ast.moveParent();
             }
         }
     }
