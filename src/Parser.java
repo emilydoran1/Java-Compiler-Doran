@@ -15,7 +15,7 @@ public class Parser {
     private int tokIndex = 0;
     private boolean passLex;
 
-    private ConcreteSyntaxTree cst = new ConcreteSyntaxTree();
+    private SyntaxTree cst = new SyntaxTree();
 
     int errorCount = 0;
 

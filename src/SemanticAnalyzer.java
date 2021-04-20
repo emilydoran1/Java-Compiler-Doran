@@ -13,7 +13,7 @@ public class SemanticAnalyzer {
     private boolean verboseMode;
     private int tokIndex = 0;
 
-    private ConcreteSyntaxTree ast = new ConcreteSyntaxTree();
+    private SyntaxTree ast = new SyntaxTree();
 
     int errorCount = 0;
     int warningCount = 0;
