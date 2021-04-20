@@ -87,6 +87,7 @@ public class SemanticAnalyzer {
         expr();
         // skip the closing parenthesis
         tokIndex++;
+        ast.moveParent();
     }
 
     public void assignStmt(){
@@ -106,7 +107,7 @@ public class SemanticAnalyzer {
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
         tokIndex++;
         ast.moveParent();
-        ast.moveParent();
+//        ast.moveParent();
     }
 
     public void whileStmt() {
@@ -114,12 +115,13 @@ public class SemanticAnalyzer {
         booleanExpr();
         block();
         ast.moveParent();
+        ast.moveParent();
     }
 
     public void ifStmt() {
         ast.addNode("If","branch");
-        ast.addNode(tokens.get(tokIndex).getValue(), "child");
-        tokIndex++;
+        booleanExpr();
+        block();
         ast.moveParent();
         ast.moveParent();
     }
@@ -170,7 +172,7 @@ public class SemanticAnalyzer {
         }
         checkToken("T_QUOTE");
         ast.addNode(charList, "child");
-        ast.moveParent();
+//        ast.moveParent();
     }
 
     public void booleanExpr(){

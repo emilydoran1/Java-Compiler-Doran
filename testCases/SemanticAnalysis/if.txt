@@ -1,0 +1,25 @@
+{if true {print ("string")}}$
+
+{
+  if (a!=b) {
+    int x 
+    boolean y 
+    x = 3 
+    y = false
+  }
+}$
+
+{
+  if false {
+    int x 
+    boolean y 
+    x = 3 
+    y = 
+  }
+}$
+
+{
+  if (x = 3) {
+    int x 
+  }
+}$

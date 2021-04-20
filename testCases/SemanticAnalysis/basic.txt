@@ -4,6 +4,7 @@
 {/* comments are still ignored */  int @}$
 {
   int a 
+  boolean f
   a = a 
   string b 
   a = b

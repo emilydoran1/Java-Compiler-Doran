@@ -1,6 +1,8 @@
 {print ("")}$
 
-{print ("string")}$
+{print(b)x = 1}$
+
+{print ("string")int b b = 4}$
 
 {print ("@")}$
 
