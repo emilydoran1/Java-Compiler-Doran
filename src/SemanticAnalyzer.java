@@ -81,7 +81,7 @@ public class SemanticAnalyzer {
     }
 
     public void printStmt() {
-        ast.addNode("Print Statement","branch");
+        ast.addNode("Print","branch");
         // skip the opening parenthesis
         tokIndex++;
         expr();
@@ -90,7 +90,7 @@ public class SemanticAnalyzer {
     }
 
     public void assignStmt(){
-        ast.addNode("Assign Statement","branch");
+        ast.addNode("Assign","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
         // we already matched Id in prev function, so next item to match is "="
         if(checkToken("T_ASSIGN_OP")) {
@@ -101,7 +101,7 @@ public class SemanticAnalyzer {
     }
 
     public void varDecl() {
-        ast.addNode("Variable Declaration","branch");
+        ast.addNode("VariableDeclaration","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
         tokIndex++;
@@ -110,14 +110,14 @@ public class SemanticAnalyzer {
     }
 
     public void whileStmt() {
-        ast.addNode("While Statement","branch");
+        ast.addNode("While","branch");
         booleanExpr();
         block();
         ast.moveParent();
     }
 
     public void ifStmt() {
-        ast.addNode("If Statement","branch");
+        ast.addNode("If","branch");
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
         tokIndex++;
         ast.moveParent();
@@ -136,14 +136,12 @@ public class SemanticAnalyzer {
         // check if we have an Id
         else if(checkToken("T_ID")){
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-//            ast.moveParent();
         }
         // check if we have a BooleanExpr
         else if(tokens.get(tokIndex).getKind().equals("T_L_PAREN") ||
                 tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE") ||
                 tokens.get(tokIndex).getKind().equals("T_BOOL_FALSE")){
             booleanExpr();
-            ast.moveParent();
         }
     }
 
@@ -154,17 +152,16 @@ public class SemanticAnalyzer {
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
             tokIndex++;
             expr();
+            ast.moveParent();
 
         }
         // we do not have an intop, so add node for just digit
         else{
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
         }
-        ast.moveParent();
     }
 
     public void stringExpr(){
-        ast.addNode("CharList","branch");
         String charList = "";
 
         // check if we have a character (or space)
@@ -180,30 +177,46 @@ public class SemanticAnalyzer {
         // check if we have a left parenthesis
         if(tokens.get(tokIndex).getKind().equals("T_L_PAREN")){
             checkToken("T_L_PAREN");
-            ast.addNode("Boolean Expression","branch");
-            expr();
+            int count = 0;
+            while (!tokens.get(tokIndex).getKind().equals("T_EQUALITY_OP") &&
+                    !tokens.get(tokIndex).getKind().equals("T_INEQUALITY_OP")){
+                tokIndex++;
+                count++;
+            }
             if(checkToken("T_EQUALITY_OP")){
-                ast.addNode("Equals","child");
+                ast.addNode("isEqual","branch");
+                // reset token count
+                tokIndex = tokIndex - count - 1;
             }
             else{
                 if(checkToken("T_INEQUALITY_OP")){
-                    ast.addNode("Not Equals","child");
+                    ast.addNode("isNotEqual","branch");
+                    // reset token count
+                    tokIndex = tokIndex - count - 1;
+                }
+            }
+            expr();
+            if(checkToken("T_EQUALITY_OP")){
+
+            }
+            else{
+                if(checkToken("T_INEQUALITY_OP")){
+
                 }
             }
             expr();
             checkToken("T_R_PAREN");
+            ast.moveParent();
         }
         // check if we have boolval true
         else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
             checkToken("T_BOOL_TRUE");
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
-//            ast.moveParent();
         }
         // check if we have boolval false
         else {
             if(checkToken("T_BOOL_FALSE")) {
                 ast.addNode(tokens.get(tokIndex - 1).getValue(), "child");
-//                ast.moveParent();
             }
         }
     }

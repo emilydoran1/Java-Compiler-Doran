@@ -52,6 +52,14 @@ public class ConcreteSyntaxTree {
     }
 
     /**
+     * Get root node
+     * @return Node root node
+     */
+    public Node getRoot() {
+        return root;
+    }
+
+    /**
      * Returns a String representation of our tree
      * @return String representation of tree
      */
