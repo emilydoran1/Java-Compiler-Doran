@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.Hashtable;
 
 /**
@@ -33,6 +34,16 @@ public class SemanticAnalyzer {
             System.out.println(ast.toString());
 
             System.out.println("SCOPE SIZE: " + symbolTable.size());
+            for(int i = 0; i < symbolTable.size(); i++){
+                Set<String> keys = symbolTable.get(i).getScopeItems().keySet();
+                for(String key: keys){
+                    System.out.println("value: " + key +
+                            "  type: " + symbolTable.get(i).getScopeItems().get(key).getType() +
+                            "  isUsed: " + symbolTable.get(i).getScopeItems().get(key).getIsUsed() +
+                            "  isInitialized: " + symbolTable.get(i).getScopeItems().get(key).getIsInitialized());
+                }
+
+            }
 
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
@@ -117,6 +128,8 @@ public class SemanticAnalyzer {
         ast.addNode("VariableDeclaration","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
+        SymbolTableItem newItem = new SymbolTableItem(tokens.get(tokIndex-1).getValue());
+        symbolTable.get(currentScope).addItem(tokens.get(tokIndex).getValue(), newItem);
         tokIndex++;
         ast.moveParent();
 //        ast.moveParent();

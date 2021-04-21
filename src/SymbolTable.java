@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 public class SymbolTable {
     private Scope root = null;
