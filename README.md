@@ -4,6 +4,9 @@ Compiler for Marist Spring 2021 Compilers Course
 ## Clone Repository
 `git clone https://github.com/emilydoran1/Java-Compiler-Doran.git` 
 
+## Running Semantic Analysis
+ * Go to 'Semantic-Analysis' branch and follow instructions in README there.
+
 ## Running Parser and CST
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile Parser.java `javac Parser.java`
@@ -14,7 +17,6 @@ Compiler for Marist Spring 2021 Compilers Course
 * After generating the token sequence for a program, the lexer will call the parser to verify the tokens.
   * If the lexer produced any errors, the parsing and CST will be skipped.
   * If the parser produces any errors, the CST will not be output.
-* The program will prompt asking if you would like to run in verbose test mode. Respond Y/N.
   * If running in verbose test mode, you will see the detailed token output for each program, detailed parser stage tracing, as well as warnings, error messages, and messages letting you know if the program passed or failed each stage. 
  ```
  Parser/Lexer Output For Program: {}$
@@ -65,7 +67,6 @@ Compiler for Marist Spring 2021 Compilers Course
 * Run program with test cases as parameter `java Compiler pathToFile` 
   * ex: `java Compiler ../testCases/Lexer/testCasesLexWithoutSpaces.txt`
 * The compiler will call the lexer to provide the lexical analysis
-* The program will prompt asking if you would like to run in verbose test mode. Respond Y/N.
   * If running in verbose test mode, you will see the detailed token output for each program as well as warnings, error messages, and a message letting you know if the program passed or failed. 
  ```
  Lexical Analysis for program: {}$
