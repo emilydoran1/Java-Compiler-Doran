@@ -35,6 +35,7 @@ public class SemanticAnalyzer {
 
             System.out.println("SCOPE SIZE: " + symbolTable.size());
             for(int i = 0; i < symbolTable.size(); i++){
+                System.out.println("Scope: " + (i+1));
                 Set<String> keys = symbolTable.get(i).getScopeItems().keySet();
                 for(String key: keys){
                     System.out.println("value: " + key +
@@ -42,7 +43,7 @@ public class SemanticAnalyzer {
                             "  isUsed: " + symbolTable.get(i).getScopeItems().get(key).getIsUsed() +
                             "  isInitialized: " + symbolTable.get(i).getScopeItems().get(key).getIsInitialized());
                 }
-
+                System.out.println();
             }
 
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
@@ -100,6 +101,9 @@ public class SemanticAnalyzer {
         // check if we have another statement next
         if(!checkToken("T_R_BRACE")){
             stmt();
+        }
+        else{
+            currentScope--;
         }
     }
 

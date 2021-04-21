@@ -1,0 +1,12 @@
+{
+  int a
+  string b
+  {
+    int b
+    {
+      int c
+    }
+    string f
+  }
+  boolean x
+}$
