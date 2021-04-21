@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * This program provides semantic analysis for the program and generates an Abstract
@@ -18,6 +19,10 @@ public class SemanticAnalyzer {
     int errorCount = 0;
     int warningCount = 0;
 
+    SymbolTable symbolTable = new SymbolTable();
+    private int scopeCount = 0;
+    private int currentScope = 0;
+
     public SemanticAnalyzer(ArrayList<Token> tokens, boolean verboseMode, boolean passedLex, boolean passedParse, int programNum) {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
@@ -26,6 +31,8 @@ public class SemanticAnalyzer {
             block();
             System.out.println("\nAST for program " + programNum + " ...");
             System.out.println(ast.toString());
+
+            System.out.println("SCOPE SIZE: " + symbolTable.size());
 
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
@@ -44,6 +51,11 @@ public class SemanticAnalyzer {
     public void block() {
         ast.addNode("BLOCK","branch");
         tokIndex++;
+        Hashtable<String, SymbolTableItem> newHash = new Hashtable<String, SymbolTableItem>();
+        Scope tempScope = new Scope(scopeCount, newHash);
+        symbolTable.addScope(tempScope);
+        scopeCount++;
+        currentScope = scopeCount-1;
         stmt();
     }
 
