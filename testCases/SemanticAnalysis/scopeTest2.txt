@@ -2,3 +2,6 @@
 {int b{{{a=3}}}}$
 
 {int a int b}$
+
+{int a int a}$
+{int b boolean b}$
