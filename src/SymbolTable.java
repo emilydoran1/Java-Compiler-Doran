@@ -1,60 +1,65 @@
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.util.Set;
 
+/**
+ * This program creates a Symbol Table to be used for semantic analysis scope checking and further compilation.
+ *
+ * @author Emily Doran
+ *
+ */
 public class SymbolTable {
-    private Scope root = null;
-    private Scope current;
-
     private ArrayList<Scope> symbolTable;
 
+    /**
+     * Initialize the symbol table to be the ArrayList<Scope>
+     */
     public SymbolTable(){
         symbolTable = new ArrayList<Scope>();
     }
 
+    /**
+     * Add a scope to the symbol table
+     * @param scope to add
+     */
     public void addScope(Scope scope){
         symbolTable.add(scope);
     }
 
+    /**
+     * Get the entire symbol table
+     * @return symbol table
+     */
     public ArrayList<Scope> getSymbolTable(){
         return symbolTable;
     }
 
+    /**
+     * Get the symbol table size
+     * @return size of symbol table
+     */
     public int size(){
         return symbolTable.size();
     }
 
+    /**
+     * Get a specific Scope from symbol table
+     * @return Scope at index i of symbol table
+     */
     public Scope get(int i){
         return symbolTable.get(i);
     }
 
-    public String toString(){
-        String output = "";
+    /**
+     * Get the string representation of the symbol table
+     */
+    public void printSymbolTable(){
         for(int i = 0; i < symbolTable.size(); i++){
-            output += "Scope: " + (i+1) + "\n";
             Set<String> keys = symbolTable.get(i).getScopeItems().keySet();
             for(String key: keys){
-                output += "value: " + key +
-                        "  type: " + symbolTable.get(i).getScopeItems().get(key).getType() +
-                        "  line num: " + symbolTable.get(i).getScopeItems().get(key).getLineNum() +
-                        "  isUsed: " + symbolTable.get(i).getScopeItems().get(key).getIsUsed() +
-                        "  isInitialized: " + symbolTable.get(i).getScopeItems().get(key).getIsInitialized() + "\n";
+                System.out.printf("%-6s%-9s%-7s%-4s\n", key, symbolTable.get(i).getScopeItems().get(key).getType(),
+                        (i), symbolTable.get(i).getScopeItems().get(key).getLineNum());
             }
-            output += "\n";
         }
-        return output;
     }
-
-    /*public static void main(String[] args){
-        SymbolTable sym = new SymbolTable();
-        Hashtable<String, SymbolTableItem> newHash = new Hashtable<String, SymbolTableItem>();
-        Scope test = new Scope(0, newHash);
-        sym.addScope(test);
-
-        SymbolTableItem newItem = new SymbolTableItem("boolean");
-        test.addItem("a", newItem);
-        System.out.println(sym.get(0).getScopeItems().get("a").getType());
-    }*/
 
 }

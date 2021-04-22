@@ -19,3 +19,26 @@
   a = 2
   b = 1
 }$
+
+{ 
+  int a
+  boolean b
+  { 
+    string c
+    a=5
+    b = true /* no comment */
+    c = "inta"
+    print(c)
+  }
+  print(b)
+  print(a) 
+}$
+
+{ 
+  int a
+  { 
+    boolean b 
+    a=1
+  }
+  print(b) 
+}$

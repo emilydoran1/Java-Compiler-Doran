@@ -34,8 +34,13 @@ public class SemanticAnalyzer {
             System.out.println("\nAST for program " + programNum + " ...");
             System.out.println(ast.toString());
 
-            System.out.println("SYMBOL TABLE for program " + programNum + " ...");
-            System.out.println(symbolTable.toString());
+            if(errorCount <= 0){
+                System.out.println("Program " + programNum + " Symbol Table");
+                System.out.println("---------------------------");
+                System.out.printf("%-6s%-9s%-7s%-4s\n", "Name", "Type", "Scope", "Line");
+                System.out.println("---------------------------");
+                symbolTable.printSymbolTable();
+            }
 
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
@@ -126,6 +131,29 @@ public class SemanticAnalyzer {
                 System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex - 1).getValue()
                         + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                         tokens.get(tokIndex - 1).getPosition() + ")");
+            }
+        }
+        else if(symbolTable.get(currentScope).getParent() != null){
+            int tempScope = currentScope;
+            while(symbolTable.get(tempScope).getParent() != null){
+                if(symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
+                    symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex - 1).getValue()).setInitialized();
+                    if(verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex - 1).getValue()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
+                        tempScope = 0;
+                    }
+                }
+                else{
+                    tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                    if(tempScope == 0){
+                        System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
+                                " ] was assigned a value at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
+                        errorCount++;
+                    }
+                }
             }
         }
         else{
