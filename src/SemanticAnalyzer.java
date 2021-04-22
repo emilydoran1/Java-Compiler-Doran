@@ -33,18 +33,8 @@ public class SemanticAnalyzer {
             System.out.println("\nAST for program " + programNum + " ...");
             System.out.println(ast.toString());
 
-            System.out.println("SCOPE SIZE: " + symbolTable.size());
-            for(int i = 0; i < symbolTable.size(); i++){
-                System.out.println("Scope: " + (i+1));
-                Set<String> keys = symbolTable.get(i).getScopeItems().keySet();
-                for(String key: keys){
-                    System.out.println("value: " + key +
-                            "  type: " + symbolTable.get(i).getScopeItems().get(key).getType() +
-                            "  isUsed: " + symbolTable.get(i).getScopeItems().get(key).getIsUsed() +
-                            "  isInitialized: " + symbolTable.get(i).getScopeItems().get(key).getIsInitialized());
-                }
-                System.out.println();
-            }
+            System.out.println("SYMBOL TABLE for program " + programNum + " ...");
+            System.out.println(symbolTable.toString());
 
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
@@ -52,10 +42,12 @@ public class SemanticAnalyzer {
         }
         else if(!passedLex){
             System.out.println("\nAST for program " + programNum + ": Skipped due to LEXER error(s)");
+            System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to LEXER error(s)");
             System.out.println("\nCompilation stopped due to LEXER error(s) . . .");
         }
         else{
             System.out.println("\nAST for program " + programNum + ": Skipped due to PARSER error(s)");
+            System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to PARSER error(s)");
             System.out.println("\nCompilation stopped due to PARSER error(s) . . .");
         }
     }
@@ -120,6 +112,20 @@ public class SemanticAnalyzer {
     public void assignStmt(){
         ast.addNode("Assign","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
+        if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
+            symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex - 1).getValue()).setInitialized();
+            if(verboseMode) {
+                System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex - 1).getValue()
+                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                        tokens.get(tokIndex - 1).getPosition() + ")");
+            }
+        }
+        else{
+            System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
+                    " ] was assigned a value at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                    tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
+            errorCount++;
+        }
         // we already matched Id in prev function, so next item to match is "="
         if(checkToken("T_ASSIGN_OP")) {
             // parseExpr() or other function calls threw an error

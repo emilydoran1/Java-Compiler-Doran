@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Set;
 
 public class SymbolTable {
     private Scope root = null;
@@ -26,6 +27,22 @@ public class SymbolTable {
 
     public Scope get(int i){
         return symbolTable.get(i);
+    }
+
+    public String toString(){
+        String output = "";
+        for(int i = 0; i < symbolTable.size(); i++){
+            output += "Scope: " + (i+1) + "\n";
+            Set<String> keys = symbolTable.get(i).getScopeItems().keySet();
+            for(String key: keys){
+                output += "value: " + key +
+                        "  type: " + symbolTable.get(i).getScopeItems().get(key).getType() +
+                        "  isUsed: " + symbolTable.get(i).getScopeItems().get(key).getIsUsed() +
+                        "  isInitialized: " + symbolTable.get(i).getScopeItems().get(key).getIsInitialized() + "\n";
+            }
+            output += "\n";
+        }
+        return output;
     }
 
     /*public static void main(String[] args){
