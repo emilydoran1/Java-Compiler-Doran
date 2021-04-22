@@ -5,6 +5,7 @@ public class Scope {
     private int scopeNum;
     private ArrayList<Scope> children = new ArrayList<Scope>();
     private Scope parent;
+    private Scope current;
 
     private Hashtable<String, SymbolTableItem> scopeItems = new Hashtable<String, SymbolTableItem>();
 
@@ -36,6 +37,15 @@ public class Scope {
     public void setParent(Scope parent){
         this.parent = parent;
     }
+
+    /*public void moveParent(){
+        if(current.getParent() != null ){
+            current = current.getParent();
+        }
+        else{
+            // TODO: error logging
+        }
+    }*/
 
 //    public void addChild(Scope child){
 //        children.add(child);

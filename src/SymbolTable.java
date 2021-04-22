@@ -37,6 +37,7 @@ public class SymbolTable {
             for(String key: keys){
                 output += "value: " + key +
                         "  type: " + symbolTable.get(i).getScopeItems().get(key).getType() +
+                        "  line num: " + symbolTable.get(i).getScopeItems().get(key).getLineNum() +
                         "  isUsed: " + symbolTable.get(i).getScopeItems().get(key).getIsUsed() +
                         "  isInitialized: " + symbolTable.get(i).getScopeItems().get(key).getIsInitialized() + "\n";
             }

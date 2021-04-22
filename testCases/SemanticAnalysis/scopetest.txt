@@ -6,6 +6,9 @@
     {
       int c
     }
+    {
+      boolean j
+    }
     string f
   }
   boolean x

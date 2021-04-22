@@ -23,6 +23,7 @@ public class SemanticAnalyzer {
     SymbolTable symbolTable = new SymbolTable();
     private int scopeCount = 0;
     private int currentScope = 0;
+    private int prevScope;
 
     public SemanticAnalyzer(ArrayList<Token> tokens, boolean verboseMode, boolean passedLex, boolean passedParse, int programNum) {
         this.tokens = tokens;
@@ -57,9 +58,14 @@ public class SemanticAnalyzer {
         tokIndex++;
         Hashtable<String, SymbolTableItem> newHash = new Hashtable<String, SymbolTableItem>();
         Scope tempScope = new Scope(scopeCount, newHash);
+        prevScope = currentScope;
         symbolTable.addScope(tempScope);
         scopeCount++;
         currentScope = scopeCount-1;
+        if(currentScope != 0){
+            symbolTable.get(currentScope).setParent(symbolTable.get(prevScope));
+            System.out.println(symbolTable.get(currentScope).getParent().getScopeNum());
+        }
         stmt();
     }
 
@@ -95,7 +101,9 @@ public class SemanticAnalyzer {
             stmt();
         }
         else{
-            currentScope--;
+            if(symbolTable.get(currentScope).getParent() != null) {
+                currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
+            }
         }
     }
 
@@ -138,7 +146,7 @@ public class SemanticAnalyzer {
         ast.addNode("VariableDeclaration","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
-        SymbolTableItem newItem = new SymbolTableItem(tokens.get(tokIndex-1).getValue());
+        SymbolTableItem newItem = new SymbolTableItem(tokens.get(tokIndex-1).getValue(), tokens.get(tokIndex-1).getLine());
         symbolTable.get(currentScope).addItem(tokens.get(tokIndex).getValue(), newItem);
         tokIndex++;
         ast.moveParent();
