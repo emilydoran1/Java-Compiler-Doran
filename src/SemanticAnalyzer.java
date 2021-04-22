@@ -180,6 +180,11 @@ public class SemanticAnalyzer {
         if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex).getValue()) == null){
             SymbolTableItem newItem = new SymbolTableItem(tokens.get(tokIndex-1).getValue(), tokens.get(tokIndex-1).getLine());
             symbolTable.get(currentScope).addItem(tokens.get(tokIndex).getValue(), newItem);
+            if(verboseMode) {
+                System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex).getValue()
+                        + " ] has been declared at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                        tokens.get(tokIndex - 1).getPosition() + ")");
+            }
         }
         else{
             System.out.println("SEMANTIC ANALYSIS: ERROR: Duplicate Variable [ " + tokens.get(tokIndex).getValue() +
@@ -187,8 +192,6 @@ public class SemanticAnalyzer {
                     tokens.get(tokIndex - 1).getPosition() + ").");
             errorCount++;
         }
-//        SymbolTableItem newItem = new SymbolTableItem(tokens.get(tokIndex-1).getValue(), tokens.get(tokIndex-1).getLine());
-//        symbolTable.get(currentScope).addItem(tokens.get(tokIndex).getValue(), newItem);
         tokIndex++;
         ast.moveParent();
 //        ast.moveParent();

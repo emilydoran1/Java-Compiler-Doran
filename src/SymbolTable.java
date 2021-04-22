@@ -65,16 +65,23 @@ public class SymbolTable {
                     numWarnings++;
                 }
                 else {
-                    if(symbolTable.get(i).getScopeItems().get(key).getIsInitialized() == false){
+                    if(symbolTable.get(i).getScopeItems().get(key).getIsInitialized() == false &&
+                            symbolTable.get(i).getScopeItems().get(key).getIsUsed() == false){
                         System.out.println("SEMANTIC ANALYSIS: WARNING: Variable [ " + key +
-                                " ] is declared but never initialized.");
+                                " ] is declared but never initialized or used.");
                         numWarnings++;
                     }
-                    /*if(symbolTable.get(i).getScopeItems().get(key).getIsUsed() == false){
+                    else if(symbolTable.get(i).getScopeItems().get(key).getIsUsed() == false){
                         System.out.println("SEMANTIC ANALYSIS: WARNING: Variable [ " + key +
                                 " ] is declared but never used.");
                         numWarnings++;
-                    }*/
+                    }
+                    else if(symbolTable.get(i).getScopeItems().get(key).getIsInitialized() == false &&
+                            symbolTable.get(i).getScopeItems().get(key).getIsUsed() == true){
+                        System.out.println("SEMANTIC ANALYSIS: WARNING: Variable [ " + key +
+                                " ] is declared and used but never initialized.");
+                        numWarnings++;
+                    }
                 }
             }
         }
