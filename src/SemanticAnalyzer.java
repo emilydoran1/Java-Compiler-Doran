@@ -31,6 +31,9 @@ public class SemanticAnalyzer {
 
         if(passedLex && passedParse){
             block();
+            warningCount += symbolTable.printWarnings();
+            System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
+                    warningCount + " warning(s).");
             System.out.println("\nAST for program " + programNum + " ...");
             System.out.println(ast.toString());
 
@@ -41,9 +44,10 @@ public class SemanticAnalyzer {
                 System.out.println("---------------------------");
                 symbolTable.printSymbolTable();
             }
-
-            System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
-                    warningCount + " warning(s).");
+            else{
+                System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
+                System.out.println("\nCompilation stopped due to SEMANTIC ANALYSIS error(s) . . .");
+            }
 
         }
         else if(!passedLex){
@@ -69,7 +73,6 @@ public class SemanticAnalyzer {
         currentScope = scopeCount-1;
         if(currentScope != 0){
             symbolTable.get(currentScope).setParent(symbolTable.get(prevScope));
-            System.out.println(symbolTable.get(currentScope).getParent().getScopeNum());
         }
         stmt();
     }
