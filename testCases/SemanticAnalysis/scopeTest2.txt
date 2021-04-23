@@ -1,7 +1,10 @@
 {int b{{{b=3}}}}$
+{boolean b{{{b=1}}}}$
 {int b{{{a=3}}}}$
 
 {int a int b}$
 
 {int a int a}$
 {int b boolean b}$
+
+{int x {}{{{x=4}}}}$

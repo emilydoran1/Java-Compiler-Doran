@@ -714,6 +714,7 @@ public class Parser {
      * Throws an error message that the expected token was not equal to the current
      * and updates the errorCount
      * @param expectedKind expected token kind
+     * @return boolean if token matches
      */
     public void throwErr(String expectedKind){
         // check for out of bounds

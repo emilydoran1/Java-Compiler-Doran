@@ -60,6 +60,14 @@ public class SyntaxTree {
     }
 
     /**
+     * Get current node
+     * @return Node current node
+     */
+    public Node getCurrent() {
+        return current;
+    }
+
+    /**
      * Returns a String representation of our tree
      * @return String representation of tree
      */
