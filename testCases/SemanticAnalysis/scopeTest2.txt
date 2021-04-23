@@ -7,4 +7,7 @@
 {int a int a}$
 {int b boolean b}$
 
-{int x {}{{{x=4}}}}$
+{boolean x {}{{{x=false}}}}$
+{int x {}{{{x=false}}}}$
+
+{{{print(5)}}}$
