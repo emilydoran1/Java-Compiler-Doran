@@ -1,2 +1,13 @@
 {int a
 a = 1+1+2+3+5}$
+
+{int f {{{{f=1+1}}}}}$
+{string f {{{{f=1+1}}}}}$
+
+{boolean j
+j = 1+1+2+3+5}$
+
+{boolean a
+a = 1}$
+
+{print(1)}$

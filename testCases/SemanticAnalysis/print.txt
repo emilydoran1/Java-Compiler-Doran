@@ -1,3 +1,4 @@
+{print(a)}$
 {print ("")}$
 
 {print(b)x = 1}$

@@ -30,6 +30,7 @@ public class SemanticAnalyzer {
         this.verboseMode = verboseMode;
 
         if(passedLex && passedParse){
+
             System.out.println("SEMANTIC ANALYSIS: Beginning Semantic Analysis on Program " + programNum + " ...");
             block();
             warningCount += symbolTable.printWarnings();
@@ -51,10 +52,12 @@ public class SemanticAnalyzer {
 
         }
         else if(!passedLex){
+            System.out.println("\nSemantic Analysis for program " + programNum + ": Skipped due to LEXER error(s)");
             System.out.println("\nAST for program " + programNum + ": Skipped due to LEXER error(s)");
             System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to LEXER error(s)");
         }
         else{
+            System.out.println("\nSemantic Analysis for program " + programNum + ": Skipped due to PARSER error(s)");
             System.out.println("\nAST for program " + programNum + ": Skipped due to PARSER error(s)");
             System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to PARSER error(s)");
         }
@@ -237,6 +240,73 @@ public class SemanticAnalyzer {
         if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
             ast.addNode("Addition","branch");
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
+            
+            // check if it is an assign op and that var is an int
+            if(symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()) != null) {
+                String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).getType();
+                if(varType.equals("int")){
+                    symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).setInitialized();
+                    if(verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
+                    }
+                }
+                else{
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was assigned to type [ int ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+            }
+            // check parent to see if var exists
+            else if(symbolTable.get(currentScope).getParent() != null){
+                int tempScope = currentScope;
+                // keep checking parent scopes for variable while parent scope exists
+                while(symbolTable.get(tempScope).getParent() != null){
+                    if(symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()) != null) {
+
+                        String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).getType();
+                        if(varType.equals("int")){
+                            symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).setInitialized();                            if(verboseMode) {
+                                System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName()
+                                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ")");
+                                tempScope = 0;
+                            }
+                        }
+                        else{
+                            System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName() +
+                                    " ] of type [ " + varType + " ] was assigned to type [ int ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                    tokens.get(tokIndex - 1).getPosition() + ").");
+                            errorCount++;
+                            tempScope = 0;
+                        }
+                    }
+                    else{
+                        tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                        if(tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()) != null){
+                            String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).getType();
+
+                            if (varType.equals("int")) {
+                                symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).setInitialized();
+                                System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName()
+                                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ")");
+                                tempScope = 0;
+                            }
+                            else {
+                                System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName() +
+                                        " ] of type [ " + varType + " ] was assigned to type [ int ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ").");
+                                errorCount++;
+                                tempScope = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
             tokIndex++;
             expr();
             ast.moveParent();
@@ -292,10 +362,10 @@ public class SemanticAnalyzer {
 
                             if (varType.equals("int")) {
                                 symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                                    System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                            + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                            tokens.get(tokIndex - 1).getPosition() + ")");
-                                    tempScope = 0;
+                                System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ")");
+                                tempScope = 0;
                             }
                             else {
                                 System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
@@ -314,63 +384,62 @@ public class SemanticAnalyzer {
     public void stringExpr(){
         String charList = "";
 
-        if(symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-            String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-            if(varType.equals("string")){
-                symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                if(verboseMode) {
-                    System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                            + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                            tokens.get(tokIndex - 1).getPosition() + ")");
+        // non empty string
+        if(symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren()) != null){
+            if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
+                String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
+                if (varType.equals("string")) {
+                    symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                    if (verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
+                    }
+                } else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was assigned to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
                 }
-            }
-            else{
-                System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                        " ] of type [ " + varType + " ] was assigned to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                        tokens.get(tokIndex - 1).getPosition() + ").");
-                errorCount++;
-            }
-        }
-        else if(symbolTable.get(currentScope).getParent() != null){
-            int tempScope = currentScope;
-            while(symbolTable.get(tempScope).getParent() != null){
-                if(symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
+            } else if (symbolTable.get(currentScope).getParent() != null) {
+                int tempScope = currentScope;
+                while (symbolTable.get(tempScope).getParent() != null) {
+                    if (symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
 
-                    String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                    if(varType.equals("string")){
-                        symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();                            if(verboseMode) {
-                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                    + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                    tokens.get(tokIndex - 1).getPosition() + ")");
-                            tempScope = 0;
-                        }
-                    }
-                    else{
-                        System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                " ] of type [ " + varType + " ] was assigned to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                tokens.get(tokIndex - 1).getPosition() + ").");
-                        errorCount++;
-                        tempScope = 0;
-                    }
-                }
-                else{
-                    tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
-                    if(tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null){
                         String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-
                         if (varType.equals("string")) {
                             symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                    + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                    tokens.get(tokIndex - 1).getPosition() + ")");
-                            tempScope = 0;
-                        }
-                        else {
+                            if (verboseMode) {
+                                System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ")");
+                                tempScope = 0;
+                            }
+                        } else {
                             System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                                     " ] of type [ " + varType + " ] was assigned to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                                     tokens.get(tokIndex - 1).getPosition() + ").");
                             errorCount++;
                             tempScope = 0;
+                        }
+                    } else {
+                        tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                        if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
+                            String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
+
+                            if (varType.equals("string")) {
+                                symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                                System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ")");
+                                tempScope = 0;
+                            } else {
+                                System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                                        " ] of type [ " + varType + " ] was assigned to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ").");
+                                errorCount++;
+                                tempScope = 0;
+                            }
                         }
                     }
                 }
