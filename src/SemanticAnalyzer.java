@@ -130,23 +130,12 @@ public class SemanticAnalyzer {
         ast.addNode("Assign","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
         if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
-//            symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex - 1).getValue()).setInitialized();
-            if(verboseMode) {
-//                System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex - 1).getValue()
-//                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-//                        tokens.get(tokIndex - 1).getPosition() + ")");
-            }
+
         }
         else if(symbolTable.get(currentScope).getParent() != null){
             int tempScope = currentScope;
             while(symbolTable.get(tempScope).getParent() != null){
                 if(symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
-//                    symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex - 1).getValue()).setInitialized();
-                    if(verboseMode) {
-//                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex - 1).getValue()
-//                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-//                                tokens.get(tokIndex - 1).getPosition() + ")");
-                    }
                     tempScope = 0;
                 }
                 else{
@@ -226,6 +215,48 @@ public class SemanticAnalyzer {
         // check if we have an Id
         else if(checkToken("T_ID")){
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
+
+            // make sure variable exists before it is used
+            if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
+                // set variable is used boolean
+                symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()).setUsed();
+                if (verboseMode) {
+                    System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                            + " ] has been used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ")");
+                }
+            }
+            else if(symbolTable.get(currentScope).getParent() != null){
+                int tempScope = currentScope;
+                while(symbolTable.get(tempScope).getParent() != null){
+
+                    if(symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
+                        // set variable is used boolean
+                        symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()).setUsed();
+                        if (verboseMode) {
+                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                    + " ] has been used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                    tokens.get(tokIndex - 1).getPosition() + ")");
+                        }
+                        tempScope = 0;
+                    }
+                    else{
+                        tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                        if(tempScope == 0){
+                            System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
+                                    " ] was used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                    tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
+                            errorCount++;
+                        }
+                    }
+                }
+            }
+            else{
+                System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
+                        " ] was used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                        tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
+                errorCount++;
+            }
         }
         // check if we have a BooleanExpr
         else if(tokens.get(tokIndex).getKind().equals("T_L_PAREN") ||
@@ -240,7 +271,7 @@ public class SemanticAnalyzer {
         if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
             ast.addNode("Addition","branch");
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-            
+
             // check if it is an assign op and that var is an int
             if(symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()) != null) {
                 String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).getType();
@@ -384,8 +415,9 @@ public class SemanticAnalyzer {
     public void stringExpr(){
         String charList = "";
 
-        // non empty string
-        if(symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren()) != null){
+        // check if we have a string expression within an assign so that we can type check the variable
+        if(ast.getCurrent().getChildren().size() > 0){
+            // check if variable is declared within current scope
             if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
                 String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
                 if (varType.equals("string")) {
@@ -401,7 +433,9 @@ public class SemanticAnalyzer {
                             tokens.get(tokIndex - 1).getPosition() + ").");
                     errorCount++;
                 }
-            } else if (symbolTable.get(currentScope).getParent() != null) {
+            }
+            // variable was not declared in current scope, check if parent scope exists and search there for variable
+            else if (symbolTable.get(currentScope).getParent() != null) {
                 int tempScope = currentScope;
                 while (symbolTable.get(tempScope).getParent() != null) {
                     if (symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {

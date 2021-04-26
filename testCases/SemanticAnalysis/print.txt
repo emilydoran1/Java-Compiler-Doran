@@ -1,4 +1,6 @@
-{print(a)}$
+{{string a {a = "hi"}} {string a {print(a)}}}$
+
+{int a {{print(a)}}}$
 {print ("")}$
 
 {print(b)x = 1}$
