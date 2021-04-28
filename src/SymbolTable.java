@@ -54,6 +54,7 @@ public class SymbolTable {
      */
     public int printWarnings(){
         int numWarnings = 0;
+        // iterate through symbol table to check if variables are initialized/used
         for(int i = 0; i < symbolTable.size(); i++){
             Set<String> keys = symbolTable.get(i).getScopeItems().keySet();
             for(String key: keys){

@@ -1,6 +1,17 @@
 {if true {print ("string")}}$
 
 {
+  int a
+  int b
+  if (a!=b) {
+    int x 
+    boolean y 
+    x = 3 
+    y = false
+  }
+}$
+
+{
   if (a!=b) {
     int x 
     boolean y 

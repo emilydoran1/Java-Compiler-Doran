@@ -46,9 +46,6 @@ public class SyntaxTree {
         if(current.getParent() != null && current.getParent().getName() != null){
             current = current.getParent();
         }
-        else{
-            // TODO: error logging
-        }
     }
 
     /**

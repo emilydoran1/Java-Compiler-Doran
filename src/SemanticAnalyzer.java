@@ -36,10 +36,10 @@ public class SemanticAnalyzer {
             warningCount += symbolTable.printWarnings();
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
-            System.out.println("\nAST for program " + programNum + " ...");
-            System.out.println(ast.toString());
 
-            if(errorCount <= 0){
+            if(errorCount == 0){
+                System.out.println("\nAST for program " + programNum + " ...");
+                System.out.println(ast.toString());
                 System.out.println("Program " + programNum + " Symbol Table");
                 System.out.println("---------------------------");
                 System.out.printf("%-6s%-9s%-7s%-4s\n", "Name", "Type", "Scope", "Line");
@@ -47,6 +47,7 @@ public class SemanticAnalyzer {
                 symbolTable.printSymbolTable();
             }
             else{
+                System.out.println("\nAST for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
                 System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
             }
 
@@ -63,21 +64,35 @@ public class SemanticAnalyzer {
         }
     }
 
+    /**
+     * Begin creating AST and symbol table, call stmt() after adding block
+     * Block ::== { StatementList }
+     */
     public void block() {
+        // add block to AST
         ast.addNode("BLOCK","branch");
         tokIndex++;
+
+        // add a new scope to the symbol table and increment scopeCount and currentScope vars
         Hashtable<String, SymbolTableItem> newHash = new Hashtable<String, SymbolTableItem>();
         Scope tempScope = new Scope(scopeCount, newHash);
         prevScope = currentScope;
         symbolTable.addScope(tempScope);
         scopeCount++;
         currentScope = scopeCount-1;
+        // if we are not the first scope, set parent scope to be previous scope
         if(currentScope != 0){
             symbolTable.get(currentScope).setParent(symbolTable.get(prevScope));
         }
+        //
         stmt();
     }
 
+    /**
+     * get the statement kind based on current token and call function to handle each case and build AST, symbol table,
+     * and perform scope/type checking
+     * Statement ::== PrintStatement | AssignStatement | VarDecl | WhileStatement | IfStatement | Block
+     */
     public void stmt(){
         // we have a PrintStatement
         if(checkToken("T_PRINT")) {
@@ -514,7 +529,7 @@ public class SemanticAnalyzer {
             }
             expr();
             if(checkToken("T_EQUALITY_OP")){
-
+                
             }
             else{
                 if(checkToken("T_INEQUALITY_OP")){
@@ -663,7 +678,7 @@ public class SemanticAnalyzer {
     }
 
     /**
-     * Checks if current token equals the passed in token
+     * Checks if current token equals the passed in token (stolen from my parser but useful for creating AST)
      * @param expectedKind expected token kind
      * @return boolean if token matches
      */
