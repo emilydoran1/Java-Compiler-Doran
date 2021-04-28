@@ -236,7 +236,7 @@ public class SemanticAnalyzer {
                 // set variable is used boolean
                 symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()).setUsed();
                 if (verboseMode) {
-                    System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                    System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex-1).getValue()
                             + " ] has been used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ")");
                 }
@@ -249,7 +249,7 @@ public class SemanticAnalyzer {
                         // set variable is used boolean
                         symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()).setUsed();
                         if (verboseMode) {
-                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + tokens.get(tokIndex-1).getValue()
                                     + " ] has been used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                                     tokens.get(tokIndex - 1).getPosition() + ")");
                         }
@@ -617,9 +617,19 @@ public class SemanticAnalyzer {
                 }
             }
 
+            // type check the boolean expression
             else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                     && ast.getCurrent().getChildren().size() > 1) {
-                if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
+
+                // check if the other node is an intOp/digit
+                if(ast.getCurrent().getChildren().get(0).getName().equals("Addition") || ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ int ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+                // check if the other node is a variable and is declared in our scope
+                else if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
                     String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
                     if (varType.equals("boolean")) {
                         symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
@@ -732,7 +742,15 @@ public class SemanticAnalyzer {
 
                 else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                         && ast.getCurrent().getChildren().size() > 1) {
-                    if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
+                    // check if the other node is an intOp/digit
+                    if(ast.getCurrent().getChildren().get(0).getName().equals("Addition") || ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
+                        System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - [ " + ast.getCurrent().getChildren().get(0).getName() +
+                                " ] of type [ int ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ").");
+                        errorCount++;
+                    }
+                    // check if the other node is a variable and is declared in our scope
+                    else if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
                         String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
                         if (varType.equals("boolean")) {
                             symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
