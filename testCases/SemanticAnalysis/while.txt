@@ -1,8 +1,9 @@
 {while false{}}$
-{while (1+2+3 == 7){}}$
+{while (1+2+3 == true){}}$
 {
-  while (a!=2){
-    a = 3+1
+  boolean a
+  while (false!=a){
+    a = true
   }
 }$
 {while (c==true){print(a)}}$
