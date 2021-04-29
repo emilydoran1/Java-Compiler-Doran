@@ -12,6 +12,6 @@
 
 {{{print(5)}}}$
 
-{string l {{ int a {l = "s"}}}}$
+{string l {{ int a {l = "s" print(l)}}}}$
 
 {string f {f=4}}$
