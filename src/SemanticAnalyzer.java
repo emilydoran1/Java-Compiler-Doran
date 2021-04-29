@@ -131,6 +131,10 @@ public class SemanticAnalyzer {
         }
     }
 
+    /**
+     * add node to AST for print and call expr() to get content being printed
+     * PrintStatement ::== print ( Expr )
+     */
     public void printStmt() {
         ast.addNode("Print","branch");
         // skip the opening parenthesis
@@ -141,30 +145,18 @@ public class SemanticAnalyzer {
         ast.moveParent();
     }
 
+    /**
+     * add node to AST for assign, Id, and call expr() to get content Id is assigned to.
+     * make sure that the Id exists in our scope prior to initializing it
+     * AssignStatement ::== Id = Expr
+     */
     public void assignStmt(){
         ast.addNode("Assign","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
-        if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
 
-        }
-        else if(symbolTable.get(currentScope).getParent() != null){
-            int tempScope = currentScope;
-            while(symbolTable.get(tempScope).getParent() != null){
-                if(symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
-                    tempScope = 0;
-                }
-                else{
-                    tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
-                    if(tempScope == 0){
-                        System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
-                                " ] was assigned a value at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
-                        errorCount++;
-                    }
-                }
-            }
-        }
-        else{
+        String varType = getVariableType(tokens.get(tokIndex-1).getValue());
+
+        if(varType.equals("")){
             System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
                     " ] was assigned a value at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                     tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
@@ -199,7 +191,6 @@ public class SemanticAnalyzer {
         }
         tokIndex++;
         ast.moveParent();
-//        ast.moveParent();
     }
 
     public void whileStmt() {
@@ -344,6 +335,7 @@ public class SemanticAnalyzer {
                                 boolExpType2 = getVariableType(boolExpType2);
                             }
 
+                            // make sure the boolean types are equivalent, if NOT throw error
                             if(!boolExpType.equals(boolExpType2)){
                                 if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                                     boolExpType = "int";
@@ -402,7 +394,9 @@ public class SemanticAnalyzer {
 
             // check if the variable exists is it is being used in an assign
             if(ast.getCurrent().getChildren().get(0).getName().matches("[a-z]")) {
+                // get variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+                // make sure type is "int" since we are assigning a number to it
                 if (varType.equals("int")) {
                     int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
                     symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
@@ -411,8 +405,10 @@ public class SemanticAnalyzer {
                                 + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                                 tokens.get(tokIndex - 1).getPosition() + ")");
                     }
-                } else {
-                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName() +
+                }
+                // variable type was not int -> throw error for type mismatch
+                else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                             " ] of type [ " + varType + " ] was assigned to type [ int ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
                     errorCount++;
@@ -452,6 +448,7 @@ public class SemanticAnalyzer {
                     System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                             " ] of type [ " + varType + " ] was compared to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
                 }
             }
         }
@@ -488,13 +485,9 @@ public class SemanticAnalyzer {
                 }
             }
             expr();
-            if(checkToken("T_EQUALITY_OP")){
-
-            }
+            if(checkToken("T_EQUALITY_OP")){ }
             else{
-                if(checkToken("T_INEQUALITY_OP")){
-
-                }
+                if(checkToken("T_INEQUALITY_OP")){}
             }
             expr();
             checkToken("T_R_PAREN");
@@ -693,14 +686,18 @@ public class SemanticAnalyzer {
     public String getVariableType(String var) {
         String varType = "";
 
+        // check if var is declared in current scope
         if (symbolTable.get(currentScope).getScopeItems().get(var) != null) {
             varType = symbolTable.get(currentScope).getScopeItems().get(var).getType();
 
-        } else if (symbolTable.get(currentScope).getParent() != null) {
+        }
+        // not in current scope -> check parent
+        else if (symbolTable.get(currentScope).getParent() != null) {
             int tempScope = currentScope;
             while (symbolTable.get(tempScope).getParent() != null) {
                 if (symbolTable.get(tempScope).getScopeItems().get(var) != null) {
                     varType = symbolTable.get(tempScope).getScopeItems().get(var).getType();
+                    tempScope = 0;
                 } else {
                     tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
                     if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(var) != null) {
@@ -713,21 +710,25 @@ public class SemanticAnalyzer {
     }
 
     /**
-     * Check get variable scope
+     * Get variable's scope number
      * @param var name
      * @return variable scope num
      */
     public int getVariableScope(String var) {
        int varScope = -1;
 
+       // check if var is declared in current scope
         if (symbolTable.get(currentScope).getScopeItems().get(var) != null) {
             varScope = currentScope;
 
-        } else if (symbolTable.get(currentScope).getParent() != null) {
+        }
+        // not in current scope -> check parent
+        else if (symbolTable.get(currentScope).getParent() != null) {
             int tempScope = currentScope;
             while (symbolTable.get(tempScope).getParent() != null) {
                 if (symbolTable.get(tempScope).getScopeItems().get(var) != null) {
                     varScope = tempScope;
+                    tempScope = 0;
                 } else {
                     tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
                     if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(var) != null) {

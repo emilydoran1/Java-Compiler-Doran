@@ -5,3 +5,5 @@
 {string s s = true}$
 
 {boolean b b = "true"}$
+
+{int a {boolean h {a =4}}}$
