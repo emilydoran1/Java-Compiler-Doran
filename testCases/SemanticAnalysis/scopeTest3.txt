@@ -1,3 +1,7 @@
-{boolean a {{{{{{{{print(1+a)}}}}}}}}}$
+{boolean a {{{{{{{{print(1+1)}}}}}}}}}$
 
 {string a a=1+"str"}$
+
+{string s s = true}$
+
+{boolean b b = "true"}$
