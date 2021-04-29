@@ -15,8 +15,6 @@
 {int a {{{{{while(false !=a){}}}}}}}$
 
 {boolean a while ("string" == (a == (a != "int"))) {}}$
-{int a while (false == (false != false)) {}}$
+{int a while (true == (false != false)) {}}$
 
-{boolean a print(1+a)}$
-
-{string a a=1+"str"}$
+{string a {{string b while(a!=b){}}}}$
