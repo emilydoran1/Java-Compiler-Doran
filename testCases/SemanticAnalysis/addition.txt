@@ -1,5 +1,5 @@
-{int a
-{a = 1+1+2+3+5}{print(a)}}$
+{boolean a
+{a = 1+1+2+3+5}{print(1+a)}}$
 
 {int f {{{{f=1+1}}}}}$
 {string f {{{{f=1+1}}}}}$
@@ -12,4 +12,4 @@ a = 1}$
 
 {print(1)}$
 
-{int a a=1+a$
+{string a a=1+a}$

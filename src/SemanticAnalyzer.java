@@ -240,6 +240,54 @@ public class SemanticAnalyzer {
                             + " ] has been used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ")");
                 }
+
+                // see if we are using the variable in a boolean expression
+                if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
+                        && ast.getCurrent().getChildren().size() > 1) {
+                    String boolExpType = ast.getCurrent().getChildren().get(0).getName();
+                    // check if other node is bool val
+                    if(boolExpType.equals("true") || boolExpType.equals("false")){
+                        boolExpType = "boolean";
+                    }
+                    // check if other node is digit
+                    else if(boolExpType.matches("[0-9]")){
+                        boolExpType = "int";
+                    }
+                    // check if other node is string
+                    else if(boolExpType.matches("[a-z]+[a-z]+")){
+                        boolExpType = "string";
+                    }
+                    // check if other node is variable
+                    else if(boolExpType.matches("[a-z]")){
+                        boolExpType = getVariableType(boolExpType);
+                    }
+
+                    // get the other node's type
+                    String boolExpType2 = ast.getCurrent().getChildren().get(1).getName();
+                    if(boolExpType2.equals("true") || boolExpType2.equals("false")){
+                        boolExpType2 = "boolean";
+                    }
+                    // other node is digit
+                    else if(boolExpType2.matches("[0-9]")){
+                        boolExpType2 = "int";
+                    }
+                    // other node is string
+                    else if(boolExpType2.matches("[a-z]+[a-z]+")){
+                        boolExpType2 = "string";
+                    }
+                    // other node is variable
+                    else if(boolExpType2.matches("[a-z]")){
+                        boolExpType2 = getVariableType(boolExpType2);
+                    }
+
+                    if(!boolExpType.equals(boolExpType2)){
+                        System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                                " ] of type [ " + boolExpType + " ] was compared to type [ " + boolExpType2 + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ").");
+                        errorCount++;
+                    }
+
+                }
             }
             else if(symbolTable.get(currentScope).getParent() != null){
                 int tempScope = currentScope;
@@ -253,6 +301,55 @@ public class SemanticAnalyzer {
                                     + " ] has been used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                                     tokens.get(tokIndex - 1).getPosition() + ")");
                         }
+
+                        // see if we are using the variable in a boolean expression
+                        if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
+                                && ast.getCurrent().getChildren().size() > 1) {
+                            String boolExpType = ast.getCurrent().getChildren().get(0).getName();
+                            // check if other node is bool val
+                            if(boolExpType.equals("true") || boolExpType.equals("false")){
+                                boolExpType = "boolean";
+                            }
+                            // check if other node is digit
+                            else if(boolExpType.matches("[0-9]")){
+                                boolExpType = "int";
+                            }
+                            // check if other node is string
+                            else if(boolExpType.matches("[a-z]+[a-z]+")){
+                                boolExpType = "string";
+                            }
+                            // check if other node is variable
+                            else if(boolExpType.matches("[a-z]")){
+                                boolExpType = getVariableType(boolExpType);
+                            }
+
+                            // get the other node's type
+                            String boolExpType2 = ast.getCurrent().getChildren().get(1).getName();
+                            if(boolExpType2.equals("true") || boolExpType2.equals("false")){
+                                boolExpType2 = "boolean";
+                            }
+                            // other node is digit
+                            else if(boolExpType2.matches("[0-9]")){
+                                boolExpType2 = "int";
+                            }
+                            // other node is string
+                            else if(boolExpType2.matches("[a-z]+[a-z]+")){
+                                boolExpType2 = "string";
+                            }
+                            // other node is variable
+                            else if(boolExpType2.matches("[a-z]")){
+                                boolExpType2 = getVariableType(boolExpType2);
+                            }
+
+                            if(!boolExpType.equals(boolExpType2)){
+                                System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                                        " ] of type [ " + boolExpType + " ] was compared to type [ " + boolExpType2 + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                        tokens.get(tokIndex - 1).getPosition() + ").");
+                                errorCount++;
+                            }
+
+                        }
+
                         tempScope = 0;
                     }
                     else{
@@ -272,6 +369,7 @@ public class SemanticAnalyzer {
                         tokens.get(tokIndex - 1).getPosition() + ") before being declared.");
                 errorCount++;
             }
+
         }
         // check if we have a BooleanExpr
         else if(tokens.get(tokIndex).getKind().equals("T_L_PAREN") ||
@@ -512,7 +610,6 @@ public class SemanticAnalyzer {
 
         checkToken("T_QUOTE");
         ast.addNode(charList, "child");
-//        ast.moveParent();
     }
 
     public void booleanExpr(){
@@ -549,71 +646,81 @@ public class SemanticAnalyzer {
             expr();
             checkToken("T_R_PAREN");
             ast.moveParent();
+
+            // see if we have another boolean expression
+            if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
+                    && ast.getCurrent().getChildren().size() > 1) {
+                String boolExpType = ast.getCurrent().getChildren().get(0).getName();
+                // other node is bool val
+                if(boolExpType.equals("true") || boolExpType.equals("false")){
+                    boolExpType = "boolean";
+                }
+                // other node is digit
+                else if(boolExpType.matches("[0-9]")){
+                    boolExpType = "int";
+                }
+                // other node is string
+                else if(boolExpType.matches("[a-z]+[a-z]+")){
+                    boolExpType = "string";
+                }
+                // other node is variable
+                else if(boolExpType.matches("[a-z]")){
+                    boolExpType = getVariableType(boolExpType);
+                }
+
+                // get the other node's type
+                String boolExpType2 = ast.getCurrent().getChildren().get(1).getChildren().get(0).getName();
+                if(boolExpType2.equals("true") || boolExpType2.equals("false")){
+                    boolExpType2 = "boolean";
+                }
+                // other node is digit
+                else if(boolExpType2.matches("[0-9]")){
+                    boolExpType2 = "int";
+                }
+                // other node is string
+                else if(boolExpType2.matches("[a-z]+[a-z]+")){
+                    boolExpType2 = "string";
+                }
+                // other node is variable
+                else if(boolExpType2.matches("[a-z]")){
+                    boolExpType2 = getVariableType(boolExpType2);
+                }
+
+                if(!boolExpType.equals(boolExpType2)){
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + boolExpType + " ] was compared to type [ " + boolExpType2 + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+
+            }
+
+
         }
         // check if we have boolval true
         else if(tokens.get(tokIndex).getKind().equals("T_BOOL_TRUE")){
             checkToken("T_BOOL_TRUE");
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
+            // check if we are currently doing an assign statement
             if(ast.getCurrent().getName().equals("Assign")) {
-                if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                    String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                    if (varType.equals("boolean")) {
-                        symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                        if (verboseMode) {
-                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                    + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                    tokens.get(tokIndex - 1).getPosition() + ")");
-                        }
-                    } else {
-                        System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                tokens.get(tokIndex - 1).getPosition() + ").");
-                        errorCount++;
+                // get the variable type
+                String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+                // make sure the type is boolean since we are setting it equal to true
+                if (varType.equals("boolean")) {
+                    symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                    if (verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
                     }
-                } else if (symbolTable.get(currentScope).getParent() != null) {
-                    int tempScope = currentScope;
-                    while (symbolTable.get(tempScope).getParent() != null) {
-                        if (symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-
-                            String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                            if (varType.equals("boolean")) {
-                                symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                                if (verboseMode) {
-                                    System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                            + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                            tokens.get(tokIndex - 1).getPosition() + ")");
-                                }
-                                tempScope = 0;
-                            } else {
-                                System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                        " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                        tokens.get(tokIndex - 1).getPosition() + ").");
-                                errorCount++;
-                                tempScope = 0;
-                            }
-                        } else {
-                            tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
-                            if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                                String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                                if (varType.equals("boolean")) {
-                                    symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                                    if(verboseMode) {
-                                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                                tokens.get(tokIndex - 1).getPosition() + ")");
-                                    }
-                                    tempScope = 0;
-                                } else {
-                                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                            " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                            tokens.get(tokIndex - 1).getPosition() + ").");
-                                    errorCount++;
-                                    tempScope = 0;
-                                }
-                            }
-                        }
-                    }
+                }
+                // throw error -> type mismatch
+                else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
                 }
             }
 
@@ -621,179 +728,56 @@ public class SemanticAnalyzer {
             else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                     && ast.getCurrent().getChildren().size() > 1) {
 
-                // check if the other node is an intOp/digit
-                if(ast.getCurrent().getChildren().get(0).getName().equals("Addition") || ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
-                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - [ " + ast.getCurrent().getChildren().get(0).getName() +
-                            " ] of type [ int ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+                if (varType.equals("boolean")) {
+                    symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
+                } else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
                     errorCount++;
-                }
-                // check if the other node is a variable and is declared in our scope
-                else if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                    String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                    if (varType.equals("boolean")) {
-                        symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
-                    } else {
-                        System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                tokens.get(tokIndex - 1).getPosition() + ").");
-                        errorCount++;
-                    }
-                } else if (symbolTable.get(currentScope).getParent() != null) {
-                    int tempScope = currentScope;
-                    while (symbolTable.get(tempScope).getParent() != null) {
-                        if (symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                            String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                            if (varType.equals("boolean")) {
-                                symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
-                                tempScope = 0;
-                            } else {
-                                System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                        " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                        tokens.get(tokIndex - 1).getPosition() + ").");
-                                errorCount++;
-                                tempScope = 0;
-                            }
-                        } else {
-                            tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
-                            if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                                String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                                if (varType.equals("boolean")) {
-                                    symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
-                                    tempScope = 0;
-                                } else {
-                                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                            " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                            tokens.get(tokIndex - 1).getPosition() + ").");
-                                    errorCount++;
-                                    tempScope = 0;
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
         // check if we have boolval false
-        else {
-            if(checkToken("T_BOOL_FALSE")) {
-                ast.addNode(tokens.get(tokIndex - 1).getValue(), "child");
+        else if(tokens.get(tokIndex).getKind().equals("T_BOOL_FALSE")){
+            checkToken("T_BOOL_FALSE");
+            ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
-                if(ast.getCurrent().getName().equals("Assign")) {
-                    if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                        String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                        if (varType.equals("boolean")) {
-                            symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                            if (verboseMode) {
-                                System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                        + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                        tokens.get(tokIndex - 1).getPosition() + ")");
-                            }
-                        } else {
-                            System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                    " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                    tokens.get(tokIndex - 1).getPosition() + ").");
-                            errorCount++;
-                        }
-                    } else if (symbolTable.get(currentScope).getParent() != null) {
-                        int tempScope = currentScope;
-                        while (symbolTable.get(tempScope).getParent() != null) {
-                            if (symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                                String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                                if (varType.equals("boolean")) {
-                                    symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                                    if (verboseMode) {
-                                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                                tokens.get(tokIndex - 1).getPosition() + ")");
-                                    }
-                                    tempScope = 0;
-                                } else {
-                                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                            " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                            tokens.get(tokIndex - 1).getPosition() + ").");
-                                    errorCount++;
-                                    tempScope = 0;
-                                }
-                            } else {
-                                tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
-                                if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                                    String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                                    if (varType.equals("boolean")) {
-                                        symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
-                                        if(verboseMode) {
-                                            System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
-                                                    + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                                    tokens.get(tokIndex - 1).getPosition() + ")");
-                                        }
-                                        tempScope = 0;
-                                    } else {
-                                        System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                                " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                                tokens.get(tokIndex - 1).getPosition() + ").");
-                                        errorCount++;
-                                        tempScope = 0;
-                                    }
-                                }
-                            }
-                        }
+            // check if we are currently doing an assign statement
+            if(ast.getCurrent().getName().equals("Assign")) {
+                // get the variable type
+                String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+                // make sure the type is boolean since we are setting it equal to true
+                if (varType.equals("boolean")) {
+                    symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                    if (verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
                     }
                 }
+                // throw error -> type mismatch
+                else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+            }
 
-                else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
-                        && ast.getCurrent().getChildren().size() > 1) {
-                    // check if the other node is an intOp/digit
-                    if(ast.getCurrent().getChildren().get(0).getName().equals("Addition") || ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
-                        System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                " ] of type [ int ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                tokens.get(tokIndex - 1).getPosition() + ").");
-                        errorCount++;
-                    }
-                    // check if the other node is a variable and is declared in our scope
-                    else if (symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                        String varType = symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                        if (varType.equals("boolean")) {
-                            symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
-                        } else {
-                            System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                    " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                    tokens.get(tokIndex - 1).getPosition() + ").");
-                            errorCount++;
-                        }
-                    } else if (symbolTable.get(currentScope).getParent() != null) {
-                        int tempScope = currentScope;
-                        while (symbolTable.get(tempScope).getParent() != null) {
-                            if (symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
+            // type check the boolean expression
+            else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
+                    && ast.getCurrent().getChildren().size() > 1) {
 
-                                String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                                if (varType.equals("boolean")) {
-                                    symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
-                                    tempScope = 0;
-                                } else {
-                                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                            " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                            tokens.get(tokIndex - 1).getPosition() + ").");
-                                    errorCount++;
-                                    tempScope = 0;
-                                }
-                            } else {
-                                tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
-                                if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()) != null) {
-                                    String varType = symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).getType();
-                                    if (varType.equals("boolean")) {
-                                        symbolTable.get(tempScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
-                                        tempScope = 0;
-                                    } else {
-                                        System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                                                " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
-                                                tokens.get(tokIndex - 1).getPosition() + ").");
-                                        errorCount++;
-                                        tempScope = 0;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+                if (varType.equals("boolean")) {
+                    symbolTable.get(currentScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
+                } else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was compared to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
                 }
             }
         }
@@ -814,4 +798,32 @@ public class SemanticAnalyzer {
 
         return tokenMatch;
     }
+
+    /**
+     * Check if variable exists in scope and get variable type
+     * @param var name
+     * @return variable type
+     */
+    public String getVariableType(String var) {
+        String varType = "";
+
+        if (symbolTable.get(currentScope).getScopeItems().get(var) != null) {
+            varType = symbolTable.get(currentScope).getScopeItems().get(var).getType();
+
+        } else if (symbolTable.get(currentScope).getParent() != null) {
+            int tempScope = currentScope;
+            while (symbolTable.get(tempScope).getParent() != null) {
+                if (symbolTable.get(tempScope).getScopeItems().get(var) != null) {
+                    varType = symbolTable.get(tempScope).getScopeItems().get(var).getType();
+                } else {
+                    tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                    if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(var) != null) {
+                        varType = symbolTable.get(tempScope).getScopeItems().get(var).getType();
+                    }
+                }
+            }
+        }
+        return varType;
+    }
+
 }

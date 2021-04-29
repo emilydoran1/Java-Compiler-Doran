@@ -10,6 +10,13 @@
 {while (b){}}$
 {while ("hi" == 2)}}$
 
-{while (a == 5 {}}$
+{int a a=6 while (a == "str") {}}$
 
-{while a == 5 {}}$
+{int a {{{{{while(false !=a){}}}}}}}$
+
+{boolean a while ("string" == (a == (a != "int"))) {}}$
+{int a while (false == (false != false)) {}}$
+
+{boolean a print(1+a)}$
+
+{string a a=1+"str"}$
