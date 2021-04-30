@@ -80,9 +80,19 @@ public class SemanticAnalyzer {
         symbolTable.addScope(tempScope);
         scopeCount++;
         currentScope = scopeCount-1;
+        // output entering new scope
+        if(verboseMode) {
+            System.out.println("SEMANTIC ANALYSIS: New Scope [ " + currentScope + " ] has been entered at line: "
+                    + tokens.get(tokIndex - 1).getLine() + ".");
+        }
         // if we are not the first scope, set parent scope to be previous scope
         if(currentScope != 0){
             symbolTable.get(currentScope).setParent(symbolTable.get(prevScope));
+            // output parent scope set if not first scope
+            if(verboseMode) {
+                System.out.println("SEMANTIC ANALYSIS: Scope [ " + currentScope + " ] parent scope has been set to [ "
+                        + symbolTable.get(currentScope).getParent().getScopeNum() + " ] at line: " + tokens.get(tokIndex - 1).getLine() + ".");
+            }
         }
         //
         stmt();
@@ -126,6 +136,10 @@ public class SemanticAnalyzer {
         }
         else{
             if(symbolTable.get(currentScope).getParent() != null) {
+                if(verboseMode) {
+                    System.out.println("SEMANTIC ANALYSIS: Exiting scope [ " + currentScope + " ] and entering scope [ "
+                            + symbolTable.get(currentScope).getParent().getScopeNum() + " ] at line: " + tokens.get(tokIndex - 1).getLine() + ".");
+                }
                 currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
             }
         }

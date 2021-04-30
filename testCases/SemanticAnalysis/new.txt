@@ -14,3 +14,5 @@
 {int a {string a {boolean a}}}$
 
 {boolean a print(1+a)}$
+
+{int a {string b}{print(b)}}$
