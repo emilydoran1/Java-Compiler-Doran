@@ -232,9 +232,11 @@ public class SemanticAnalyzer {
                             tokens.get(tokIndex - 1).getPosition() + ")");
                 }
 
-                // see if we are using the variable in a boolean expression or Addition
+                // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
+                // node is already declared in the tree
                 if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual")
-                        || ast.getCurrent().getName().equals("Addition")) && ast.getCurrent().getChildren().size() > 1) {
+                        || ast.getCurrent().getName().equals("Addition") || ast.getCurrent().getName().equals("Assign"))
+                        && ast.getCurrent().getChildren().size() > 1) {
                     String boolExpType = ast.getCurrent().getChildren().get(0).getName();
                     // check if other node is bool val
                     if(boolExpType.equals("true") || boolExpType.equals("false")){
@@ -296,9 +298,11 @@ public class SemanticAnalyzer {
                                     tokens.get(tokIndex - 1).getPosition() + ")");
                         }
 
-                        // see if we are using the variable in a boolean expression or Addition
+                        // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
+                        // node is already declared in the tree
                         if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual")
-                                || ast.getCurrent().getName().equals("Addition")) && ast.getCurrent().getChildren().size() > 1) {
+                                || ast.getCurrent().getName().equals("Addition") || ast.getCurrent().getName().equals("Assign"))
+                                && ast.getCurrent().getChildren().size() > 1) {
                             String boolExpType = ast.getCurrent().getChildren().get(0).getName();
                             // check if other node is bool val
                             if(boolExpType.equals("true") || boolExpType.equals("false")){

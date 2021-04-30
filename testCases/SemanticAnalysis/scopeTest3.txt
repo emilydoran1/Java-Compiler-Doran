@@ -1,6 +1,6 @@
 {boolean a {{{{{{{{print(1+1)}}}}}}}}}$
 
-{string a a=1+"str"}$
+{string a a=1}$
 
 {string s s = true}$
 
