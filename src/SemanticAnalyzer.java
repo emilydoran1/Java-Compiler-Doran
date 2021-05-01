@@ -427,8 +427,14 @@ public class SemanticAnalyzer {
         }
     }
 
+    /**
+     * add node to AST for digit and check if we have an intOp (if yes, call expr() and type check if we are computing
+     * calculations on a variable)
+     * IntExpr ::== digit intop Expr
+     *         ::== digit
+     */
     public void intExpr(){
-        // check if it's an intop
+        // we have an intop
         if(tokens.get(tokIndex).getKind().equals("T_ADDITION_OP")) {
             ast.addNode("Addition","branch");
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
@@ -492,6 +498,11 @@ public class SemanticAnalyzer {
         }
     }
 
+    /**
+     * add node to AST for CharList and make sure that if we are using a stringExpr with a variable, that the variable
+     * is also of type string
+     * StringExpr ::== " CharList "
+     */
     public void stringExpr(){
         String charList = "";
 
@@ -537,21 +548,30 @@ public class SemanticAnalyzer {
         ast.addNode(charList, "child");
     }
 
+    /**
+     * check for boolVals and isEqual, isNotEqual expressions and add values to AST and perform type and scope checking
+     * when necessary
+     * BooleanExpr ::== ( Expr boolop Expr )
+     *             ::== boolVal
+     */
     public void booleanExpr(){
-        // check if we have a left parenthesis
+        // check if we have a left parenthesis (signifies beginning of ( Expr boolop Expr ))
         if(tokens.get(tokIndex).getKind().equals("T_L_PAREN")){
             checkToken("T_L_PAREN");
             int count = 0;
+            // look ahead to get the equality or inequality op to add to the AST before adding the two expressions
             while (!tokens.get(tokIndex).getKind().equals("T_EQUALITY_OP") &&
                     !tokens.get(tokIndex).getKind().equals("T_INEQUALITY_OP")){
                 tokIndex++;
                 count++;
             }
+            // add isEqual node to AST and reset tokIndex to get first expr
             if(checkToken("T_EQUALITY_OP")){
                 ast.addNode("isEqual","branch");
                 // reset token count
                 tokIndex = tokIndex - count - 1;
             }
+            // ad isNot equal node to AST and reset tokIndex to get first expr
             else{
                 if(checkToken("T_INEQUALITY_OP")){
                     ast.addNode("isNotEqual","branch");
@@ -559,16 +579,20 @@ public class SemanticAnalyzer {
                     tokIndex = tokIndex - count - 1;
                 }
             }
+            // get first expression in boolean expression
             expr();
+
+            // skip over the equality/inequality op since we already added it to AST before
             if(checkToken("T_EQUALITY_OP")){ }
             else{
                 if(checkToken("T_INEQUALITY_OP")){}
             }
+            // get second expression in boolean expression
             expr();
             checkToken("T_R_PAREN");
             ast.moveParent();
 
-            // see if we have another boolean expression
+            // check if we have another boolean expression
             if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                     && ast.getCurrent().getChildren().size() > 1) {
                 String boolExpType = ast.getCurrent().getChildren().get(0).getName();
@@ -606,7 +630,7 @@ public class SemanticAnalyzer {
                 else if(boolExpType2.matches("[a-z]")){
                     boolExpType2 = getVariableType(boolExpType2);
                 }
-
+                // make sure boolean expression types match. If they don't -> throw error
                 if(!boolExpType.equals(boolExpType2)){
                     if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                         boolExpType = "int";
@@ -632,6 +656,7 @@ public class SemanticAnalyzer {
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure the type is boolean since we are setting it equal to true
                 if (varType.equals("boolean")) {
+                    // get variable scope to set to initialized
                     int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
                     symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
                     if (verboseMode) {
@@ -649,25 +674,29 @@ public class SemanticAnalyzer {
                 }
             }
 
-            // type check the boolean expression
+            // type check the boolean expression if we have true within isEqual or isNotEqual and first node is not empty
             else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                     && ast.getCurrent().getChildren().size() > 1) {
 
                 String varType;
+                // other node is bool val
                 if(ast.getCurrent().getChildren().get(0).getName().equals("true") ||
                         ast.getCurrent().getChildren().get(0).getName().equals("false")){
                     varType = "boolean";
                 }
+                // get variable type from AST
                 else {
                     varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 }
-
+                // check if other var type is boolean
                 if (varType.equals("boolean")) {
                     int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
                     if(varScope != -1) {
                         symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
                     }
-                } else {
+                }
+                // other var type is not boolean and since we are comparing it to true, throw error for type mismatch
+                else {
                     if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                         varType = "int";
                     }
@@ -706,25 +735,29 @@ public class SemanticAnalyzer {
                 }
             }
 
-            // type check the boolean expression
+            // type check the boolean expression if we have true within isEqual or isNotEqual and first node is not empty
             else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                     && ast.getCurrent().getChildren().size() > 1) {
 
                 String varType;
+                // other node is true/false so type is boolean
                 if(ast.getCurrent().getChildren().get(0).getName().equals("true") ||
                         ast.getCurrent().getChildren().get(0).getName().equals("false")){
                     varType = "boolean";
                 }
+                // get other var type from AST
                 else {
                     varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 }
-
+                // check if other var type is boolean
                 if (varType.equals("boolean")) {
                     int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
                     if(varScope != -1) {
                         symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setUsed();
                     }
-                } else {
+                }
+                // other var type is not boolean and since we are comparing it to true, throw error for type mismatch
+                else {
                     if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                         varType = "int";
                     }
@@ -814,5 +847,4 @@ public class SemanticAnalyzer {
         }
         return varScope;
     }
-
 }
