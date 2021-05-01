@@ -147,6 +147,7 @@ public class SemanticAnalyzer {
                             + symbolTable.get(currentScope).getParent().getScopeNum() + " ] at line: " + tokens.get(tokIndex - 1).getLine() + ".");
                 }
                 currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
+                ast.moveParent();
             }
         }
     }
@@ -509,11 +510,19 @@ public class SemanticAnalyzer {
         // check if we have a string expression within an assign so that we can type check the variable
         if(ast.getCurrent().getChildren().size() > 0){
             // check if variable is declared within current scope
-            String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+            String varType;
+            if(ast.getCurrent().getChildren().get(0).getName().charAt(0) == '"'){
+                varType = "string";
+            }
+            else{
+                varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+            }
             // the variable exists -> is it a string?
             if (varType.equals("string")) {
                 int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
-                symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                if(varScope != -1) {
+                    symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                }
                 if (verboseMode) {
                     System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
                             + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
@@ -545,7 +554,7 @@ public class SemanticAnalyzer {
         }
 
         checkToken("T_QUOTE");
-        ast.addNode(charList, "child");
+        ast.addNode("\"" + charList + "\"", "child");
     }
 
     /**
@@ -651,7 +660,7 @@ public class SemanticAnalyzer {
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
             // check if we are currently doing an assign statement
-            if(ast.getCurrent().getName().equals("Assign")) {
+            if(ast.getCurrent().getName().equals("Assign") || ast.getCurrent().getName().equals("Addition")) {
                 // get the variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure the type is boolean since we are setting it equal to true
@@ -667,6 +676,9 @@ public class SemanticAnalyzer {
                 }
                 // throw error -> type mismatch
                 else {
+                    if(ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
+                        varType = "int";
+                    }
                     System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                             " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
@@ -713,7 +725,7 @@ public class SemanticAnalyzer {
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
             // check if we are currently doing an assign statement
-            if(ast.getCurrent().getName().equals("Assign")) {
+            if(ast.getCurrent().getName().equals("Assign") || ast.getCurrent().getName().equals("Addition")) {
                 // get the variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure the type is boolean since we are setting it equal to true
@@ -728,6 +740,9 @@ public class SemanticAnalyzer {
                 }
                 // throw error -> type mismatch
                 else {
+                    if(ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
+                        varType = "int";
+                    }
                     System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                             " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
