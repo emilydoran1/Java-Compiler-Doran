@@ -1,7 +1,7 @@
 {boolean a
-{a = 1+1+2+3+5}{print(1+a)}}$
+{a = 1+1+2+3+5} {print(1+a)}}$
 
-{int f {{{{f=1+1}}}}}$
+{int f {{{{f=1+f}}}}}$
 {string f {{{{f=1+1}}}}}$
 
 {boolean j

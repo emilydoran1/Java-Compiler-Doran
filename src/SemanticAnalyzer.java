@@ -29,14 +29,17 @@ public class SemanticAnalyzer {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
 
+        // make sure Lex and Parse didn't throw any errors before we begin Semantic Analysis
         if(passedLex && passedParse){
 
             System.out.println("SEMANTIC ANALYSIS: Beginning Semantic Analysis on Program " + programNum + " ...");
             block();
+            // get the warnings for unused/uninitialized variables
             warningCount += symbolTable.printWarnings();
             System.out.println("\nProgram " + programNum + " Semantic Analysis produced " + errorCount + " error(s) and " +
                     warningCount + " warning(s).");
 
+            // if no errors were thrown, print AST and symbol table
             if(errorCount == 0){
                 System.out.println("\nAST for program " + programNum + " ...");
                 System.out.println(ast.toString());
@@ -46,17 +49,20 @@ public class SemanticAnalyzer {
                 System.out.println("---------------------------");
                 symbolTable.printSymbolTable();
             }
+            // errors thrown -> stop compilation
             else{
                 System.out.println("\nAST for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
                 System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
             }
 
         }
+        // Lex failed, so don't do semantic analysis
         else if(!passedLex){
             System.out.println("\nSemantic Analysis for program " + programNum + ": Skipped due to LEXER error(s)");
             System.out.println("\nAST for program " + programNum + ": Skipped due to LEXER error(s)");
             System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to LEXER error(s)");
         }
+        // Parse failed, so don't do semantic analysis
         else{
             System.out.println("\nSemantic Analysis for program " + programNum + ": Skipped due to PARSER error(s)");
             System.out.println("\nAST for program " + programNum + ": Skipped due to PARSER error(s)");
@@ -184,11 +190,17 @@ public class SemanticAnalyzer {
         ast.moveParent();
     }
 
+    /**
+     * add nodes to AST for variable declaration and make sure that variable is not already declared in scope
+     * VarDecl ::== type Id
+     */
     public void varDecl() {
         ast.addNode("VariableDeclaration","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
         ast.addNode(tokens.get(tokIndex).getValue(), "child");
+        // check that variable doesn't already exist in current scope
         if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex).getValue()) == null){
+            // add var to symbol table
             SymbolTableItem newItem = new SymbolTableItem(tokens.get(tokIndex-1).getValue(), tokens.get(tokIndex-1).getLine());
             symbolTable.get(currentScope).addItem(tokens.get(tokIndex).getValue(), newItem);
             if(verboseMode) {
@@ -197,6 +209,7 @@ public class SemanticAnalyzer {
                         tokens.get(tokIndex - 1).getPosition() + ")");
             }
         }
+        // variable already exists -> throw error
         else{
             System.out.println("SEMANTIC ANALYSIS: ERROR: Duplicate Variable [ " + tokens.get(tokIndex).getValue() +
                     " ] was declared at (" + tokens.get(tokIndex - 1).getLine() + ":" +
@@ -207,6 +220,10 @@ public class SemanticAnalyzer {
         ast.moveParent();
     }
 
+    /**
+     * add node to AST for while and call booleanExpr() and block() to continue semantic analysis
+     * WhileStatement ::== while BooleanExpr Block
+     */
     public void whileStmt() {
         ast.addNode("While","branch");
         booleanExpr();
@@ -215,6 +232,10 @@ public class SemanticAnalyzer {
         ast.moveParent();
     }
 
+    /**
+     * add node to AST for if and call booleanExpr() and block() to continue semantic analysis
+     * IfStatement ::== if BooleanExpr Block
+     */
     public void ifStmt() {
         ast.addNode("If","branch");
         booleanExpr();
@@ -223,6 +244,10 @@ public class SemanticAnalyzer {
         ast.moveParent();
     }
 
+    /**
+     * check type of current token and call corresponding functions. Type/Scope check Ids and add AST nodes.
+     * Expr ::== IntExpr | StringExpr | BooleanExpr | Id
+     */
     public void expr(){
         // check if we have an IntExpr
         if(checkToken("T_DIGIT")){
@@ -236,7 +261,7 @@ public class SemanticAnalyzer {
         else if(checkToken("T_ID")){
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
 
-            // make sure variable exists before it is used
+            // check current scope for variable
             if(symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
                 // set variable is used boolean
                 symbolTable.get(currentScope).getScopeItems().get(tokens.get(tokIndex-1).getValue()).setUsed();
@@ -286,11 +311,12 @@ public class SemanticAnalyzer {
                     else if(boolExpType2.matches("[a-z]")){
                         boolExpType2 = getVariableType(boolExpType2);
                     }
-
+                    // make sure the two types are equivalent
                     if(!boolExpType.equals(boolExpType2)){
                         if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                             boolExpType = "int";
                         }
+                        // throw error -> types not equivalent
                         System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                                 " ] of type [ " + boolExpType + " ] was compared to type [ " + boolExpType2 + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                                 tokens.get(tokIndex - 1).getPosition() + ").");
@@ -299,8 +325,10 @@ public class SemanticAnalyzer {
 
                 }
             }
+            // check parent scope for variable
             else if(symbolTable.get(currentScope).getParent() != null){
                 int tempScope = currentScope;
+                // while parent scope exists, check for variable existance
                 while(symbolTable.get(tempScope).getParent() != null){
 
                     if(symbolTable.get(tempScope).getParent().getScopeItems().get(tokens.get(tokIndex-1).getValue()) != null) {
@@ -358,6 +386,7 @@ public class SemanticAnalyzer {
                                 if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                                     boolExpType = "int";
                                 }
+                                // types not equivalent -> throw error
                                 System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                                         " ] of type [ " + boolExpType + " ] was compared to type [ " + boolExpType2 + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                                         tokens.get(tokIndex - 1).getPosition() + ").");
@@ -368,8 +397,10 @@ public class SemanticAnalyzer {
 
                         tempScope = 0;
                     }
+                    // get next parent scope (if exists)
                     else{
                         tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                        // variable was not declared in parent scope either -> throw error
                         if(tempScope == 0){
                             System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
                                     " ] was used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
@@ -379,6 +410,7 @@ public class SemanticAnalyzer {
                     }
                 }
             }
+            // variable was not declared  -> throw error
             else{
                 System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
                         " ] was used at (" + tokens.get(tokIndex - 1).getLine() + ":" +
@@ -403,6 +435,30 @@ public class SemanticAnalyzer {
 
             tokIndex++;
             expr();
+            // check if we are in an assign statement and that the variable exists
+            if(ast.getCurrent().getParent().getName().equals("Assign") &&
+                    ast.getCurrent().getParent().getChildren().get(0).getName().matches("[a-z]")) {
+                // get variable type
+                String varType = getVariableType(ast.getCurrent().getParent().getChildren().get(0).getName());
+                // make sure type is "int" since we are assigning an int op
+                if (varType.equals("int")) {
+                    // get scope of variable so we can set it to initialized
+                    int varScope = getVariableScope(ast.getCurrent().getParent().getChildren().get(0).getName());
+                    symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getParent().getChildren().get(0).getName()).setInitialized();
+                    if (verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
+                    }
+                }
+                // variable type was not int -> throw error for type mismatch
+                else {
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getParent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was assigned to type [ int ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+            }
             ast.moveParent();
 
         }
@@ -410,12 +466,13 @@ public class SemanticAnalyzer {
         else{
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
 
-            // check if the variable exists is it is being used in an assign
+            // check if we are assigning a digit to a variable
             if(ast.getCurrent().getChildren().get(0).getName().matches("[a-z]")) {
                 // get variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure type is "int" since we are assigning a number to it
                 if (varType.equals("int")) {
+                    // get scope of variable so we can set it to initialized
                     int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
                     symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
                     if (verboseMode) {
