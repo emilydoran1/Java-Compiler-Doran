@@ -5,7 +5,6 @@
 {int a int b}$
 
 {int a int a}$
-{int b boolean b}$
 
 {boolean x {}{{{x=false}}}}$
 {int x {}{{{x=false}}}}$
