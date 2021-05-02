@@ -1,5 +1,9 @@
 {int i while(1!=(1==(1!=(1!=a)))){}}$
 
-{boolean s while(1!=(1==(1!=(1!=a)))){}}$
+{boolean s while(s!=(s==(s!=(1!=2)))){}}$
 
-{string a boolean b if ("string" == (a == (b != true))) {}}$
+{string a boolean b if (false == (b == (a != "string"))) {}}$
+
+{boolean b if(b==(b!=b)){}}$
+
+{string s int i if(i==s){}}$

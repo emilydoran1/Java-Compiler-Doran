@@ -622,30 +622,13 @@ public class SemanticAnalyzer {
                     boolExpType = getVariableType(boolExpType);
                 }
 
-                // get the other node's type
-                String boolExpType2 = ast.getCurrent().getChildren().get(1).getChildren().get(0).getName();
-                if(boolExpType2.equals("true") || boolExpType2.equals("false")){
-                    boolExpType2 = "boolean";
-                }
-                // other node is digit
-                else if(boolExpType2.matches("[0-9]")){
-                    boolExpType2 = "int";
-                }
-                // other node is string
-                else if(boolExpType2.charAt(0) == '"'){
-                    boolExpType2 = "string";
-                }
-                // other node is variable
-                else if(boolExpType2.matches("[a-z]")){
-                    boolExpType2 = getVariableType(boolExpType2);
-                }
-                // make sure boolean expression types match. If they don't -> throw error
-                if(!boolExpType.equals(boolExpType2)){
+                // make sure other node is of type boolean. If it's not -> throw error
+                if(!boolExpType.equals("boolean")){
                     if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
                         boolExpType = "int";
                     }
                     System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
-                            " ] of type [ " + boolExpType + " ] was compared to type [ " + boolExpType2 + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            " ] of type [ " + boolExpType + " ] was compared to type [ BooleanExpression ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
                     errorCount++;
                 }
