@@ -25,6 +25,10 @@ public class SemanticAnalyzer {
     private int currentScope = 0;
     private int prevScope;
 
+    /**
+     * Creates a new instance of Semantic Analysis
+     * @param tokens, verboseMode, passedLex, passedParse, programNum
+     */
     public SemanticAnalyzer(ArrayList<Token> tokens, boolean verboseMode, boolean passedLex, boolean passedParse, int programNum) {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
@@ -175,8 +179,10 @@ public class SemanticAnalyzer {
         ast.addNode("Assign","branch");
         ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
+        // get variable type
         String varType = getVariableType(tokens.get(tokIndex-1).getValue());
 
+        // make sure variable exists (type != empty string) -> else throw error
         if(varType.equals("")){
             System.out.println("SEMANTIC ANALYSIS: ERROR: Undeclared variable [ " + tokens.get(tokIndex-1).getValue() +
                     " ] was assigned a value at (" + tokens.get(tokIndex - 1).getLine() + ":" +
@@ -442,11 +448,43 @@ public class SemanticAnalyzer {
 
             tokIndex++;
             expr();
+
+            // make sure the other half of the int Expression is of type integer
+            String boolExpType = ast.getCurrent().getChildren().get(1).getName();
+
+            // other node is bool val
+            if(boolExpType.equals("true") || boolExpType.equals("false")){
+                boolExpType = "boolean";
+            }
+            // other node is a boolean expression
+            if(boolExpType.equals("isNotEqual") || boolExpType.equals("isEqual")){
+                boolExpType = "BooleanExpression";
+            }
+            // other node is digit
+            else if(boolExpType.matches("[0-9]")){
+                boolExpType = "int";
+            }
+            // other node is string
+            else if(boolExpType.charAt(0) == '"'){
+                boolExpType = "string";
+            }
+            // other node is variable
+            else if(boolExpType.matches("[a-z]")){
+                boolExpType = getVariableType(boolExpType);
+            }
+            // if the other expression type is NOT int -> throw error
+            if(!boolExpType.equals("int")){
+                System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - [ IntOp ] of type [ int ] was assigned to type [ " + boolExpType + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                        tokens.get(tokIndex - 1).getPosition() + ").");
+                errorCount++;
+            }
+
             // check if we are in an assign statement and that the variable exists
             if(ast.getCurrent().getParent().getName().equals("Assign") &&
                     ast.getCurrent().getParent().getChildren().get(0).getName().matches("[a-z]")) {
                 // get variable type
                 String varType = getVariableType(ast.getCurrent().getParent().getChildren().get(0).getName());
+
                 // make sure type is "int" since we are assigning an int op
                 if (varType.equals("int")) {
                     // get scope of variable so we can set it to initialized
