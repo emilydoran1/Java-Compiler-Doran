@@ -510,7 +510,6 @@ public class SemanticAnalyzer {
         // we do not have an intop, so add node for just digit
         else{
             ast.addNode(tokens.get(tokIndex-1).getValue(), "child");
-
             // check if we are assigning a digit to a variable
             if(ast.getCurrent().getChildren().get(0).getName().matches("[a-z]")) {
                 // get variable type
@@ -534,6 +533,38 @@ public class SemanticAnalyzer {
                     errorCount++;
                 }
             }
+            // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
+            // node is already declared in the tree
+            else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
+                    && ast.getCurrent().getChildren().size() > 1) {
+                String expType = ast.getCurrent().getChildren().get(0).getName();
+                // check if other node is bool val
+                if(expType.equals("true") || expType.equals("false")){
+                    expType = "boolean";
+                }
+                // check if other node is digit
+                else if(expType.matches("[0-9]")){
+                    expType = "int";
+                }
+                // check if other node is string
+                else if(expType.charAt(0) == '"'){
+                    expType = "string";
+                }
+                // check if other node is variable
+                else if(expType.matches("[a-z]")){
+                    expType = getVariableType(expType);
+                }
+
+                // make sure the two types are equivalent
+                if(!expType.equals("int")){
+                    // throw error -> types not equivalent
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + expType + " ] was compared to type [ int ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+
+            }
         }
     }
 
@@ -545,7 +576,7 @@ public class SemanticAnalyzer {
     public void stringExpr(){
         String charList = "";
 
-        // check if we have a string expression within an assign so that we can type check the variable
+        // check if we have a string expression within an expression so that we can type check the variable
         if(ast.getCurrent().getChildren().size() > 0){
             // check if variable is declared within current scope
             String varType;
