@@ -281,7 +281,7 @@ public class SemanticAnalyzer {
                 // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
                 // node is already declared in the tree
                 if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual")
-                        || ast.getCurrent().getName().equals("Addition") || ast.getCurrent().getName().equals("Assign"))
+                         || ast.getCurrent().getName().equals("Assign"))
                         && ast.getCurrent().getChildren().size() > 1) {
                     String boolExpType = ast.getCurrent().getChildren().get(0).getName();
                     // check if other node is bool val
@@ -358,7 +358,7 @@ public class SemanticAnalyzer {
                         // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
                         // node is already declared in the tree
                         if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual")
-                                || ast.getCurrent().getName().equals("Addition") || ast.getCurrent().getName().equals("Assign"))
+                                || ast.getCurrent().getName().equals("Assign"))
                                 && ast.getCurrent().getChildren().size() > 1) {
                             String boolExpType = ast.getCurrent().getChildren().get(0).getName();
                             // check if other node is bool val
@@ -624,7 +624,7 @@ public class SemanticAnalyzer {
                     errorCount++;
                 }
                 // throw error for type mismatch in boolean expression
-                else {
+                else if (!ast.getCurrent().getName().equals("Addition")){
                     System.out.println("SEMANTIC ANALYSIS: ERROR: Incorrect Type Comparison - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
                             " ] of type [ " + varType + " ] was compared to type [ string ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
                             tokens.get(tokIndex - 1).getPosition() + ").");
@@ -724,7 +724,7 @@ public class SemanticAnalyzer {
 
             }
             // check if we are currently doing an assign statement and make sure var type is boolean
-            else if(ast.getCurrent().getName().equals("Assign") || ast.getCurrent().getName().equals("Addition")) {
+            else if(ast.getCurrent().getName().equals("Assign")) {
                 // get the variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure the type is boolean since we are setting it equal to true
@@ -757,7 +757,7 @@ public class SemanticAnalyzer {
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
             // check if we are currently doing an assign statement
-            if(ast.getCurrent().getName().equals("Assign") || ast.getCurrent().getName().equals("Addition")) {
+            if(ast.getCurrent().getName().equals("Assign")) {
                 // get the variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure the type is boolean since we are setting it equal to true
@@ -822,7 +822,7 @@ public class SemanticAnalyzer {
             ast.addNode(tokens.get(tokIndex-1).getValue(),"child");
 
             // check if we are currently doing an assign statement
-            if(ast.getCurrent().getName().equals("Assign") || ast.getCurrent().getName().equals("Addition")) {
+            if(ast.getCurrent().getName().equals("Assign")) {
                 // get the variable type
                 String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
                 // make sure the type is boolean since we are setting it equal to true
