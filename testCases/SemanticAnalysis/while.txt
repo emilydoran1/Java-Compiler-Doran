@@ -14,7 +14,6 @@
 
 {int a {{{{{while(false !=a){}}}}}}}$
 
-{boolean a while ("string" == (a == (a != "int"))) {}}$
 {int a while (true == (false != false)) {}}$
 
 {string a {{string b while(a!=b){}}}}$

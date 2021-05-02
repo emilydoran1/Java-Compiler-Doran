@@ -287,7 +287,7 @@ public class SemanticAnalyzer {
                         boolExpType = "int";
                     }
                     // check if other node is string
-                    else if(boolExpType.matches("[a-z]+[a-z]+")){
+                    else if(boolExpType.charAt(0) == '"'){
                         boolExpType = "string";
                     }
                     // check if other node is variable
@@ -305,7 +305,7 @@ public class SemanticAnalyzer {
                         boolExpType2 = "int";
                     }
                     // other node is string
-                    else if(boolExpType2.matches("[a-z]+[a-z]+")){
+                    else if(boolExpType2.charAt(0) == '"'){
                         boolExpType2 = "string";
                     }
                     // other node is variable
@@ -356,7 +356,7 @@ public class SemanticAnalyzer {
                                 boolExpType = "int";
                             }
                             // check if other node is string
-                            else if(boolExpType.matches("[a-z]+[a-z]+")){
+                            else if(boolExpType.charAt(0) == '"'){
                                 boolExpType = "string";
                             }
                             // check if other node is variable
@@ -374,7 +374,7 @@ public class SemanticAnalyzer {
                                 boolExpType2 = "int";
                             }
                             // other node is string
-                            else if(boolExpType2.matches("[a-z]+[a-z]+")){
+                            else if(boolExpType2.charAt(0) == '"'){
                                 boolExpType2 = "string";
                             }
                             // other node is variable
@@ -614,7 +614,7 @@ public class SemanticAnalyzer {
                     boolExpType = "int";
                 }
                 // other node is string
-                else if(boolExpType.matches("[a-z]+[a-z]+")){
+                else if(boolExpType.charAt(0) == '"'){
                     boolExpType = "string";
                 }
                 // other node is variable
@@ -632,7 +632,7 @@ public class SemanticAnalyzer {
                     boolExpType2 = "int";
                 }
                 // other node is string
-                else if(boolExpType2.matches("[a-z]+[a-z]+")){
+                else if(boolExpType2.charAt(0) == '"'){
                     boolExpType2 = "string";
                 }
                 // other node is variable
