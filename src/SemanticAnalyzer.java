@@ -300,6 +300,10 @@ public class SemanticAnalyzer {
                     else if(boolExpType.matches("[a-z]")){
                         boolExpType = getVariableType(boolExpType);
                     }
+                    // check if other node is addition
+                    else if(boolExpType.equals("Addition")){
+                        boolExpType = "int";
+                    }
 
                     // get the other node's type
                     String boolExpType2 = ast.getCurrent().getChildren().get(1).getName();
@@ -317,6 +321,10 @@ public class SemanticAnalyzer {
                     // other node is variable
                     else if(boolExpType2.matches("[a-z]")){
                         boolExpType2 = getVariableType(boolExpType2);
+                    }
+                    // check if other node is addition
+                    else if(boolExpType2.equals("Addition")){
+                        boolExpType2 = "int";
                     }
                     // make sure the two types are equivalent
                     if(!boolExpType.equals(boolExpType2)){
@@ -472,6 +480,10 @@ public class SemanticAnalyzer {
             else if(boolExpType.matches("[a-z]")){
                 boolExpType = getVariableType(boolExpType);
             }
+            // other node is an intOp
+            else if(boolExpType.equals("Addition")){
+                boolExpType = "int";
+            }
             // if the other expression type is NOT int -> throw error
             if(!boolExpType.equals("int")){
                 System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - [ IntOp ] of type [ int ] was assigned to type [ " + boolExpType + " ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
@@ -553,6 +565,10 @@ public class SemanticAnalyzer {
                 // check if other node is variable
                 else if(expType.matches("[a-z]")){
                     expType = getVariableType(expType);
+                }
+                // check if other node is an intOp
+                else if(expType.equals("Addition")){
+                    expType = "int";
                 }
 
                 // make sure the two types are equivalent
@@ -690,6 +706,10 @@ public class SemanticAnalyzer {
                 else if(boolExpType.matches("[a-z]")){
                     boolExpType = getVariableType(boolExpType);
                 }
+                // check if other node is an intOp
+                else if(boolExpType.equals("Addition")){
+                    boolExpType = "int";
+                }
 
                 // make sure other node is of type boolean. If it's not -> throw error
                 if(!boolExpType.equals("boolean")){
@@ -703,7 +723,32 @@ public class SemanticAnalyzer {
                 }
 
             }
-
+            // check if we are currently doing an assign statement and make sure var type is boolean
+            else if(ast.getCurrent().getName().equals("Assign") || ast.getCurrent().getName().equals("Addition")) {
+                // get the variable type
+                String varType = getVariableType(ast.getCurrent().getChildren().get(0).getName());
+                // make sure the type is boolean since we are setting it equal to true
+                if (varType.equals("boolean")) {
+                    // get variable scope to set to initialized
+                    int varScope = getVariableScope(ast.getCurrent().getChildren().get(0).getName());
+                    symbolTable.get(varScope).getScopeItems().get(ast.getCurrent().getChildren().get(0).getName()).setInitialized();
+                    if (verboseMode) {
+                        System.out.println("SEMANTIC ANALYSIS: Variable [ " + ast.getCurrent().getChildren().get(0).getName()
+                                + " ] has been initialized at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                                tokens.get(tokIndex - 1).getPosition() + ")");
+                    }
+                }
+                // throw error -> type mismatch
+                else {
+                    if(ast.getCurrent().getChildren().get(0).getName().matches("[0-9]")){
+                        varType = "int";
+                    }
+                    System.out.println("SEMANTIC ANALYSIS: ERROR: Type Mismatch - Variable [ " + ast.getCurrent().getChildren().get(0).getName() +
+                            " ] of type [ " + varType + " ] was assigned to type [ boolean ] at (" + tokens.get(tokIndex - 1).getLine() + ":" +
+                            tokens.get(tokIndex - 1).getPosition() + ").");
+                    errorCount++;
+                }
+            }
 
         }
         // check if we have boolval true
