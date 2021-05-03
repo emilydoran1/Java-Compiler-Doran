@@ -278,7 +278,7 @@ public class SemanticAnalyzer {
                             tokens.get(tokIndex - 1).getPosition() + ")");
                 }
 
-                // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
+                // see if we are using the variable in a Boolean Expression, or Assign and that the other
                 // node is already declared in the tree
                 if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual")
                          || ast.getCurrent().getName().equals("Assign"))
@@ -355,7 +355,7 @@ public class SemanticAnalyzer {
                                     tokens.get(tokIndex - 1).getPosition() + ")");
                         }
 
-                        // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
+                        // see if we are using the variable in a Boolean Expression, or Assign and that the other
                         // node is already declared in the tree
                         if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual")
                                 || ast.getCurrent().getName().equals("Assign"))
@@ -545,7 +545,7 @@ public class SemanticAnalyzer {
                     errorCount++;
                 }
             }
-            // see if we are using the variable in a Boolean Expression, Addition, or Assign and that the other
+            // see if we are using the variable in a Boolean Expression, or Assign and that the other
             // node is already declared in the tree
             else if((ast.getCurrent().getName().equals("isEqual") || ast.getCurrent().getName().equals("isNotEqual"))
                     && ast.getCurrent().getChildren().size() > 1) {
