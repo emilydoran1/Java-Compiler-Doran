@@ -20,12 +20,14 @@ Compiler for Marist Spring 2021 Compilers Course
   * To change to non-verbose test mode, change line 17 in compiler.java to be `Lexer lex = new Lexer(args[0], false);`
   * If running in verbose test mode, you will see the detailed token output for each program, detailed parser stage tracing, semantic analysis debugging messages, as well as warnings, error messages, and messages letting you know if the program passed or failed each stage. 
 ```
- Output For Program: {}$
+ Output For Program: {int a}$
  Output in Verbose Test Mode:
     INFO  Lexer - Lexing program 1...
     DEBUG Lexer - T_L_BRACE [ { ] found at (1:1)
-    DEBUG Lexer - T_R_BRACE [ } ] found at (1:2)
-    DEBUG Lexer - T_EOP [ $ ] found at (1:3)
+    DEBUG Lexer - T_VARIABLE_TYPE [ int ] found at (1:2)
+    DEBUG Lexer - T_ID [ a ] found at (1:6)
+    DEBUG Lexer - T_R_BRACE [ } ] found at (1:7)
+    DEBUG Lexer - T_EOP [ $ ] found at (1:8)
     INFO  Lexer - Lex completed with 0 errors
 
     PARSER: Parsing program 1 ...
@@ -33,28 +35,44 @@ Compiler for Marist Spring 2021 Compilers Course
     PARSER: parseProgram()
     PARSER: parseBlock()
     PARSER: parseStatementList()
+    PARSER: parseStatement()
+    PARSER: parseVarDecl()
+    PARSER: parseType()
+    PARSER: parseStatementList()
     PARSER: Parse completed successfully
 
     CST for program 1 ...
     <Program> 
     -<Block> 
     --[{]
-    --[StatementList]
+    --<StatementList> 
+    ---<Statement> 
+    ----<VarDecl> 
+    -----<Type> 
+    ------[int]
+    -----<Id> 
+    ------[a]
     --[}]
     -[$]
 
     SEMANTIC ANALYSIS: Beginning Semantic Analysis on Program 1 ...
     SEMANTIC ANALYSIS: New Scope [ 0 ] has been entered at line: 1.
+    SEMANTIC ANALYSIS: Variable [ a ] has been declared at (1:2)
+    SEMANTIC ANALYSIS: WARNING: Variable [ a ] is declared but never initialized or used.
 
-    Program 1 Semantic Analysis produced 0 error(s) and 0 warning(s).
+    Program 1 Semantic Analysis produced 0 error(s) and 1 warning(s).
 
     AST for program 1 ...
-    [BLOCK]
+    <BLOCK> 
+    -<VariableDeclaration> 
+    --[int]
+    --[a]
 
     Program 1 Symbol Table
     ---------------------------
     Name  Type     Scope  Line
     ---------------------------
+    a     int      0      1   
 ```
   * If not running in verbose test mode, you will only see messages letting you know when you are beginning to lex, parse, and perform semantic analysis on a new program, the CST (if no errors are thrown), the AST (if no errors are thrown), the symbol table (if no errors are thrown), any error messages or warnings, and a message letting you know if the program passed or failed each stage. Each token, parser stage tracing, and semantic analysis debugging variable and scope messages will not be printed out.
 ```
