@@ -122,6 +122,10 @@ Output in Non-Verbose Test Mode:
    Symbol Table for program 1: Skipped due to SEMANTIC ANALYSIS error(s)
 ```
 
+### Sample Test Cases
+* Sample test case .txt files can be found in the testCases folder. Programs that throw Semantic Analysis-specific errors can be found within the testCases/SemanticAnalysis folder
+* A PDF with a write up of the testing results can also be found in the testCases/Parser folder. The document is titled SemanticAnalysisTestingResults.pdf
+
 ## Running Parser and CST
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile Parser.java `javac Parser.java`
@@ -200,8 +204,6 @@ Output in Non-Verbose Test Mode:
 ### Sample Test Cases
 * Sample test case .txt files can be found in the testCases folder. Programs that throw parse-specific errors can be found within the testCases/Parser folder
 * A PDF with a write up of the testing results can also be found in the testCases/Parser folder. The document is titled ParserTestingResults.pdf
-=======
-* Go to 'Parser' branch and follow instructions in README there.
 
 ## Running Lexical Analysis 
 * Redirect to the filepath `Java-Compiler-Doran/src`
