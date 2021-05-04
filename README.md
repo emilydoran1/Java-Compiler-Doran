@@ -7,7 +7,10 @@ Compiler for Marist Spring 2021 Compilers Course
 ## Running Semantic Analysis
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile SemanticAnalyzer.java `javac SemanticAnalyzer.java`
+* Compile Parser.java `javac Parser.java`
 * Compile Compiler.java `javac Compiler.java`
+* Compile SymbolTable.java `javac SymbolTable.java`
+* Compile Scope.java `javac Scope.java`
 * Run program with test cases as parameter `java Compiler pathToFile` 
   * ex: `java Compiler ../testCases/SemanticAnalysis/basic.txt`
 * The compiler will call the lexer to provide the lexical analysis.
