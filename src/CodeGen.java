@@ -153,9 +153,7 @@ public class CodeGen {
 
     public void assignStmtString(char variableName, String value, int scope){
         storeHeap(value);
-
-        System.out.println(value);
-
+        
         String end = Integer.toHexString(heapEnd);
         if(end.length() < 2){
             end = "0" + end;
@@ -175,16 +173,19 @@ public class CodeGen {
             value = value.substring(1, value.length()-1);
         }
 
+        String appendHeapOut = "";
         for(int i=0; i < value.length(); i++){
             String tempHeapOut = Integer.toHexString((int) value.charAt(i));
             if(tempHeapOut.length() < 2){
                 tempHeapOut = "0" + tempHeapOut;
             }
-            heapOutput += tempHeapOut;
+            appendHeapOut += tempHeapOut;
             heapEnd--;
         }
-        heapOutput += "00";
+        appendHeapOut += "00";
         heapEnd--;
+
+        heapOutput = appendHeapOut + heapOutput;
     }
 
     public void assignStmtBoolTrue(char variableName, int scope){

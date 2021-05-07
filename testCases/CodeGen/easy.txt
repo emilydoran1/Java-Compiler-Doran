@@ -1,0 +1,33 @@
+{
+  int i
+  int j
+  i = 9
+  j = 5
+  print(i)
+  print(j)
+}$
+
+{
+  int i 
+  i = 1
+  print(i)
+  {
+    int i 
+    {
+      print(i)
+    }
+  }
+  print(i)
+}$
+
+{
+  string n
+  n = "emily" 
+  print(n) 
+}$
+
+{
+  boolean b
+  b = false
+  print(b) 
+}$

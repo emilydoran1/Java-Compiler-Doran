@@ -1,0 +1,22 @@
+{
+  int a
+  {
+    a = 5
+    print(a)
+  }
+  string x
+  x = " hello "
+  print(x)
+  boolean y
+  y = false print(y)
+}$
+
+{
+  string y
+  y = "hi"
+  string z 
+  z = "bye"
+  print(y)
+  print(z)
+}$
+
