@@ -13,10 +13,10 @@
 
 {
   string y
-  y = "hi"
+  {{y = "hi"}}
   string z 
   z = "bye"
-  print(y)
-  print(z)
+  {print(y)
+  print(z)}
 }$
 

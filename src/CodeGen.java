@@ -153,7 +153,7 @@ public class CodeGen {
 
     public void assignStmtString(char variableName, String value, int scope){
         storeHeap(value);
-        
+
         String end = Integer.toHexString(heapEnd);
         if(end.length() < 2){
             end = "0" + end;
@@ -212,11 +212,11 @@ public class CodeGen {
         String opCode = "";
 
         if(Character.toString(variableName).matches("[a-z]")){
-            if(symbolTable.get(scope).getScopeItems().get(Character.toString(variableName)).getType().equals("int")) {
+            if(getVariableType(Character.toString(variableName)).equals("int")) {
                 opCode += "AC" + varTable.getItem(variableName, scope).getTemp() + "A201FF";
             }
-            else if (symbolTable.get(scope).getScopeItems().get(Character.toString(variableName)).getType().equals("string")
-                || symbolTable.get(scope).getScopeItems().get(Character.toString(variableName)).getType().equals("boolean")) {
+            else if (getVariableType(Character.toString(variableName)).equals("string")
+                || getVariableType(Character.toString(variableName)).equals("boolean")) {
                 opCode += "AC" + varTable.getItem(variableName, scope).getTemp() + "A202FF";
             }
         }
@@ -234,5 +234,36 @@ public class CodeGen {
         String val = "2";
         String result = opCodeOutput.replaceAll("(.{" + val + "})", "$1 ").trim();
         return result;
+    }
+
+    /**
+     * Check if variable exists in scope and get variable type
+     * @param var name
+     * @return variable type
+     */
+    public String getVariableType(String var) {
+        String varType = "";
+
+        // check if var is declared in current scope
+        if (symbolTable.get(currentScope).getScopeItems().get(var) != null) {
+            varType = symbolTable.get(currentScope).getScopeItems().get(var).getType();
+
+        }
+        // not in current scope -> check parent
+        else if (symbolTable.get(currentScope).getParent() != null) {
+            int tempScope = currentScope;
+            while (symbolTable.get(tempScope).getParent() != null) {
+                if (symbolTable.get(tempScope).getScopeItems().get(var) != null) {
+                    varType = symbolTable.get(tempScope).getScopeItems().get(var).getType();
+                    tempScope = 0;
+                } else {
+                    tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                    if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(var) != null) {
+                        varType = symbolTable.get(tempScope).getScopeItems().get(var).getType();
+                    }
+                }
+            }
+        }
+        return varType;
     }
 }
