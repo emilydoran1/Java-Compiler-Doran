@@ -1,0 +1,19 @@
+{int b{{{b=3}}}}$
+{boolean b{{{b=1}}}}$
+{int b{{{a=3}}}}$
+
+{int a int b}$
+
+{int a int a}$
+
+{boolean x {}{{{x=false}}}}$
+{int x {}{{{x=false}}}}$
+
+{{{print(5)}}}$
+
+{string l {{ int a {l = "s" print(l)}}}}$
+
+{string f {f=4}}$
+
+{int a a = true}$
+

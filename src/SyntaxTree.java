@@ -1,12 +1,12 @@
 /**
- * This program creates a CST (concrete syntax tree)
+ * This program creates a syntax tree
  *
  * @author Emily Doran, modified Alan G. Labouseur's implementation,
  * based on the 2009 work by Michael Ardizzone and Tim Smith.
  *
  */
 
-public class ConcreteSyntaxTree {
+public class SyntaxTree {
 
     private Node root = null;
     private Node current;
@@ -14,7 +14,7 @@ public class ConcreteSyntaxTree {
     private String traversalResult = "";
 
     /**
-     * Add a node to our CST with name and kind passed in
+     * Add a node to our tree with name and kind passed in
      */
     public void addNode(String name, String kind){
         Node node = new Node(name);
@@ -46,9 +46,22 @@ public class ConcreteSyntaxTree {
         if(current.getParent() != null && current.getParent().getName() != null){
             current = current.getParent();
         }
-        else{
-            // TODO: error logging
-        }
+    }
+
+    /**
+     * Get root node
+     * @return Node root node
+     */
+    public Node getRoot() {
+        return root;
+    }
+
+    /**
+     * Get current node
+     * @return Node current node
+     */
+    public Node getCurrent() {
+        return current;
     }
 
     /**

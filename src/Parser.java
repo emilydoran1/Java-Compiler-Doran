@@ -13,14 +13,16 @@ public class Parser {
     private ArrayList<Token> tokens;
     private boolean verboseMode;
     private int tokIndex = 0;
+    private boolean passLex;
 
-    private ConcreteSyntaxTree cst = new ConcreteSyntaxTree();
+    private SyntaxTree cst = new SyntaxTree();
 
     int errorCount = 0;
 
     public Parser(ArrayList<Token> tokens, boolean verboseMode, boolean passLex, int programNum) {
         this.tokens = tokens;
         this.verboseMode = verboseMode;
+        this.passLex = passLex;
 
         if(passLex){
             System.out.println("\nPARSER: Parsing program " + programNum + " ...");
@@ -30,16 +32,22 @@ public class Parser {
                 System.out.println("PARSER: Parse completed successfully");
                 System.out.println("\nCST for program " + programNum + " ...");
                 System.out.println(cst.toString());
+
+                SemanticAnalyzer semanticAnalysis = new SemanticAnalyzer(tokens, verboseMode, passLex, true, programNum);
             }
             else{
                 System.out.println("PARSER: Parse failed with " +  errorCount + " error(s)");
                 System.out.println("\nCST for program " + programNum + ": Skipped due to PARSER error(s)");
+
+                SemanticAnalyzer semanticAnalysis = new SemanticAnalyzer(tokens, verboseMode, passLex, false, programNum);
             }
         }
         else{
             System.out.println("\nPARSER: Skipped due to LEXER error(s)");
 
             System.out.println("\nCST for program " + programNum + ": Skipped due to LEXER error(s)");
+
+            SemanticAnalyzer semanticAnalysis = new SemanticAnalyzer(tokens, verboseMode, passLex, false, programNum);
         }
 
     }
@@ -706,6 +714,7 @@ public class Parser {
      * Throws an error message that the expected token was not equal to the current
      * and updates the errorCount
      * @param expectedKind expected token kind
+     * @return boolean if token matches
      */
     public void throwErr(String expectedKind){
         // check for out of bounds

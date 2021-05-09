@@ -1,0 +1,12 @@
+{{string a {a = "hi"}} {string a {print(a)}}}$
+
+{int a {{print(a)}}}$
+{print ("")}$
+
+{print(b)x = 1}$
+
+{print ("string")int b b = 4}$
+
+{print ("@")}$
+
+{int a a=2 print("abc")}$

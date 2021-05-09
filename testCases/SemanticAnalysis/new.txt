@@ -1,0 +1,24 @@
+{int a a = a {{string b a=b}}}$
+{boolean a while ("string" == (a == (a != "int"))) {}}$
+
+{string a a=5 a=1+2}$
+
+{{int a} print(a)}$
+
+{int a {int b}{print(1+a)}}$
+
+{int a {string b}{print(b)}}$
+
+{int a string a boolean a}$
+
+{int a {string a {boolean a}}}$
+
+{boolean a print(1+a)}$
+
+{int a {string b}{print(b)}}$
+
+/* A digit is added to something other than a digit */
+{
+int a
+a = 4 + false
+}$

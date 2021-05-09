@@ -1,0 +1,7 @@
+{boolean a {{{{{{{{print(1+1)}}}}}}}}}$
+
+{string a a=1}$
+
+{boolean b b = "true"}$
+
+{int a {boolean h {a =4} h = true}}$

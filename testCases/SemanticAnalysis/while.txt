@@ -1,0 +1,19 @@
+{while false{int a print(a)}}$
+{while (1+7 == false){}}$
+{
+  boolean a
+  while (a==false){
+    print(a)
+  }
+}$
+{while (c==true){print(a)}}$
+{while (b){}}$
+{while ("hi" == 2)}}$
+
+{int a a=6 while (a == "str") {}}$
+
+{int a {{{{{while(false !=a){}}}}}}}$
+
+{int a while (true == (false != false)) {}}$
+
+{string a {{string b while(a!=b){}}}}$
