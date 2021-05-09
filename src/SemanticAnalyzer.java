@@ -717,6 +717,11 @@ public class SemanticAnalyzer {
                     boolExpType = "int";
                 }
 
+                // check if other node is an Equals Not Equals
+                else if(boolExpType.equals("isEqual") || boolExpType.equals("isNotEqual")){
+                    boolExpType = "boolean";
+                }
+
                 // make sure other node is of type boolean. If it's not -> throw error
                 if(!boolExpType.equals("boolean")){
                     if(ast.getCurrent().getChildren().get(0).getName().equals("Addition")){
