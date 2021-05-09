@@ -11,12 +11,13 @@
   y = false print(y)
 }$
 
+
 {
   string y
-  {{y = "hi"}}
+  {{y = "hi" print(y)}}
   string z 
   z = "bye"
-  {print(y)
+  {y = "bye" print(y)
   print(z)}
 }$
 
