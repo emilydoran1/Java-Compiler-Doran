@@ -89,7 +89,12 @@ public class CodeGen {
                 // get child's children
                 ArrayList<Node> childChildren = child.getChildren();
                 if(child.getName().equals("Print")){
-                    initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
+                    if(child.getChildren().get(0).getName().equals("true") || child.getChildren().get(0).getName().equals("false")){
+                        initializePrintBoolean(child.getChildren().get(0).getName());
+                    }
+                    else {
+                        initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
+                    }
                 }
                 else{
                     if(child.getName().equals("BLOCK")){
@@ -167,6 +172,26 @@ public class CodeGen {
 
     }
 
+    /*public void compareInts(int value1, int value2, int scope){
+        String value = "false";
+        if(value1 == value2){
+            value = "true";
+        }
+        storeHeap(value);
+
+        String end = Integer.toHexString(heapEnd);
+        if(end.length() < 2){
+            end = "0" + end;
+        }
+
+        String opCode = "A9" + end + "8D" + varTable.getItem(variableName, scope).getTemp();
+
+        totalBytesUsed += opCode.length()/2;
+
+        opCodeOutput += opCode;
+
+    }*/
+
     public void storeHeap(String value){
         // if we have a string, ignore the quotes
         if(value.charAt(0) == '\"'){
@@ -188,25 +213,6 @@ public class CodeGen {
         heapOutput = appendHeapOut + heapOutput;
     }
 
-    public void assignStmtBoolTrue(char variableName, int scope){
-
-        String opCode = "A9008D" + varTable.getItem(variableName, scope).getTemp();
-
-        totalBytesUsed += opCode.length()/2;
-
-        opCodeOutput += opCode;
-
-    }
-
-    public void assignStmtBoolFalse(char variableName, int scope){
-
-        String opCode = "A9008D" + varTable.getItem(variableName, scope).getTemp();
-
-        totalBytesUsed += opCode.length()/2;
-
-        opCodeOutput += opCode;
-
-    }
 
     public void initializePrint(char variableName, int scope){
         String opCode = "";
@@ -223,6 +229,24 @@ public class CodeGen {
         else if(Character.toString(variableName).matches("[0-9]")){
             opCode += "A00" + Character.toString(variableName) + "A201FF";
         }
+
+        totalBytesUsed += opCode.length()/2;
+
+        opCodeOutput += opCode;
+
+    }
+
+    public void initializePrintBoolean(String val){
+        String opCode = "";
+
+        storeHeap(val);
+
+        String end = Integer.toHexString(heapEnd);
+        if(end.length() < 2){
+            end = "0" + end;
+        }
+
+        opCode += "A0" + end + "A202FF";
 
         totalBytesUsed += opCode.length()/2;
 
