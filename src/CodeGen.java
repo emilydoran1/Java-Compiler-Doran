@@ -92,6 +92,9 @@ public class CodeGen {
                     if(child.getChildren().get(0).getName().equals("true") || child.getChildren().get(0).getName().equals("false")){
                         initializePrintBoolean(child.getChildren().get(0).getName());
                     }
+                    else if(child.getChildren().get(0).getName().charAt(0) == '"'){
+                        initializePrintString(child.getChildren().get(0).getName());
+                    }
                     else {
                         initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
                     }
@@ -237,6 +240,24 @@ public class CodeGen {
     }
 
     public void initializePrintBoolean(String val){
+        String opCode = "";
+
+        storeHeap(val);
+
+        String end = Integer.toHexString(heapEnd);
+        if(end.length() < 2){
+            end = "0" + end;
+        }
+
+        opCode += "A0" + end + "A202FF";
+
+        totalBytesUsed += opCode.length()/2;
+
+        opCodeOutput += opCode;
+
+    }
+
+    public void initializePrintString(String val){
         String opCode = "";
 
         storeHeap(val);

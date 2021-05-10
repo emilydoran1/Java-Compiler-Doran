@@ -1,1 +1,6 @@
 {print(1) print(true)}$
+
+{boolean b b = true print(b)
+b = false print(b)}$
+
+{print("hello emily")}$
