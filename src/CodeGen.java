@@ -20,6 +20,7 @@ public class CodeGen {
     private int currentScope = 0;
     private int heapEnd = 256;
     private int tempCount = 0;
+    private int scopeCount = 1;
 
     public CodeGen(SyntaxTree ast, SymbolTable symbolTable, int programNum, boolean verboseMode, boolean passedLex, boolean passedParse,
                    boolean passedSemanticAnalysis){
@@ -115,35 +116,43 @@ public class CodeGen {
                 }
                 else{
                     if(child.getName().equals("BLOCK")){
-                        currentScope++;
+                        scopeCount++;
+                        currentScope = scopeCount-1;
+                        beginCodeGen(childChildren);
+                        currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
                     }
-                    beginCodeGen(childChildren);
+                    else{
+                        beginCodeGen(childChildren);
+                    }
+
                 }
             }
             // leaf node
             else{
+                // variable declaration
                 if(child.getName().equals("int") || child.getName().equals("boolean") || child.getName().equals("string")){
                     initializeVariable(child.getParent().getChildren().get(1).getName().charAt(0), currentScope);
                 }
+                // assigning var to int
                 else if(child.getParent().getChildren().size() > 1 && child.getName().matches("[a-z]") &&
                         child.getParent().getChildren().get(1).getName().matches("[0-9]")){
                     assignStmtInt(child.getName().charAt(0), child.getParent().getChildren().get(1).getName(), currentScope);
                 }
+                // assigning var to string
                 else if(child.getParent().getChildren().size() > 1 && child.getName().matches("[a-z]") &&
                         child.getParent().getChildren().get(1).getName().charAt(0) == '\"'){
                     assignStmtString(child.getName().charAt(0), child.getParent().getChildren().get(1).getName(), currentScope);
                 }
+                // assigning var to true
                 else if(child.getParent().getChildren().size() > 1 && child.getName().matches("[a-z]") &&
                         child.getParent().getChildren().get(1).getName().equals("true")){
                     assignStmtString(child.getName().charAt(0), child.getParent().getChildren().get(1).getName(), currentScope);
                 }
+                // assigning var to false
                 else if(child.getParent().getChildren().size() > 1 && child.getName().matches("[a-z]") &&
                         child.getParent().getChildren().get(1).getName().equals("false")){
                     assignStmtString(child.getName().charAt(0), child.getParent().getChildren().get(1).getName(), currentScope);
                 }
-            }
-            if(currentScope != 0) {
-                currentScope--;
             }
         }
 
@@ -378,11 +387,11 @@ public class CodeGen {
 
         if(Character.toString(variableName).matches("[a-z]")){
             if(getVariableType(Character.toString(variableName)).equals("int")) {
-                opCode += "AC" + varTable.getItem(variableName, scope).getTemp() + "A201FF";
+                opCode += "AC" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp() + "A201FF";
             }
             else if (getVariableType(Character.toString(variableName)).equals("string")
                 || getVariableType(Character.toString(variableName)).equals("boolean")) {
-                opCode += "AC" + varTable.getItem(variableName, scope).getTemp() + "A202FF";
+                opCode += "AC" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp() + "A202FF";
             }
         }
         else if(Character.toString(variableName).matches("[0-9]")){
@@ -466,5 +475,36 @@ public class CodeGen {
             }
         }
         return varType;
+    }
+
+    /**
+     * Get variable's scope number
+     * @param var name
+     * @return variable scope num
+     */
+    public int getVariableScope(String var) {
+        int varScope = -1;
+
+        // check if var is declared in current scope
+        if (symbolTable.get(currentScope).getScopeItems().get(var) != null) {
+            varScope = currentScope;
+
+        }
+        // not in current scope -> check parent
+        else if (symbolTable.get(currentScope).getParent() != null) {
+            int tempScope = currentScope;
+            while (symbolTable.get(tempScope).getParent() != null) {
+                if (symbolTable.get(tempScope).getScopeItems().get(var) != null) {
+                    varScope = tempScope;
+                    tempScope = 0;
+                } else {
+                    tempScope = symbolTable.get(tempScope).getParent().getScopeNum();
+                    if (tempScope == 0 && symbolTable.get(tempScope).getScopeItems().get(var) != null) {
+                        varScope = tempScope;
+                    }
+                }
+            }
+        }
+        return varScope;
     }
 }

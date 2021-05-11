@@ -1,0 +1,24 @@
+{
+  int a
+  string b
+  b = "hi"
+  {
+    int b
+    b = 4
+    {
+      int c
+      print(b)
+    }
+    {
+      boolean j
+    }
+    string f
+    print(b)
+  }
+  {
+    int l
+    print(b)
+  }
+  boolean x
+  print(b)
+}$
