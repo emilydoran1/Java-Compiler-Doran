@@ -22,3 +22,6 @@
   boolean x
   print(b)
 }$
+
+{int b{{{b=3}}}print(b)}$
+{boolean x {}{{{x=false print(x)}}}x = true print(" ") print(x)}$

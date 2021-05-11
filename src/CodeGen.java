@@ -118,8 +118,12 @@ public class CodeGen {
                     if(child.getName().equals("BLOCK")){
                         scopeCount++;
                         currentScope = scopeCount-1;
-                        beginCodeGen(childChildren);
-                        currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
+                        if(childChildren != null) {
+                            beginCodeGen(childChildren);
+                        }
+                        if(currentScope != 0) {
+                            currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
+                        }
                     }
                     else{
                         beginCodeGen(childChildren);
