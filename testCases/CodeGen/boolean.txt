@@ -9,22 +9,3 @@ b = false print(b)}$
   s = "goodbye emily"
   print(s)
 }$
-
-{print(1+9)}$
-
-{
-  int a 
-  a = 7
-  print(a)
-  a = 7+a 
-  print(a)
-}$
-
-{
-  int a 
-  a = 7
-  print(a)
-  a = 7+a 
-  print(a)
-  print(1+a)
-}$

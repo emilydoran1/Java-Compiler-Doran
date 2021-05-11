@@ -1,0 +1,25 @@
+{print(1+9)}$
+
+{
+  int a 
+  a = 7
+  print(a)
+  a = 7+a 
+  print(a)
+}$
+
+{
+  int a 
+  a = 7
+  print(a)
+  a = 7+a 
+  print(a)
+  print(1+a)
+}$
+
+{
+  int a 
+  a = 9 
+  a = 1+2+3+4+a 
+  print(a)
+}$
