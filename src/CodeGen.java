@@ -95,9 +95,15 @@ public class CodeGen {
                     else if(child.getChildren().get(0).getName().charAt(0) == '"'){
                         initializePrintString(child.getChildren().get(0).getName());
                     }
+                    else if(child.getChildren().get(0).getName().equals("Addition")){
+                        printAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0).getChildren().get(0).getName(), child.getChildren().get(0).getChildren().get(1).getName(), currentScope);
+                    }
                     else {
                         initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
                     }
+                }
+                else if(child.getName().equals("Addition")){
+                    storeAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0).getName(), child.getChildren().get(1).getName(), currentScope);
                 }
                 else{
                     if(child.getName().equals("BLOCK")){
@@ -175,25 +181,104 @@ public class CodeGen {
 
     }
 
-    /*public void compareInts(int value1, int value2, int scope){
-        String value = "false";
-        if(value1 == value2){
-            value = "true";
+    public void printAddInts(char var, String value1, String value2, int scope){
+        int numVars = varTable.getNumVariables();
+
+        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", 't', scope);
+        varTable.addItem(newItem);
+
+        numVars = varTable.getNumVariables();
+
+        String opCode = "";
+
+        if(!value2.matches("[0-9]")){
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", 'u', scope);
+            varTable.addItem(newItem2);
+
+            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
+
+            opCode += "6D" + newItem.getTemp();
+
+            opCode += "8D" + newItem2.getTemp() + "AC" + newItem2.getTemp();
+
+            opCode += "A201FF";
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
         }
-        storeHeap(value);
+        else {
+            opCode = "A90" + value1 + "8D" + newItem.getTemp();
 
-        String end = Integer.toHexString(heapEnd);
-        if(end.length() < 2){
-            end = "0" + end;
+            opCode += "A90" + value2 + "6D" + newItem.getTemp();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", 'u', scope);
+            varTable.addItem(newItem2);
+
+            opCode += "8D" + newItem2.getTemp();
+
+            opCode += "A201AC" + newItem2.getTemp();
+
+            opCode += "A201FF";
+
+            totalBytesUsed += opCode.length() / 2;
+
+            opCodeOutput += opCode;
         }
 
-        String opCode = "A9" + end + "8D" + varTable.getItem(variableName, scope).getTemp();
+    }
 
-        totalBytesUsed += opCode.length()/2;
+    public void storeAddInts(char var, String value1, String value2, int scope){
+        int numVars = varTable.getNumVariables();
 
-        opCodeOutput += opCode;
+        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", 't', scope);
+        varTable.addItem(newItem);
 
-    }*/
+        numVars = varTable.getNumVariables();
+
+        String opCode = "";
+
+        if(!value2.matches("[0-9]")){
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", 'u', scope);
+            varTable.addItem(newItem2);
+
+            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
+
+            opCode += "6D" + newItem.getTemp();
+
+            opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
+
+            opCode += "8D" + varTable.getItem(var, scope).getTemp();
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+        }
+        else{
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+            opCode += "A90" + value2 + "6D" + newItem.getTemp();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", 'u', scope);
+            varTable.addItem(newItem2);
+
+            opCode += "8D" + newItem2.getTemp();
+
+            opCode += "A201AC" + newItem2.getTemp();
+
+            opCode += "AC" +  newItem2.getTemp() + "8D" +  varTable.getItem(var, scope).getTemp();
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+        }
+
+
+
+    }
 
     public void storeHeap(String value){
         // if we have a string, ignore the quotes

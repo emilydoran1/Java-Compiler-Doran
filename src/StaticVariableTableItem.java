@@ -18,6 +18,14 @@ public class StaticVariableTableItem {
     }
 
     /**
+     * Sets the temp address of var in memory
+     * @param temp address
+     */
+    public void setTemp(String temp){
+        this.temp = temp;
+    }
+
+    /**
      * Sets the address of var in memory
      * @param address
      */
