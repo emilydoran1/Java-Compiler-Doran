@@ -97,9 +97,11 @@ public class CodeGen {
                         initializePrintString(child.getChildren().get(0).getName());
                     }
                     else if(child.getChildren().get(0).getName().equals("Addition")){
-                        if(!child.getChildren().get(0).getChildren().get(1).getName().equals("Addition")){
-                            printAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0).getChildren().get(0).getName(), child.getChildren().get(0).getChildren().get(1).getName(), currentScope);
-                        }
+                        printAddInts(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1), currentScope);
+                        String opCode = "A201FF";
+                        totalBytesUsed += opCode.length()/2;
+                        opCodeOutput += opCode;
+
                     }
                     else {
                         initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
@@ -187,52 +189,93 @@ public class CodeGen {
 
     }
 
-    public void printAddInts(char var, String value1, String value2, int scope){
+    public void printAddInts(Node node1, Node node2, int scope){
         int numVars = varTable.getNumVariables();
 
-        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", 't', scope);
+        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, scope);
         varTable.addItem(newItem);
 
         numVars = varTable.getNumVariables();
 
+        String value1 = node1.getName();
+        String value2 = node2.getName();
+
         String opCode = "";
 
-        if(!value2.matches("[0-9]")){
+        if(!value2.matches("[0-9]") && !value2.equals("Addition")){
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
-            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", 'u', scope);
+            numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, scope);
             varTable.addItem(newItem2);
 
-            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
+            opCode += "6D" + varTable.getItem(value2.charAt(0), scope).getTemp();
 
-            opCode += "6D" + newItem.getTemp();
+            opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
 
-            opCode += "8D" + newItem2.getTemp() + "AC" + newItem2.getTemp();
+            opCode += "A201AC" + newItem2.getTemp();
 
-            opCode += "A201FF";
+//            opCode += "A201FF";
 
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
         }
-        else {
-            opCode = "A90" + value1 + "8D" + newItem.getTemp();
+        else if(value2.equals("Addition")){
+            /* printAddInts2(node2.getChildren().get(0), node2.getChildren().get(1), scope);
 
+            opCode += "A90" +value1 + "6D" + varTable.getItem((char)(tempCount-1), scope).getTemp();
+
+            opCode += "8D" + newItem.getTemp();
+
+            opCode += "A201AC" + newItem.getTemp();
+
+            */
+            printAddInts(node2.getChildren().get(0), node2.getChildren().get(1), scope);
+
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+
+            opCode += "A9006D" + varTable.getItem((char)(tempCount-1), scope).getTemp();
+
+//            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
+
+            opCode += "6D" + newItem.getTemp();
+
+            opCode += "8D" + varTable.getItem((char)(tempCount-1), scope).getTemp() + "AD" + varTable.getItem((char)(tempCount-1), scope).getTemp();
+
+            opCode += "8D" + newItem.getTemp();
+
+            opCode += "A201AC" + newItem.getTemp();
+
+//            opCode += "A201FF";
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+
+        }
+        else{
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
             opCode += "A90" + value2 + "6D" + newItem.getTemp();
 
-            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", 'u', scope);
+            numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, scope);
             varTable.addItem(newItem2);
 
             opCode += "8D" + newItem2.getTemp();
 
             opCode += "A201AC" + newItem2.getTemp();
 
-            opCode += "A201FF";
+//            opCode += "A201FF";
 
-            totalBytesUsed += opCode.length() / 2;
+            totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
         }
+
+
 
     }
 
