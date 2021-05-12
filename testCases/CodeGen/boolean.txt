@@ -9,3 +9,7 @@ b = false print(b)}$
   s = "goodbye emily"
   print(s)
 }$
+
+{print((1!=6))}$
+
+{int a a = 6 print(a) int bb = 5 print((a!=b)) print(b)}$

@@ -104,6 +104,9 @@ public class CodeGen {
                         opCodeOutput += opCode;
 
                     }
+                    else if(child.getChildren().get(0).getName().equals("isEqual") || child.getChildren().get(0).getName().equals("isNotEqual")){
+                        compareValues(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1));
+                    }
                     else {
                         initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
                     }
@@ -112,6 +115,10 @@ public class CodeGen {
                     //if(!child.getChildren().get(0).getChildren().get(1).getName().equals("Addition")) {
                         storeAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0), child.getChildren().get(1), currentScope);
                    // }
+
+                }
+                else if(child.getName().equals("isEqual") || child.getName().equals("isNotEqual")){
+                    compareValues(child.getChildren().get(0), child.getChildren().get(0));
 
                 }
                 else{
@@ -442,6 +449,97 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
+    }
+
+    public void compareValues(Node node1, Node node2){
+        String opCode = "";
+
+        String val1 = node1.getName();
+        String val2 = node2.getName();
+        // check if values are ints
+        if(val1.matches("[0-9]") && val2.matches("[0-9]")){
+            int numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+            varTable.addItem(newItem);
+
+            opCode += "A90" +val1 + "8D" + newItem.getTemp();
+
+            numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+            varTable.addItem(newItem2);
+
+            opCode += "A90" + val2 + "8D" + newItem2.getTemp();
+
+            opCode += "AE" + newItem.getTemp();
+
+            opCode += "EC" + newItem2.getTemp();
+
+            numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem3 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+            varTable.addItem(newItem3);
+
+            opCode += "A9018D" + newItem3.getTemp();
+
+            opCode += "D005";
+
+            opCode += "A9008D" + newItem3.getTemp();
+
+            opCode += "A201EC" + newItem3.getTemp();
+
+            opCode += "D005";
+
+            opCode += "A9018D" + newItem3.getTemp();
+
+            opCode += "A201AC" + newItem3.getTemp() + "FF";
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+        }
+        else if(val1.matches("[a-z]") && val2.matches("[a-z]")){
+            opCode += "AE" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
+
+            opCode += "EC" + varTable.getItem(val2.charAt(0), getVariableScope(val2)).getTemp();
+
+            int numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+            varTable.addItem(newItem1);
+
+            opCode += "A9018D" + newItem1.getTemp();
+
+            opCode += "D005";
+
+            opCode += "A9008D" + newItem1.getTemp();
+
+            opCode += "A201EC" + newItem1.getTemp();
+
+            opCode += "D005";
+
+            opCode += "A9018D" + newItem1.getTemp();
+
+            opCode += "A201AC" + newItem1.getTemp() + "FF";
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+        }
+        else{
+            storeHeap(val1);
+            String end = Integer.toHexString(heapEnd);
+
+            if(end.length() < 2){
+                end = "0" + end;
+                opCode += "A0" + end + "A202FF";
+
+                totalBytesUsed += opCode.length()/2;
+
+                opCodeOutput += opCode;
+            }
+        }
     }
 
     public String outputToString(){
