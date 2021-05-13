@@ -36,6 +36,11 @@ public class CodeGen {
 
             ArrayList<Node> children = root.getChildren();
 
+            // add the true and false values to the heap
+            storeHeap("false");
+
+            storeHeap("true");
+
             beginCodeGen(children);
             opCodeOutput += "00";
             totalBytesUsed += 1;
@@ -209,7 +214,6 @@ public class CodeGen {
     public void assignStmtString(char variableName, String value, int scope){
         // if you are assigning it to the value of a variable
         if(value.matches("[a-z]") && variableName != value.charAt(0)){
-            System.out.println("yo");
             String opCode = "AD" + varTable.getItem(value.charAt(0), scope).getTemp() + "8D" +
                     varTable.getItem(variableName, scope).getTemp();
 
@@ -218,11 +222,22 @@ public class CodeGen {
             opCodeOutput += opCode;
         }
         else if(variableName != value.charAt(0)){
-            storeHeap(value);
+            String end = "";
+            if(value.equals("true") || value.equals("false")){
+                if(value.equals("false")){
+                    end = "FA";
+                }
+                else{
+                    end = "F5";
+                }
+            }
+            else {
+                storeHeap(value);
 
-            String end = Integer.toHexString(heapEnd);
-            if(end.length() < 2){
-                end = "0" + end;
+                end = Integer.toHexString(heapEnd);
+                if (end.length() < 2) {
+                    end = "0" + end;
+                }
             }
 
             String opCode = "A9" + end + "8D" + varTable.getItem(variableName, scope).getTemp();
@@ -435,11 +450,13 @@ public class CodeGen {
     public void initializePrintBoolean(String val){
         String opCode = "";
 
-        storeHeap(val);
-
-        String end = Integer.toHexString(heapEnd);
-        if(end.length() < 2){
-            end = "0" + end;
+        // boolean values are pre-stored, so we don't need to re store them
+        String end;
+        if(val.equals("false")){
+            end = "FA";
+        }
+        else{
+            end = "F5";
         }
 
         opCode += "A0" + end + "A202FF";
@@ -582,6 +599,43 @@ public class CodeGen {
 
                 opCodeOutput += opCode;
             }
+            else if(type.equals("boolean")){
+                String end;
+                if(val2.equals("false")){
+                    end = "FA";
+                }
+                else{
+                    end = "F5";
+                }
+                opCode += "A2" + end;
+
+                opCode += "EC" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
+
+                int numVars = varTable.getNumVariables();
+
+                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+                varTable.addItem(newItem1);
+
+                opCode += "A9018D" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9008D" + newItem1.getTemp();
+
+                opCode += "A201EC" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9018D" + newItem1.getTemp();
+
+                if(inPrint) {
+                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                }
+
+                totalBytesUsed += opCode.length()/2;
+
+                opCodeOutput += opCode;
+            }
             else{
                 storeHeap(val2);
 
@@ -653,6 +707,43 @@ public class CodeGen {
 
                 totalBytesUsed += opCode.length()/2;
 
+                opCodeOutput += opCode;
+            }
+            else if(type.equals("boolean")){
+                String end;
+                if(val1.equals("false")){
+                    end = "FA";
+                }
+                else{
+                    end = "F5";
+                }
+                opCode += "A2" + end;
+
+                opCode += "EC" + varTable.getItem(val2.charAt(0), getVariableScope(val2)).getTemp();
+
+                int numVars = varTable.getNumVariables();
+
+                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+                varTable.addItem(newItem1);
+
+                opCode += "A9018D" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9008D" + newItem1.getTemp();
+
+                opCode += "A201EC" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9018D" + newItem1.getTemp();
+
+                if(inPrint) {
+                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                }
+
+                totalBytesUsed += opCode.length()/2;
+//
                 opCodeOutput += opCode;
             }
             else{

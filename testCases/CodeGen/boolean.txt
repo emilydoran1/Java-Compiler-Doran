@@ -48,6 +48,7 @@ b = false print(b)}$
 }$
 
 { 
-  string a a = "hi" 
-  print((a!="hi"))
+  boolean a a = false
+  print(a)
+  print((false!=a))
 }$
