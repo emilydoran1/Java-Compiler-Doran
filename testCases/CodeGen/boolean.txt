@@ -39,7 +39,7 @@ b = false print(b)}$
   int a a = 1 
   int b
   b = 7
-  print((a!=b))
+  print((a==b))
 }$
 
 { 
@@ -50,5 +50,13 @@ b = false print(b)}$
 { 
   boolean a a = false
   print(a)
-  print((false!=a))
+  print((false==a))
 }$
+
+{ 
+  boolean a a = false
+  boolean b b = false
+  print((a!=b))
+}$
+
+{print((1==0))}$

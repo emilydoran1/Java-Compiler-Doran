@@ -110,10 +110,12 @@ public class CodeGen {
 
                     }
                     else if(child.getChildren().get(0).getName().equals("isNotEqual")){
-                        compareValuesNotEqual(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1), true);
+                        compareValues(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1),
+                                true, false);
                     }
                     else if(child.getChildren().get(0).getName().equals("isEqual")){
-//                        compareValuesEqual(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1));
+                        compareValues(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1),
+                                true, true);
                     }
                     else {
                         initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
@@ -126,11 +128,11 @@ public class CodeGen {
 
                 }
                 else if(child.getName().equals("isNotEqual")){
-                    compareValuesNotEqual(child.getChildren().get(0), child.getChildren().get(0), false);
+                    compareValues(child.getChildren().get(0), child.getChildren().get(0), false, false);
 
                 }
                 else if(child.getName().equals("isEqual")){
-//                    compareValuesEqual(child.getChildren().get(0), child.getChildren().get(0));
+                    compareValues(child.getChildren().get(0), child.getChildren().get(0), false, true);
 
                 }
                 else{
@@ -485,7 +487,7 @@ public class CodeGen {
 
     }
 
-    public void compareValuesNotEqual(Node node1, Node node2, boolean inPrint){
+    public void compareValues(Node node1, Node node2, boolean inPrint, boolean isEqual){
         String opCode = "";
 
         String val1 = node1.getName();
@@ -515,17 +517,34 @@ public class CodeGen {
             StaticVariableTableItem newItem3 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
             varTable.addItem(newItem3);
 
-            opCode += "A9018D" + newItem3.getTemp();
+            if(!isEqual){
+                opCode += "A9018D" + newItem3.getTemp();
 
-            opCode += "D005";
+                opCode += "D005";
 
-            opCode += "A9008D" + newItem3.getTemp();
+                opCode += "A9008D" + newItem3.getTemp();
 
-            opCode += "A201EC" + newItem3.getTemp();
+                opCode += "A201EC" + newItem3.getTemp();
 
-            opCode += "D005";
+                opCode += "D005";
 
-            opCode += "A9018D" + newItem3.getTemp();
+                opCode += "A9018D" + newItem3.getTemp();
+
+            }
+            else{
+                opCode += "A9008D" + newItem3.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9018D" + newItem3.getTemp();
+
+                opCode += "A200EC" + newItem3.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9008D" + newItem3.getTemp();
+
+            }
 
             if (inPrint){
                 opCode += "A201AC" + newItem3.getTemp() + "FF";
@@ -535,6 +554,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
         }
+        // check if the compared values are both variables
         else if(val1.matches("[a-z]") && val2.matches("[a-z]")){
             opCode += "AE" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
 
@@ -545,17 +565,34 @@ public class CodeGen {
             StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
             varTable.addItem(newItem1);
 
-            opCode += "A9018D" + newItem1.getTemp();
+            if(!isEqual){
+                opCode += "A9018D" + newItem1.getTemp();
 
-            opCode += "D005";
+                opCode += "D005";
 
-            opCode += "A9008D" + newItem1.getTemp();
+                opCode += "A9008D" + newItem1.getTemp();
 
-            opCode += "A201EC" + newItem1.getTemp();
+                opCode += "A201EC" + newItem1.getTemp();
 
-            opCode += "D005";
+                opCode += "D005";
 
-            opCode += "A9018D" + newItem1.getTemp();
+                opCode += "A9018D" + newItem1.getTemp();
+
+            }
+            else{
+                opCode += "A9008D" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9018D" + newItem1.getTemp();
+
+                opCode += "A200EC" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9008D" + newItem1.getTemp();
+
+            }
 
             if(inPrint) {
                 opCode += "A201AC" + newItem1.getTemp() + "FF";
@@ -579,17 +616,34 @@ public class CodeGen {
                 StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
                 varTable.addItem(newItem1);
 
-                opCode += "A9018D" + newItem1.getTemp();
+                if(!isEqual){
+                    opCode += "A9018D" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9008D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A201EC" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                }
+                else{
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                    opCode += "A200EC" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                }
 
                 if(inPrint) {
                     opCode += "A201AC" + newItem1.getTemp() + "FF";
@@ -616,17 +670,34 @@ public class CodeGen {
                 StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
                 varTable.addItem(newItem1);
 
-                opCode += "A9018D" + newItem1.getTemp();
+                if(!isEqual){
+                    opCode += "A9018D" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9008D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A201EC" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                }
+                else{
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                    opCode += "A200EC" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                }
 
                 if(inPrint) {
                     opCode += "A201AC" + newItem1.getTemp() + "FF";
@@ -653,17 +724,34 @@ public class CodeGen {
                 StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
                 varTable.addItem(newItem1);
 
-                opCode += "A9018D" + newItem1.getTemp();
+                if(!isEqual){
+                    opCode += "A9018D" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9008D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A201EC" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                }
+                else{
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                    opCode += "A200EC" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                }
 
                 if(inPrint) {
                     opCode += "A201AC" + newItem1.getTemp() + "FF";
@@ -678,6 +766,7 @@ public class CodeGen {
         else if(val2.matches("[a-z]")){
             String type = getVariableType(val2);
 
+            // comparing int values
             if(type.equals("int")){
 
                 opCode += "A20" + val1;
@@ -689,17 +778,34 @@ public class CodeGen {
                 StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
                 varTable.addItem(newItem1);
 
-                opCode += "A9018D" + newItem1.getTemp();
+                if(!isEqual){
+                    opCode += "A9018D" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9008D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A201EC" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                }
+                else{
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                    opCode += "A200EC" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                }
 
                 if(inPrint) {
                     opCode += "A201AC" + newItem1.getTemp() + "FF";
@@ -709,6 +815,7 @@ public class CodeGen {
 
                 opCodeOutput += opCode;
             }
+            // comparing boolean values
             else if(type.equals("boolean")){
                 String end;
                 if(val1.equals("false")){
@@ -726,26 +833,44 @@ public class CodeGen {
                 StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
                 varTable.addItem(newItem1);
 
-                opCode += "A9018D" + newItem1.getTemp();
+                if(!isEqual){
+                    opCode += "A9018D" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9008D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A201EC" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                }
+                else{
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                    opCode += "A200EC" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                }
 
                 if(inPrint) {
                     opCode += "A201AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
-//
+
                 opCodeOutput += opCode;
             }
+            // comparing string values
             else{
                 storeHeap(val2);
 
@@ -763,17 +888,34 @@ public class CodeGen {
                 StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
                 varTable.addItem(newItem1);
 
-                opCode += "A9018D" + newItem1.getTemp();
+                if(!isEqual){
+                    opCode += "A9018D" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9008D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A201EC" + newItem1.getTemp();
 
-                opCode += "D005";
+                    opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                }
+                else{
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9018D" + newItem1.getTemp();
+
+                    opCode += "A200EC" + newItem1.getTemp();
+
+                    opCode += "D005";
+
+                    opCode += "A9008D" + newItem1.getTemp();
+
+                }
 
                 if(inPrint) {
                     opCode += "A201AC" + newItem1.getTemp() + "FF";
@@ -785,6 +927,7 @@ public class CodeGen {
             }
 
         }
+        // no variables, comparing 2 string / boolean values
         else{
             storeHeap(val1);
             String end = Integer.toHexString(heapEnd);
