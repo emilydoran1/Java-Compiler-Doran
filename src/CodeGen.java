@@ -518,37 +518,105 @@ public class CodeGen {
             varTable.addItem(newItem3);
 
             if(!isEqual){
-                opCode += "A9018D" + newItem3.getTemp();
+                opCode += "A9F58D" + newItem3.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9008D" + newItem3.getTemp();
+                opCode += "A9FA8D" + newItem3.getTemp();
 
-                opCode += "A201EC" + newItem3.getTemp();
+                opCode += "A2F5EC" + newItem3.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9018D" + newItem3.getTemp();
+                opCode += "A9F58D" + newItem3.getTemp();
 
             }
             else{
-                opCode += "A9008D" + newItem3.getTemp();
+                opCode += "A9FA8D" + newItem3.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9018D" + newItem3.getTemp();
+                opCode += "A9F58D" + newItem3.getTemp();
 
-                opCode += "A200EC" + newItem3.getTemp();
+                opCode += "A2FAEC" + newItem3.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9008D" + newItem3.getTemp();
+                opCode += "A9FA8D" + newItem3.getTemp();
 
             }
 
             if (inPrint){
-                opCode += "A201AC" + newItem3.getTemp() + "FF";
+                opCode += "A202AC" + newItem3.getTemp() + "FF";
             }
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+        }
+        // check if values are both booleans
+        else if(val1.matches("(true|false)") && val2.matches("(true|false)")){
+            String endVal1;
+            String endVal2;
+
+            // check val1 true/false
+            if(val1.equals("false")){
+                endVal1 = "FA";
+            }
+            else{
+                endVal1 = "F5";
+            }
+            // check val2 true/false
+            if(val2.equals("false")){
+                endVal2 = "FA";
+            }
+            else{
+                endVal2 = "F5";
+            }
+            opCode += "AE" + endVal1 + "00";
+
+            opCode += "EC" + endVal2 + "00";
+
+            int numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", (char) tempCount++, currentScope);
+            varTable.addItem(newItem1);
+
+            // check if we are in an isNotEqual op
+            if(!isEqual){
+                opCode += "A9F58D" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9FA8D" + newItem1.getTemp();
+
+                opCode += "A2F5EC" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9F58D" + newItem1.getTemp();
+
+            }
+            // in an isEqual op
+            else{
+                opCode += "A9FA8D" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9F58D" + newItem1.getTemp();
+
+                opCode += "A2FAEC" + newItem1.getTemp();
+
+                opCode += "D005";
+
+                opCode += "A9FA8D" + newItem1.getTemp();
+
+            }
+
+            if (inPrint){
+                opCode += "A202AC" + newItem1.getTemp() + "FF";
+            }
+
 
             totalBytesUsed += opCode.length()/2;
 
@@ -566,36 +634,36 @@ public class CodeGen {
             varTable.addItem(newItem1);
 
             if(!isEqual){
-                opCode += "A9018D" + newItem1.getTemp();
+                opCode += "A9F58D" + newItem1.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                opCode += "A9FA8D" + newItem1.getTemp();
 
-                opCode += "A201EC" + newItem1.getTemp();
+                opCode += "A2F5EC" + newItem1.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                opCode += "A9F58D" + newItem1.getTemp();
 
             }
             else{
-                opCode += "A9008D" + newItem1.getTemp();
+                opCode += "A9FA8D" + newItem1.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9018D" + newItem1.getTemp();
+                opCode += "A9F58D" + newItem1.getTemp();
 
-                opCode += "A200EC" + newItem1.getTemp();
+                opCode += "A2FAEC" + newItem1.getTemp();
 
                 opCode += "D005";
 
-                opCode += "A9008D" + newItem1.getTemp();
+                opCode += "A9FA8D" + newItem1.getTemp();
 
             }
 
-            if(inPrint) {
-                opCode += "A201AC" + newItem1.getTemp() + "FF";
+            if (inPrint){
+                opCode += "A202AC" + newItem1.getTemp() + "FF";
             }
 
             totalBytesUsed += opCode.length()/2;
@@ -617,36 +685,36 @@ public class CodeGen {
                 varTable.addItem(newItem1);
 
                 if(!isEqual){
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
-                    opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A2F5EC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                 }
                 else{
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                    opCode += "A200EC" + newItem1.getTemp();
+                    opCode += "A2FAEC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                 }
 
-                if(inPrint) {
-                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                if (inPrint){
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
@@ -671,36 +739,36 @@ public class CodeGen {
                 varTable.addItem(newItem1);
 
                 if(!isEqual){
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
-                    opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A2F5EC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                 }
                 else{
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                    opCode += "A200EC" + newItem1.getTemp();
+                    opCode += "A2FAEC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                 }
 
-                if(inPrint) {
-                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                if (inPrint){
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
@@ -725,36 +793,36 @@ public class CodeGen {
                 varTable.addItem(newItem1);
 
                 if(!isEqual){
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
-                    opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A2F5EC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                 }
                 else{
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                    opCode += "A200EC" + newItem1.getTemp();
+                    opCode += "A2FAEC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                 }
 
-                if(inPrint) {
-                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                if (inPrint){
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
@@ -779,36 +847,36 @@ public class CodeGen {
                 varTable.addItem(newItem1);
 
                 if(!isEqual){
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
-                    opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A2F5EC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                 }
                 else{
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                    opCode += "A200EC" + newItem1.getTemp();
+                    opCode += "A2FAEC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                 }
 
-                if(inPrint) {
-                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                if (inPrint){
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
@@ -834,36 +902,36 @@ public class CodeGen {
                 varTable.addItem(newItem1);
 
                 if(!isEqual){
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
-                    opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A2F5EC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                 }
                 else{
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                    opCode += "A200EC" + newItem1.getTemp();
+                    opCode += "A2FAEC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                 }
 
-                if(inPrint) {
-                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                if (inPrint){
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
@@ -889,36 +957,36 @@ public class CodeGen {
                 varTable.addItem(newItem1);
 
                 if(!isEqual){
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
-                    opCode += "A201EC" + newItem1.getTemp();
+                    opCode += "A2F5EC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
                 }
                 else{
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9018D" + newItem1.getTemp();
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                    opCode += "A200EC" + newItem1.getTemp();
+                    opCode += "A2FAEC" + newItem1.getTemp();
 
                     opCode += "D005";
 
-                    opCode += "A9008D" + newItem1.getTemp();
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
                 }
 
-                if(inPrint) {
-                    opCode += "A201AC" + newItem1.getTemp() + "FF";
+                if (inPrint){
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
                 }
 
                 totalBytesUsed += opCode.length()/2;
