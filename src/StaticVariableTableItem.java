@@ -1,5 +1,5 @@
 /**
- * This class stores the necessary information about data in the table
+ * This class stores the necessary information about data in the static variable table
  *
  * @author Emily Doran
  *

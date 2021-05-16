@@ -1,5 +1,11 @@
 import java.util.ArrayList;
 
+/**
+ * This class represents a static variable table for the 6502a instruction set
+ *
+ * @author Emily Doran
+ *
+ */
 public class StaticVariableTable {
 
     ArrayList<StaticVariableTableItem> variableTable;

@@ -13,6 +13,7 @@ public class CodeGen {
     private SyntaxTree ast;
     private SymbolTable symbolTable;
     private StaticVariableTable varTable = new StaticVariableTable();
+    private JumpTable jumpTable = new JumpTable();
     private int totalBytesUsed = 0;
 
     private String opCodeOutput = "";
@@ -23,6 +24,9 @@ public class CodeGen {
     private int scopeCount = 1;
 
     private int errorCount = 0;
+
+    private boolean insideIf = false;
+    private boolean insideWhile = false;
 
     public CodeGen(SyntaxTree ast, SymbolTable symbolTable, int programNum, boolean verboseMode, boolean passedLex, boolean passedParse,
                    boolean passedSemanticAnalysis){
@@ -57,6 +61,7 @@ public class CodeGen {
                 System.out.println("CODE GENERATION: ERROR: Exceeded Stack Memory Limit. ");
             }
             else if (errorCount == 0){
+                // add in zeros for empty bytes
                 for (int i = 0; i < difference; i++) {
                     opCodeOutput += "00";
                 }
@@ -67,10 +72,12 @@ public class CodeGen {
                     totalBytesUsedHex = "0" + totalBytesUsedHex;
                 }
 
+                // set each static variable's address
                 for (int i = 0; i < varTable.getNumVariables(); i++) {
                     varTable.getVariableTable().get(i).setAddress(totalBytesUsed + i);
                 }
 
+                // backpatch static variables
                 for (int i = 0; i < varTable.getNumVariables(); i++) {
                     String temp = varTable.getVariableTable().get(i).getTemp();
                     String hexTemp = Integer.toHexString(varTable.getVariableTable().get(i).getAddress());
@@ -78,6 +85,23 @@ public class CodeGen {
                         hexTemp = "0" + hexTemp;
                     }
                     opCodeOutput = opCodeOutput.replace(temp, hexTemp + "00");
+                    if(verboseMode){
+                        System.out.println("CODE GENERATION: Backpatching Static Variable Placeholder " + temp +
+                                " With Memory Address " + hexTemp);
+                    }
+                }
+                // backpatch jump table
+                for (int i = 0; i < jumpTable.getNumVariables(); i++) {
+                    String tempJump = jumpTable.getJumpTable().get(i).getTemp();
+                    String hexTemp = Integer.toHexString(jumpTable.getJumpTable().get(i).getDistance());
+                    if (hexTemp.length() < 2) {
+                        hexTemp = "0" + hexTemp;
+                    }
+                    opCodeOutput = opCodeOutput.replace(tempJump, hexTemp + "00");
+                    if(verboseMode){
+                        System.out.println("CODE GENERATION: Backpatching Jump Variable Placeholder " + tempJump +
+                                " Forward " + hexTemp + " Addresses");
+                    }
                 }
                 System.out.println(outputToString());
             }
@@ -104,7 +128,12 @@ public class CodeGen {
             if(child.getChildren().size() > 0){
                 // get child's children
                 ArrayList<Node> childChildren = child.getChildren();
-                if(child.getName().equals("Print")){
+                if(child.getName().equals("If")){
+                    insideIf = true;
+                    beginCodeGen(childChildren);
+                    insideIf = false;
+                }
+                else if(child.getName().equals("Print")){
                     if(child.getChildren().get(0).getName().equals("true") || child.getChildren().get(0).getName().equals("false")){
                         initializePrintBoolean(child.getChildren().get(0).getName());
                     }
@@ -136,14 +165,13 @@ public class CodeGen {
                    // }
 
                 }
-//                else if(child.getName().equals("isNotEqual")){
-//                    compareValues(child.getChildren().get(0), child.getChildren().get(0), false, false);
-//
-//                }
-//                else if(child.getName().equals("isEqual")){
-//                    compareValues(child.getChildren().get(0), child.getChildren().get(0), false, true);
-//
-//                }
+                else if(child.getName().equals("isEqual") && insideIf){
+                    compareValues(child.getChildren().get(0), child.getChildren().get(1), false, true);
+                }
+                else if(child.getName().equals("isNotEqual") && insideIf){
+                    compareValues(child.getChildren().get(0), child.getChildren().get(1), false, false);
+                }
+
                 else{
                     if(child.getName().equals("BLOCK")){
                         scopeCount++;
@@ -288,7 +316,7 @@ public class CodeGen {
     public void printAddInts(Node node1, Node node2, int scope){
         int numVars = varTable.getNumVariables();
 
-        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), scope);
+        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
         varTable.addItem(newItem);
 
         numVars = varTable.getNumVariables();
@@ -303,7 +331,7 @@ public class CodeGen {
 
             numVars = varTable.getNumVariables();
 
-            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), scope);
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
             opCode += "6D" + varTable.getItem(value2.charAt(0), scope).getTemp();
@@ -349,7 +377,7 @@ public class CodeGen {
 
             numVars = varTable.getNumVariables();
 
-            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), scope);
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
             opCode += "8D" + newItem2.getTemp();
@@ -368,7 +396,7 @@ public class CodeGen {
     public void storeAddInts(char var, Node node1, Node node2, int scope){
         int numVars = varTable.getNumVariables();
 
-        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), scope);
+        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
         varTable.addItem(newItem);
 
         numVars = varTable.getNumVariables();
@@ -381,7 +409,7 @@ public class CodeGen {
         if(!value2.matches("[0-9]") && !value2.equals("Addition")){
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
-            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), scope);
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
             opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
@@ -420,7 +448,7 @@ public class CodeGen {
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
             opCode += "A90" + value2 + "6D" + newItem.getTemp();
 
-            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), scope);
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
             opCode += "8D" + newItem2.getTemp();
@@ -531,14 +559,14 @@ public class CodeGen {
             if (val1.matches("[0-9]") && val2.matches("[0-9]")) {
                 int numVars = varTable.getNumVariables();
 
-                StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem);
 
                 opCode += "A90" + val1 + "8D" + newItem.getTemp();
 
                 numVars = varTable.getNumVariables();
 
-                StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem2);
 
                 opCode += "A90" + val2 + "8D" + newItem2.getTemp();
@@ -549,7 +577,7 @@ public class CodeGen {
 
                 numVars = varTable.getNumVariables();
 
-                StaticVariableTableItem newItem3 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                StaticVariableTableItem newItem3 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem3);
 
                 if (!isEqual) {
@@ -611,7 +639,7 @@ public class CodeGen {
 
                 int numVars = varTable.getNumVariables();
 
-                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem1);
 
                 // check if we are in an isNotEqual op
@@ -662,7 +690,7 @@ public class CodeGen {
 
                 int numVars = varTable.getNumVariables();
 
-                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem1);
 
                 if (!isEqual) {
@@ -711,7 +739,7 @@ public class CodeGen {
 
                     int numVars = varTable.getNumVariables();
 
-                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
                     if (!isEqual) {
@@ -762,7 +790,7 @@ public class CodeGen {
 
                     int numVars = varTable.getNumVariables();
 
-                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
                     if (!isEqual) {
@@ -814,7 +842,7 @@ public class CodeGen {
 
                     int numVars = varTable.getNumVariables();
 
-                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
                     if (!isEqual) {
@@ -866,7 +894,7 @@ public class CodeGen {
 
                     int numVars = varTable.getNumVariables();
 
-                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
                     if (!isEqual) {
@@ -919,7 +947,7 @@ public class CodeGen {
 
                     int numVars = varTable.getNumVariables();
 
-                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
                     if (!isEqual) {
@@ -973,7 +1001,7 @@ public class CodeGen {
 
                     int numVars = varTable.getNumVariables();
 
-                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), currentScope);
+                    StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
                     if (!isEqual) {
