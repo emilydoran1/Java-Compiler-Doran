@@ -28,6 +28,8 @@ public class CodeGen {
     private boolean insideIf = false;
     private boolean insideWhile = false;
 
+    private int jumpDist = 0;
+
     public CodeGen(SyntaxTree ast, SymbolTable symbolTable, int programNum, boolean verboseMode, boolean passedLex, boolean passedParse,
                    boolean passedSemanticAnalysis){
         this.ast = ast;
@@ -97,7 +99,7 @@ public class CodeGen {
                     if (hexTemp.length() < 2) {
                         hexTemp = "0" + hexTemp;
                     }
-                    opCodeOutput = opCodeOutput.replace(tempJump, hexTemp + "00");
+                    opCodeOutput = opCodeOutput.replace(tempJump, hexTemp);
                     if(verboseMode){
                         System.out.println("CODE GENERATION: Backpatching Jump Variable Placeholder " + tempJump +
                                 " Forward " + hexTemp + " Addresses");
@@ -131,7 +133,11 @@ public class CodeGen {
                 if(child.getName().equals("If")){
                     insideIf = true;
                     beginCodeGen(childChildren);
+                    int numJumpItems = jumpTable.getNumVariables();
+                    jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
+                    jumpDist = 0;
                     insideIf = false;
+                    System.out.println(insideIf);
                 }
                 else if(child.getName().equals("Print")){
                     if(child.getChildren().get(0).getName().equals("true") || child.getChildren().get(0).getName().equals("false")){
@@ -340,7 +346,6 @@ public class CodeGen {
 
             opCode += "A201AC" + newItem2.getTemp();
 
-//            opCode += "A201FF";
 
             totalBytesUsed += opCode.length()/2;
 
@@ -502,6 +507,9 @@ public class CodeGen {
         }
         else if(Character.toString(variableName).matches("[0-9]")){
             opCode += "A00" + Character.toString(variableName) + "A201FF";
+            if(insideIf){
+                jumpDist += 5;
+            }
         }
 
         totalBytesUsed += opCode.length()/2;
@@ -587,11 +595,24 @@ public class CodeGen {
 
                     opCode += "A9FA8D" + newItem3.getTemp();
 
-                    opCode += "A2F5EC" + newItem3.getTemp();
-
-                    opCode += "D005";
+                    if(insideIf) {
+                        opCode += "A2F5EC" + newItem3.getTemp();
+                        // TODO replace with jump table
+                        int numJumpItems = jumpTable.getNumVariables();
+                        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                        jumpTable.addItem(tempJumpItem);
+                        opCode += "D0" + tempJumpItem.getTemp();
+                    }
+                    else{
+                        opCode += "A2F5EC" + newItem3.getTemp();
+                        opCode += "D005";
+                    }
 
                     opCode += "A9F58D" + newItem3.getTemp();
+
+                    if(insideIf){
+                        jumpDist += 5;
+                    }
 
                 } else {
                     opCode += "A9FA8D" + newItem3.getTemp();
@@ -600,16 +621,31 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem3.getTemp();
 
-                    opCode += "A2FAEC" + newItem3.getTemp();
-
-                    opCode += "D005";
+                    if(insideIf) {
+                        opCode += "A2F5EC" + newItem3.getTemp();
+                        // TODO replace with jump table
+                        int numJumpItems = jumpTable.getNumVariables();
+                        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                        jumpTable.addItem(tempJumpItem);
+                        opCode += "D0" + tempJumpItem.getTemp();
+                    }
+                    else{
+                        opCode += "A2FAEC" + newItem3.getTemp();
+                        opCode += "D005";
+                    }
 
                     opCode += "A9FA8D" + newItem3.getTemp();
+                    if(insideIf){
+                        jumpDist += 5;
+                    }
 
                 }
 
                 if (inPrint) {
                     opCode += "A202AC" + newItem3.getTemp() + "FF";
+                    if(insideIf){
+                        jumpDist += 6;
+                    }
                 }
 
                 totalBytesUsed += opCode.length() / 2;
@@ -659,17 +695,32 @@ public class CodeGen {
                 }
                 // in an isEqual op
                 else {
-                    opCode += "A9FA8D" + newItem1.getTemp();
+                    if(insideIf){
+                        opCode += "A9018D" + newItem1.getTemp();
 
-                    opCode += "D005";
+                        opCode += "D005";
 
-                    opCode += "A9F58D" + newItem1.getTemp();
+                        opCode += "A9008D" + newItem1.getTemp();
 
-                    opCode += "A2FAEC" + newItem1.getTemp();
+                        opCode += "A201EC" + newItem1.getTemp();
 
-                    opCode += "D005";
+                        opCode += "D005";
 
-                    opCode += "A9FA8D" + newItem1.getTemp();
+                        opCode += "A9018D" + newItem1.getTemp();
+                    }
+                    else {
+                        opCode += "A9FA8D" + newItem1.getTemp();
+
+                        opCode += "D005";
+
+                        opCode += "A9F58D" + newItem1.getTemp();
+
+                        opCode += "A2FAEC" + newItem1.getTemp();
+
+                        opCode += "D005";
+
+                        opCode += "A9FA8D" + newItem1.getTemp();
+                    }
 
                 }
 
