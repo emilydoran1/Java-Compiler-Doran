@@ -4,6 +4,9 @@ Compiler for Marist Spring 2021 Compilers Course
 ## Clone Repository
 `git clone https://github.com/emilydoran1/Java-Compiler-Doran.git` 
 
+## Running Code Generation
+* Go to the 'CodeGen' branch and follow instructions in the ReadMe there.
+
 ## Running Semantic Analysis
 * Redirect to the filepath `Java-Compiler-Doran/src`
 * Compile SemanticAnalyzer.java `javac SemanticAnalyzer.java`
