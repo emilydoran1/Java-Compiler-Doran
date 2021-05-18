@@ -1,5 +1,27 @@
-{if(2!=1){print(7)} print("hi")}$
+{
+  int a 
+  a = 5 
+  if(2==1){
+    print(7) 
+    print("hi") 
+    print(a)
+  } 
+  print("bye")
+}$
 
 {if(2==1){print(7)}}$
 
 {print((1!=1))}$
+
+{boolean b print(b)}$
+
+{
+  int a 
+  a = 5 
+  if(false!=true){
+    print(7) 
+    print("hi") 
+    print(a)
+  } 
+  print("bye")
+}$

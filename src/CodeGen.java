@@ -139,13 +139,17 @@ public class CodeGen {
                     insideIf = false;
                     System.out.println(insideIf);
                 }
+                // check if node is a print statement
                 else if(child.getName().equals("Print")){
+                    // printing boolean value
                     if(child.getChildren().get(0).getName().equals("true") || child.getChildren().get(0).getName().equals("false")){
                         initializePrintBoolean(child.getChildren().get(0).getName());
                     }
+                    // printing string
                     else if(child.getChildren().get(0).getName().charAt(0) == '"'){
                         initializePrintString(child.getChildren().get(0).getName());
                     }
+                    // printing addition operation
                     else if(child.getChildren().get(0).getName().equals("Addition")){
                         printAddInts(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1), currentScope);
                         String opCode = "A201FF";
@@ -153,42 +157,49 @@ public class CodeGen {
                         opCodeOutput += opCode;
 
                     }
+                    // printing boolean isNotEqual expression
                     else if(child.getChildren().get(0).getName().equals("isNotEqual")){
                         compareValues(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1),
                                 true, false);
                     }
+                    // printing boolean isEqual expression
                     else if(child.getChildren().get(0).getName().equals("isEqual")){
                         compareValues(child.getChildren().get(0).getChildren().get(0), child.getChildren().get(0).getChildren().get(1),
                                 true, true);
                     }
+                    // printing number
                     else {
                         initializePrint(child.getChildren().get(0).getName().charAt(0), currentScope);
                     }
                 }
+                // storing addition expression
                 else if(child.getName().equals("Addition")){
-                    //if(!child.getChildren().get(0).getChildren().get(1).getName().equals("Addition")) {
                         storeAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0), child.getChildren().get(1), currentScope);
-                   // }
 
                 }
+                // check boolean values isEqual (within if)
                 else if(child.getName().equals("isEqual") && insideIf){
                     compareValues(child.getChildren().get(0), child.getChildren().get(1), false, true);
                 }
+                // check boolean values isNotEqual (within if)
                 else if(child.getName().equals("isNotEqual") && insideIf){
                     compareValues(child.getChildren().get(0), child.getChildren().get(1), false, false);
                 }
-
                 else{
+                    // check if we have a nested block
                     if(child.getName().equals("BLOCK")){
                         scopeCount++;
                         currentScope = scopeCount-1;
+                        // call function on the children to get depth first traversal
                         if(childChildren != null) {
                             beginCodeGen(childChildren);
                         }
+                        // update scope
                         if(currentScope != 0) {
                             currentScope = symbolTable.get(currentScope).getParent().getScopeNum();
                         }
                     }
+                    // call function on the children to get the depth first traversal
                     else{
                         beginCodeGen(childChildren);
                     }
@@ -241,14 +252,22 @@ public class CodeGen {
 
         StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", variableName, scope);
         varTable.addItem(newItem);
+        String opCode = "";
 
-        String opCode = "A9008D" + newItem.getTemp();
+        if(getVariableType(Character.toString(variableName)).equals("boolean")){
+            opCode += "A9FA8D" + newItem.getTemp();
+        }
+        else{
+            opCode += "A9008D" + newItem.getTemp();
+        }
 
         totalBytesUsed += opCode.length()/2;
 
         opCodeOutput += opCode;
 
-
+        if(insideIf){
+            jumpDist += opCode.length()/2;
+        }
     }
 
     public void assignStmtInt(char variableName, String value, int scope){
@@ -257,6 +276,10 @@ public class CodeGen {
         totalBytesUsed += opCode.length()/2;
 
         opCodeOutput += opCode;
+
+        if(insideIf){
+            jumpDist += opCode.length()/2;
+        }
 
     }
 
@@ -270,9 +293,14 @@ public class CodeGen {
             opCode += "AD" + varTable.getItem(value.charAt(0), scope).getTemp() + "8D" +
                     varTable.getItem(variableName, scope).getTemp();
 
+
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
         }
         else if(variableName != value.charAt(0)){
             String end = "";
@@ -284,6 +312,7 @@ public class CodeGen {
                     end = "F5";
                 }
                 opCode += "A9" + end + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
+
             }
             else if(value.equals("isEqual") || value.equals("isNotEqual")){
                 if(!node.getChildren().get(0).equals("isEqual") && !node.getChildren().get(0).equals("isNotEqual") &&
@@ -296,6 +325,7 @@ public class CodeGen {
                         end = varTable.getItem(Character.forDigit(tempCount - 1, 10), scope).getTemp();
                     }
                     opCode += "AD" + end + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
+
                 }
                 else{
                     errorCount++;
@@ -310,11 +340,16 @@ public class CodeGen {
                     end = "0" + end;
                 }
                 opCode += "A9" + end + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
+
             }
 
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
         }
 
     }
@@ -324,8 +359,6 @@ public class CodeGen {
 
         StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
         varTable.addItem(newItem);
-
-        numVars = varTable.getNumVariables();
 
         String value1 = node1.getName();
         String value2 = node2.getName();
@@ -350,6 +383,10 @@ public class CodeGen {
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
         }
         else if(value2.equals("Addition")){
 
@@ -359,8 +396,6 @@ public class CodeGen {
 
             opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
 
-//            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
-
             opCode += "6D" + newItem.getTemp();
 
             opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp() + "AD" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
@@ -369,11 +404,13 @@ public class CodeGen {
 
             opCode += "A201AC" + newItem.getTemp();
 
-//            opCode += "A201FF";
-
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
 
         }
         else{
@@ -389,11 +426,13 @@ public class CodeGen {
 
             opCode += "A201AC" + newItem2.getTemp();
 
-//            opCode += "A201FF";
-
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
         }
 
     }
@@ -428,6 +467,10 @@ public class CodeGen {
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
         }
         else if(value2.equals("Addition")){
             storeAddInts(var, node2.getChildren().get(0), node2.getChildren().get(1), scope);
@@ -448,6 +491,10 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
+
         }
         else{
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
@@ -465,6 +512,10 @@ public class CodeGen {
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
+
+            if(insideIf){
+                jumpDist += opCode.length()/2;
+            }
         }
 
 
@@ -496,25 +547,30 @@ public class CodeGen {
     public void initializePrint(char variableName, int scope){
         String opCode = "";
 
+        // check if we are printing a variable
         if(Character.toString(variableName).matches("[a-z]")){
+            //  var is an int -> load integer value from memory
             if(getVariableType(Character.toString(variableName)).equals("int")) {
                 opCode += "AC" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp() + "A201FF";
             }
+            // var is a string or boolean -> load string value from heap
             else if (getVariableType(Character.toString(variableName)).equals("string")
                 || getVariableType(Character.toString(variableName)).equals("boolean")) {
                 opCode += "AC" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp() + "A202FF";
+
             }
         }
         else if(Character.toString(variableName).matches("[0-9]")){
             opCode += "A00" + Character.toString(variableName) + "A201FF";
-            if(insideIf){
-                jumpDist += 5;
-            }
         }
 
         totalBytesUsed += opCode.length()/2;
 
         opCodeOutput += opCode;
+
+        if(insideIf){
+            jumpDist += opCode.length()/2;
+        }
 
     }
 
@@ -531,6 +587,10 @@ public class CodeGen {
         }
 
         opCode += "A0" + end + "A202FF";
+
+        if(insideIf){
+            jumpDist += 5;
+        }
 
         totalBytesUsed += opCode.length()/2;
 
@@ -549,6 +609,10 @@ public class CodeGen {
         }
 
         opCode += "A0" + end + "A202FF";
+
+        if(insideIf){
+            jumpDist += 5;
+        }
 
         totalBytesUsed += opCode.length()/2;
 
@@ -597,7 +661,6 @@ public class CodeGen {
 
                     if(insideIf) {
                         opCode += "A2F5EC" + newItem3.getTemp();
-                        // TODO replace with jump table
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
@@ -623,7 +686,6 @@ public class CodeGen {
 
                     if(insideIf) {
                         opCode += "A2F5EC" + newItem3.getTemp();
-                        // TODO replace with jump table
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
@@ -688,25 +750,45 @@ public class CodeGen {
 
                     opCode += "A2F5EC" + newItem1.getTemp();
 
-                    opCode += "D005";
+                    if(insideIf){
+                        int numJumpItems = jumpTable.getNumVariables();
+                        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                        jumpTable.addItem(tempJumpItem);
+
+                        opCode += "D0" + tempJumpItem.getTemp();
+                    }
+                    else {
+                        opCode += "D005";
+                    }
 
                     opCode += "A9F58D" + newItem1.getTemp();
+
+                    if(insideIf){
+                        jumpDist += 5;
+                    }
 
                 }
                 // in an isEqual op
                 else {
                     if(insideIf){
-                        opCode += "A9018D" + newItem1.getTemp();
+                        opCode += "A9FA8D" + newItem1.getTemp();
 
                         opCode += "D005";
 
-                        opCode += "A9008D" + newItem1.getTemp();
+                        opCode += "A9F58D" + newItem1.getTemp();
 
-                        opCode += "A201EC" + newItem1.getTemp();
+                        opCode += "A2F5EC" + newItem1.getTemp();
 
-                        opCode += "D005";
+                        int numJumpItems = jumpTable.getNumVariables();
 
-                        opCode += "A9018D" + newItem1.getTemp();
+                        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                        jumpTable.addItem(tempJumpItem);
+
+                        opCode += "D0" + tempJumpItem.getTemp();
+
+                        opCode += "A9FA8D" + newItem1.getTemp();
+
+                        jumpDist += 5;
                     }
                     else {
                         opCode += "A9FA8D" + newItem1.getTemp();
@@ -726,8 +808,10 @@ public class CodeGen {
 
                 if (inPrint) {
                     opCode += "A202AC" + newItem1.getTemp() + "FF";
+                    if(insideIf){
+                        jumpDist += 6;
+                    }
                 }
-
 
                 totalBytesUsed += opCode.length() / 2;
 
