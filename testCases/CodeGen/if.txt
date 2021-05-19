@@ -36,3 +36,14 @@
   } 
   print("bye")
 }$
+
+{
+  boolean a 
+  a = true
+  if false{
+    print(7) 
+    print("hi") 
+    print((a!=true))
+  } 
+  print("bye")
+}$

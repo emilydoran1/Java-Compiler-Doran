@@ -38,7 +38,7 @@ public class CodeGen {
 
         // make sure Lex, Parse, and Semantic Analysis didn't throw any errors before we begin Code Generation
         if(passedLex && passedParse && passedSemanticAnalysis){
-            System.out.println("CODE GENERATION: Beginning Code Generation on Program " + programNum + " ...");
+            System.out.println("\n\nCODE GENERATION: Beginning Code Generation on Program " + programNum + " ...");
             Node root = ast.getRoot();
 
             ArrayList<Node> children = root.getChildren();
@@ -104,7 +104,11 @@ public class CodeGen {
                                 " Forward " + hexTemp + " Addresses");
                     }
                 }
-                System.out.println(outputToString());
+
+                System.out.println("Program " + programNum + " Code Generation produced " + errorCount + " error(s)");
+                if(errorCount == 0) {
+                    System.out.println("\n" + outputToString());
+                }
             }
 
         }
@@ -174,7 +178,6 @@ public class CodeGen {
                 // storing addition expression
                 else if(child.getName().equals("Addition")){
                         storeAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0), child.getChildren().get(1), currentScope);
-
                 }
                 // check boolean values isEqual (within if)
                 else if(child.getName().equals("isEqual") && insideIf){
@@ -240,6 +243,12 @@ public class CodeGen {
                 else if(child.getParent().getName().equals("Assign") && child.getName().matches("[a-z]") &&
                         child.getParent().getChildren().get(1).getName().matches("(isEqual)|(isNotEqual)")){
                     assignStmtString(child.getName().charAt(0), child.getParent().getChildren().get(1), currentScope);
+                }
+                // check if we are in an if condition and the boolean expression is just true | false
+                else if((child.getName().equals("true") || child.getName().equals("false")) &&
+                        child.getParent().getName().equals("If")){
+                    ifWithoutExpr(child);
+
                 }
             }
         }
@@ -1392,6 +1401,55 @@ public class CodeGen {
         if(insideIfFirstPass){
             insideIfFirstPass = false;
         }
+    }
+
+    public void ifWithoutExpr(Node node1){
+        String val1 = node1.getName();
+        String opCode = "";
+
+        String endVal1;
+        // check val1 true/false
+        if (val1.equals("false")) {
+            endVal1 = "FA";
+        } else {
+            endVal1 = "F5";
+        }
+
+        opCode += "AE" + endVal1 + "00";
+
+        // compare val1 to true
+        opCode += "EC" + "F5" + "00";
+
+        int numVars = varTable.getNumVariables();
+
+        StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
+        varTable.addItem(newItem1);
+
+        opCode += "A9FA8D" + newItem1.getTemp();
+
+        opCode += "D005";
+
+        opCode += "A9F58D" + newItem1.getTemp();
+
+        opCode += "A2F5EC" + newItem1.getTemp();
+
+        int numJumpItems = jumpTable.getNumVariables();
+
+        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+        jumpTable.addItem(tempJumpItem);
+
+        opCode += "D0" + tempJumpItem.getTemp();
+
+        opCode += "A9FA8D" + newItem1.getTemp();
+
+        if(insideIfFirstPass) {
+            jumpDist += 5;
+        }
+
+        totalBytesUsed += opCode.length() / 2;
+
+        opCodeOutput += opCode;
+        insideIfFirstPass = false;
     }
 
     public String outputToString(){
