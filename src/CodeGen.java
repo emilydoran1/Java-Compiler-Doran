@@ -51,6 +51,9 @@ public class CodeGen {
             // begin code gen on root node children
             beginCodeGen(children);
             opCodeOutput += "00";
+            if(verboseMode) {
+                System.out.println("CODE GENERATION: Adding Break Statement");
+            }
             totalBytesUsed += 1;
 
             int difference = (256 - totalBytesUsed) - (256-heapEnd);
@@ -111,6 +114,10 @@ public class CodeGen {
                 }
             }
 
+            if(errorCount > 0){
+                System.out.println("Program " + programNum + " Code Generation produced " + errorCount + " error(s)");
+            }
+
         }
         // Lex failed, so don't do code generation
         else if(!passedLex){
@@ -138,8 +145,10 @@ public class CodeGen {
                     insideIfFirstPass = true;
                     beginCodeGen(childChildren);
                     int numJumpItems = jumpTable.getNumVariables();
-                    jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
-                    jumpDist = 0;
+                    if(errorCount == 0) {
+                        jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
+                        jumpDist = 0;
+                    }
                     insideIf = false;
                 }
                 // check if node is a print statement
@@ -276,6 +285,10 @@ public class CodeGen {
         if(insideIf){
             jumpDist += opCode.length()/2;
         }
+
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Adding Variable Declaration of Variable: " + variableName);
+        }
     }
 
     public void assignStmtInt(char variableName, String value, int scope){
@@ -289,6 +302,9 @@ public class CodeGen {
             jumpDist += opCode.length()/2;
         }
 
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Assigning Variable " + variableName + " to value: " + value);
+        }
     }
 
     public void assignStmtString(char variableName, Node node, int scope){
@@ -309,7 +325,12 @@ public class CodeGen {
             if(insideIf){
                 jumpDist += opCode.length()/2;
             }
+
+            if(verboseMode) {
+                System.out.println("CODE GENERATION: Assigning Variable " + variableName + " to variable: " + value);
+            }
         }
+        // not assigning variable to another variable
         else if(variableName != value.charAt(0)){
             String end = "";
             if(value.equals("true") || value.equals("false")){
@@ -358,6 +379,10 @@ public class CodeGen {
             if(insideIf){
                 jumpDist += opCode.length()/2;
             }
+
+            if(verboseMode) {
+                System.out.println("CODE GENERATION: Assigning Variable " + variableName + " to value: " + value);
+            }
         }
 
     }
@@ -373,6 +398,7 @@ public class CodeGen {
 
         String opCode = "";
 
+        // second value is a variable and we don't have any more nested integers
         if(!value2.matches("[0-9]") && !value2.equals("Addition")){
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
@@ -396,6 +422,7 @@ public class CodeGen {
                 jumpDist += opCode.length()/2;
             }
         }
+        // nested addition op
         else if(value2.equals("Addition")){
 
             printAddInts(node2.getChildren().get(0), node2.getChildren().get(1), scope);
@@ -421,6 +448,7 @@ public class CodeGen {
             }
 
         }
+        // just adding two ints
         else{
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
             opCode += "A90" + value2 + "6D" + newItem.getTemp();
@@ -441,6 +469,10 @@ public class CodeGen {
             if(insideIf){
                 jumpDist += opCode.length()/2;
             }
+        }
+
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Printing Addition Operation: " + value1 + " + " + value2);
         }
 
     }
@@ -526,7 +558,9 @@ public class CodeGen {
             }
         }
 
-
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Storing Addition Operation: " + value1 + " + " + value2 + " in variable: " + var);
+        }
 
     }
 
@@ -549,6 +583,10 @@ public class CodeGen {
         heapEnd--;
 
         heapOutput = appendHeapOut + heapOutput;
+
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Storing value: " + value + " in heap at location: " + heapEnd);
+        }
     }
 
 
@@ -567,9 +605,17 @@ public class CodeGen {
                 opCode += "AC" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp() + "A202FF";
 
             }
+
+            if(verboseMode) {
+                System.out.println("CODE GENERATION: Printing variable: " + variableName);
+            }
         }
         else if(Character.toString(variableName).matches("[0-9]")){
             opCode += "A00" + Character.toString(variableName) + "A201FF";
+
+            if(verboseMode) {
+                System.out.println("CODE GENERATION: Printing value: " + variableName);
+            }
         }
 
         totalBytesUsed += opCode.length()/2;
@@ -604,6 +650,10 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Printing value: " + val);
+        }
+
     }
 
     public void initializePrintString(String val){
@@ -626,6 +676,10 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
+        if(verboseMode) {
+            System.out.println("CODE GENERATION: Printing value: " + val);
+        }
+
     }
 
     public void compareValues(Node node1, Node node2, boolean inPrint, boolean isEqual){
@@ -633,6 +687,14 @@ public class CodeGen {
 
         String val1 = node1.getName();
         String val2 = node2.getName();
+
+        if(verboseMode) {
+            if (isEqual) {
+                System.out.println("CODE GENERATION: Comparing values: " + val1 + " + " + val2 + " in equality operation.");
+            } else {
+                System.out.println("CODE GENERATION: Comparing values: " + val1 + " + " + val2 + " in inequality operation.");
+            }
+        }
 
         // check if values are ints
         if(!val1.equals("isEqual") && !val1.equals("isNotEqual") && !val2.equals("isEqual") && !val2.equals("isNotEqual")) {
@@ -1093,9 +1155,11 @@ public class CodeGen {
 
                     opCodeOutput += opCode;
                 }
-                // TODO: look into memory issue here
+                // comparing string values -> not supported
                 else {
-                    storeHeap(val2);
+                    errorCount++;
+                    System.out.println("CODE GENERATION: ERROR: Comparing Strings is not supported.");
+                    /*storeHeap(val2);
 
                     String end = Integer.toHexString(heapEnd);
                     if (end.length() < 2) {
@@ -1146,6 +1210,7 @@ public class CodeGen {
                     totalBytesUsed += opCode.length() / 2;
 
                     opCodeOutput += opCode;
+                    */
                 }
 
             }
@@ -1299,7 +1364,6 @@ public class CodeGen {
                         if(insideIf && insideIfFirstPass){
                             jumpDist += 5;
                         }
-
                     }
 
                     if (inPrint) {
@@ -1318,10 +1382,12 @@ public class CodeGen {
 
                     opCodeOutput += opCode;
                 }
-                // comparing string values
-                // TODO: look into memory issue here
+                // comparing string values -> not supported
                 else {
-                    storeHeap(val2);
+                    errorCount++;
+                    System.out.println("CODE GENERATION: ERROR: Comparing Strings is not supported.");
+
+                    /*storeHeap(val2);
 
                     String end = Integer.toHexString(heapEnd);
                     if (end.length() < 2) {
@@ -1372,13 +1438,15 @@ public class CodeGen {
                     totalBytesUsed += opCode.length() / 2;
 
                     opCodeOutput += opCode;
+                    */
                 }
 
             }
-            // no variables, comparing 2 string / boolean values
-            // TODO: implement if have time
+            // no variables, comparing 2 string values -> not supported
             else {
-                storeHeap(val1);
+                errorCount++;
+                System.out.println("CODE GENERATION: ERROR: Comparing Strings is not supported.");
+                /*storeHeap(val1);
                 String end = Integer.toHexString(heapEnd);
 
                 if (end.length() < 2) {
@@ -1390,7 +1458,7 @@ public class CodeGen {
                     totalBytesUsed += opCode.length() / 2;
 
                     opCodeOutput += opCode;
-                }
+                }*/
             }
         }
         else{
@@ -1450,6 +1518,8 @@ public class CodeGen {
 
         opCodeOutput += opCode;
         insideIfFirstPass = false;
+
+        System.out.println("CODE GENERATION: Checking value: " + val1 + " in if statement.");
     }
 
     public String outputToString(){

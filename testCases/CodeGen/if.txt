@@ -47,3 +47,16 @@
   } 
   print("bye")
 }$
+
+{
+  int a 
+  a = 5
+  if (true == true){
+    int a 
+    print("hi") 
+    a = 2+a
+  } 
+  print(a)
+}$
+
+{boolean j j = false string a a = "a" string b b = a boolean f f = false}$
