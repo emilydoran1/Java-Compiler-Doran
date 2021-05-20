@@ -55,20 +55,24 @@ public class CodeGen {
 
             // begin code gen on root node children
             beginCodeGen(children);
+            // add end break statement
             opCodeOutput += "00";
             if(verboseMode) {
                 System.out.println("CODE GENERATION: Adding Break Statement");
             }
             totalBytesUsed += 1;
 
+            // get difference between code and heap to fill with zeros
             int difference = (256 - totalBytesUsed) - (256-heapEnd);
 
             String totalBytesUsedHex = Integer.toHexString(totalBytesUsed);
 
+            // make sure we didn't exceed 256 bytes
             if(difference < 0){
                 errorCount++;
                 System.out.println("CODE GENERATION: ERROR: Exceeded Stack Memory Limit. ");
             }
+            // fill zeros
             else if (errorCount == 0){
                 // add in zeros for empty bytes
                 for (int i = 0; i < difference; i++) {
@@ -89,7 +93,7 @@ public class CodeGen {
                 // backpatch static variables
                 for (int i = 0; i < varTable.getNumVariables(); i++) {
                     String temp = varTable.getVariableTable().get(i).getTemp();
-                    String hexTemp = Integer.toHexString(varTable.getVariableTable().get(i).getAddress());
+                    String hexTemp = Integer.toHexString(varTable.getVariableTable().get(i).getAddress()).toUpperCase();
                     if (hexTemp.length() < 2) {
                         hexTemp = "0" + hexTemp;
                     }
@@ -102,7 +106,7 @@ public class CodeGen {
                 // backpatch jump table
                 for (int i = 0; i < jumpTable.getNumVariables(); i++) {
                     String tempJump = jumpTable.getItem("J" + i).getTemp();
-                    String hexTemp = Integer.toHexString(jumpTable.getItem("J" + i).getDistance());
+                    String hexTemp = Integer.toHexString(jumpTable.getItem("J" + i).getDistance()).toUpperCase();
                     if (hexTemp.length() < 2) {
                         hexTemp = "0" + hexTemp;
                     }
@@ -114,7 +118,20 @@ public class CodeGen {
                 }
 
                 System.out.println("Program " + programNum + " Code Generation produced " + errorCount + " error(s)");
+
                 if(errorCount == 0) {
+                    System.out.println("\nProgram " + programNum + " Static Variable Table");
+                    System.out.println("---------------------------------");
+                    System.out.printf("%-6s%-7s%-9s%-4s\n", "Name", "Temp", "Address", "Scope");
+                    System.out.println("---------------------------------");
+                    varTable.printStaticVariableTable();
+
+                    System.out.println("\nProgram " + programNum + " Jump Table");
+                    System.out.println("----------------------");
+                    System.out.printf("%-6s%-7s\n", "Temp", "Distance");
+                    System.out.println("----------------------");
+                    jumpTable.printJumpTable();
+
                     System.out.println("\n" + outputToString());
                 }
             }
@@ -189,8 +206,6 @@ public class CodeGen {
                         jumpTable.getItem("J" + numJumpItems).setDistance(backToLoop);
                         jumpTable.getItem("J" + (numJumpItems-1)).setDistance(jumpDist);
                         jumpDist = 0;
-
-                        System.out.println(jumpTable.getItem("J1").getDistance());
                     }
                 }
                 // check if node is a print statement
@@ -406,7 +421,7 @@ public class CodeGen {
             else {
                 storeHeap(value);
 
-                end = Integer.toHexString(heapEnd);
+                end = Integer.toHexString(heapEnd).toUpperCase();
                 if (end.length() < 2) {
                     end = "0" + end;
                 }
@@ -614,7 +629,7 @@ public class CodeGen {
 
         String appendHeapOut = "";
         for(int i=0; i < value.length(); i++){
-            String tempHeapOut = Integer.toHexString((int) value.charAt(i));
+            String tempHeapOut = Integer.toHexString((int) value.charAt(i)).toUpperCase();
             if(tempHeapOut.length() < 2){
                 tempHeapOut = "0" + tempHeapOut;
             }
@@ -703,7 +718,7 @@ public class CodeGen {
 
         storeHeap(val);
 
-        String end = Integer.toHexString(heapEnd);
+        String end = Integer.toHexString(heapEnd).toUpperCase();
         if(end.length() < 2){
             end = "0" + end;
         }

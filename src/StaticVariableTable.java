@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * This class represents a static variable table for the 6502a instruction set
@@ -53,5 +54,15 @@ public class StaticVariableTable {
             }
         }
         return item;
+    }
+
+    /**
+     * Get the string representation of the static variable table
+     */
+    public void printStaticVariableTable(){
+        for(int i = 0; i < variableTable.size(); i++){
+            System.out.printf("%-6s%-7s%-9s%2s\n", variableTable.get(i).getVar(), variableTable.get(i).getTemp(),
+                    Integer.toHexString(variableTable.get(i).getAddress()).toUpperCase(), variableTable.get(i).getScope());
+        }
     }
 }

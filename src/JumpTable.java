@@ -55,4 +55,12 @@ public class JumpTable {
         return item;
     }
 
+    /**
+     * Get the string representation of the jump table
+     */
+    public void printJumpTable(){
+        for(int i = 0; i < jumpTable.size(); i++){
+            System.out.printf("%-6s%-7s\n", jumpTable.get(i).getTemp(), Integer.toHexString(jumpTable.get(i).getDistance()).toUpperCase());
+        }
+    }
 }
