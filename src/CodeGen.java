@@ -101,8 +101,8 @@ public class CodeGen {
                 }
                 // backpatch jump table
                 for (int i = 0; i < jumpTable.getNumVariables(); i++) {
-                    String tempJump = jumpTable.getJumpTable().get(i).getTemp();
-                    String hexTemp = Integer.toHexString(jumpTable.getJumpTable().get(i).getDistance());
+                    String tempJump = jumpTable.getItem("J" + i).getTemp();
+                    String hexTemp = Integer.toHexString(jumpTable.getItem("J" + i).getDistance());
                     if (hexTemp.length() < 2) {
                         hexTemp = "0" + hexTemp;
                     }
@@ -145,6 +145,7 @@ public class CodeGen {
             if(child.getChildren().size() > 0){
                 // get child's children
                 ArrayList<Node> childChildren = child.getChildren();
+                // check if we are getting into an if statement
                 if(child.getName().equals("If")){
                     insideIf = true;
                     insideIfFirstPass = true;
@@ -156,15 +157,21 @@ public class CodeGen {
                     }
                     insideIf = false;
                 }
+                // check if we are getting into a while statement
                 else if(child.getName().equals("While")){
                     insideWhile = true;
                     insideWhileFirstPass = true;
                     insideIfFirstPass = true;
                     beginCodeGen(childChildren);
+
+                    int numJumpItems = jumpTable.getNumVariables();
+                    JumpTableItem temp = new JumpTableItem("J"+ numJumpItems);
+                    jumpTable.addItem(temp);
+
                     String backOpCode = "";
 
                     backOpCode += "A9008D0000";
-                    backOpCode += "A201EC0000D0";
+                    backOpCode += "A201EC0000D0" + jumpTable.getItem("J" + numJumpItems).getTemp();
 
                     totalBytesUsed += backOpCode.length() / 2;
 
@@ -172,31 +179,18 @@ public class CodeGen {
 
                     jumpDist += backOpCode.length()/2;
 
-                    int backToLoop = 256 - opCodeOutput.length()/2 + startWhile - 1;
-
-                    String backToTopWhile = Integer.toHexString(backToLoop);
-
-                    if (backToTopWhile.length() < 2) {
-                        backToTopWhile = "0" + backToTopWhile;
-                    }
-
-                    backOpCode = backToTopWhile;
-
-                    jumpDist += backOpCode.length()/2;
-
-                    totalBytesUsed += backOpCode.length() / 2;
-
-                    opCodeOutput += backOpCode;
-
+                    int backToLoop = 256 - opCodeOutput.length()/2 + startWhile;
 
                     insideWhile = false;
                     startWhile = 0;
 
                     // get jump distance and update jump table item
-                    int numJumpItems = jumpTable.getNumVariables();
                     if(errorCount == 0) {
-                        jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
+                        jumpTable.getItem("J" + numJumpItems).setDistance(backToLoop);
+                        jumpTable.getItem("J" + (numJumpItems-1)).setDistance(jumpDist);
                         jumpDist = 0;
+
+                        System.out.println(jumpTable.getItem("J1").getDistance());
                     }
                 }
                 // check if node is a print statement
@@ -303,8 +297,8 @@ public class CodeGen {
                 }
                 // check if we are in an if condition and the boolean expression is just true | false
                 else if((child.getName().equals("true") || child.getName().equals("false")) &&
-                        child.getParent().getName().equals("If")){
-                    ifWithoutExpr(child);
+                        (child.getParent().getName().equals("If") || child.getParent().getName().equals("While"))){
+                    BoolOpWithoutExpr(child);
 
                 }
             }
@@ -1553,7 +1547,11 @@ public class CodeGen {
         }
     }
 
-    public void ifWithoutExpr(Node node1){
+    public void BoolOpWithoutExpr(Node node1){
+        if(insideWhileFirstPass) {
+            startWhile = opCodeOutput.length() / 2;
+        }
+
         String val1 = node1.getName();
         String opCode = "";
 
@@ -1600,6 +1598,7 @@ public class CodeGen {
 
         opCodeOutput += opCode;
         insideIfFirstPass = false;
+        insideWhileFirstPass = false;
 
         System.out.println("CODE GENERATION: Checking value: " + val1 + " in if statement.");
     }
