@@ -29,6 +29,11 @@ public class CodeGen {
     private boolean insideIfFirstPass = false;
     private int jumpDist = 0;
 
+    private boolean insideWhile = false;
+    private boolean insideWhileFirstPass = false;
+
+    private int startWhile = 0;
+
     public CodeGen(SyntaxTree ast, SymbolTable symbolTable, int programNum, boolean verboseMode, boolean passedLex, boolean passedParse,
                    boolean passedSemanticAnalysis){
         this.ast = ast;
@@ -151,6 +156,49 @@ public class CodeGen {
                     }
                     insideIf = false;
                 }
+                else if(child.getName().equals("While")){
+                    insideWhile = true;
+                    insideWhileFirstPass = true;
+                    insideIfFirstPass = true;
+                    beginCodeGen(childChildren);
+                    String backOpCode = "";
+
+                    backOpCode += "A9008D0000";
+                    backOpCode += "A201EC0000D0";
+
+                    totalBytesUsed += backOpCode.length() / 2;
+
+                    opCodeOutput += backOpCode;
+
+                    jumpDist += backOpCode.length()/2;
+
+                    int backToLoop = 256 - opCodeOutput.length()/2 + startWhile - 1;
+
+                    String backToTopWhile = Integer.toHexString(backToLoop);
+
+                    if (backToTopWhile.length() < 2) {
+                        backToTopWhile = "0" + backToTopWhile;
+                    }
+
+                    backOpCode = backToTopWhile;
+
+                    jumpDist += backOpCode.length()/2;
+
+                    totalBytesUsed += backOpCode.length() / 2;
+
+                    opCodeOutput += backOpCode;
+
+
+                    insideWhile = false;
+                    startWhile = 0;
+
+                    // get jump distance and update jump table item
+                    int numJumpItems = jumpTable.getNumVariables();
+                    if(errorCount == 0) {
+                        jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
+                        jumpDist = 0;
+                    }
+                }
                 // check if node is a print statement
                 else if(child.getName().equals("Print")){
                     // printing boolean value
@@ -188,12 +236,12 @@ public class CodeGen {
                 else if(child.getName().equals("Addition")){
                         storeAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0), child.getChildren().get(1), currentScope);
                 }
-                // check boolean values isEqual (within if)
-                else if(child.getName().equals("isEqual") && insideIf){
+                // check boolean values isEqual (within if or while)
+                else if(child.getName().equals("isEqual") && (insideIf || insideWhile)){
                     compareValues(child.getChildren().get(0), child.getChildren().get(1), false, true);
                 }
-                // check boolean values isNotEqual (within if)
-                else if(child.getName().equals("isNotEqual") && insideIf){
+                // check boolean values isNotEqual (within if or while)
+                else if(child.getName().equals("isNotEqual") && (insideIf || insideWhile)){
                     compareValues(child.getChildren().get(0), child.getChildren().get(1), false, false);
                 }
                 else{
@@ -282,7 +330,7 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
-        if(insideIf){
+        if(insideIf || insideWhile){
             jumpDist += opCode.length()/2;
         }
 
@@ -298,7 +346,7 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
-        if(insideIf){
+        if(insideIf || insideWhile){
             jumpDist += opCode.length()/2;
         }
 
@@ -322,7 +370,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
 
@@ -376,7 +424,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
 
@@ -418,7 +466,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
         }
@@ -443,7 +491,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
 
@@ -466,7 +514,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
         }
@@ -508,7 +556,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
         }
@@ -531,7 +579,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
 
@@ -553,7 +601,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
-            if(insideIf){
+            if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
         }
@@ -622,7 +670,7 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
-        if(insideIf){
+        if(insideIf || insideWhile){
             jumpDist += opCode.length()/2;
         }
 
@@ -642,7 +690,7 @@ public class CodeGen {
 
         opCode += "A0" + end + "A202FF";
 
-        if(insideIf){
+        if(insideIf || insideWhile){
             jumpDist += 5;
         }
 
@@ -668,7 +716,7 @@ public class CodeGen {
 
         opCode += "A0" + end + "A202FF";
 
-        if(insideIf){
+        if(insideIf || insideWhile){
             jumpDist += 5;
         }
 
@@ -683,6 +731,11 @@ public class CodeGen {
     }
 
     public void compareValues(Node node1, Node node2, boolean inPrint, boolean isEqual){
+        // declare start if inside while
+        if(insideWhileFirstPass) {
+            startWhile = opCodeOutput.length() / 2;
+        }
+
         String opCode = "";
 
         String val1 = node1.getName();
@@ -690,9 +743,9 @@ public class CodeGen {
 
         if(verboseMode) {
             if (isEqual) {
-                System.out.println("CODE GENERATION: Comparing values: " + val1 + " + " + val2 + " in equality operation.");
+                System.out.println("CODE GENERATION: Comparing values: " + val1 + " and " + val2 + " in equality operation.");
             } else {
-                System.out.println("CODE GENERATION: Comparing values: " + val1 + " + " + val2 + " in inequality operation.");
+                System.out.println("CODE GENERATION: Comparing values: " + val1 + " and " + val2 + " in inequality operation.");
             }
         }
 
@@ -729,7 +782,7 @@ public class CodeGen {
 
                     opCode += "A9FA8D" + newItem3.getTemp();
 
-                    if(insideIf) {
+                    if(insideIf || insideWhile) {
                         opCode += "A2F5EC" + newItem3.getTemp();
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -743,7 +796,7 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem3.getTemp();
 
-                    if(insideIf && insideIfFirstPass){
+                    if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
@@ -754,7 +807,7 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem3.getTemp();
 
-                    if(insideIf) {
+                    if(insideIf || insideWhile) {
                         opCode += "A2F5EC" + newItem3.getTemp();
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -767,7 +820,7 @@ public class CodeGen {
                     }
 
                     opCode += "A9FA8D" + newItem3.getTemp();
-                    if(insideIf && insideIfFirstPass){
+                    if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
@@ -775,12 +828,12 @@ public class CodeGen {
 
                 if (inPrint) {
                     opCode += "A202AC" + newItem3.getTemp() + "FF";
-                    if(insideIf && insideIfFirstPass){
+                    if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 6;
                     }
                 }
 
-                if(insideIf && !insideIfFirstPass){
+                if(insideIf || insideWhile && !insideIfFirstPass){
                     jumpDist += opCode.length()/2;
                 }
 
@@ -824,7 +877,7 @@ public class CodeGen {
 
                     opCode += "A2F5EC" + newItem1.getTemp();
 
-                    if(insideIf){
+                    if(insideIf || insideWhile){
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
@@ -837,14 +890,14 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem1.getTemp();
 
-                    if(insideIf && insideIfFirstPass){
+                    if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
                 }
                 // in an isEqual op
                 else {
-                    if(insideIf){
+                    if(insideIf || insideWhile){
                         opCode += "A9FA8D" + newItem1.getTemp();
 
                         opCode += "D005";
@@ -862,7 +915,7 @@ public class CodeGen {
 
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        if(insideIfFirstPass) {
+                        if(insideIfFirstPass || insideWhileFirstPass) {
                             jumpDist += 5;
                         }
                     }
@@ -884,12 +937,12 @@ public class CodeGen {
 
                 if (inPrint) {
                     opCode += "A202AC" + newItem1.getTemp() + "FF";
-                    if(insideIf && insideIfFirstPass){
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)){
                         jumpDist += 6;
                     }
                 }
 
-                if(insideIf && !insideIfFirstPass){
+                if((insideIf || insideWhile) && (!insideIfFirstPass || !insideWhileFirstPass)){
                     jumpDist += opCode.length()/2;
                 }
 
@@ -918,7 +971,7 @@ public class CodeGen {
 
                     opCode += "A2F5EC" + newItem1.getTemp();
 
-                    if(insideIf){
+                    if(insideIf || insideWhile){
                         int numJumpItems = jumpTable.getNumVariables();
 
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -932,7 +985,7 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem1.getTemp();
 
-                    if(insideIf && insideIfFirstPass){
+                    if((insideIf || insideWhile) && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
@@ -945,7 +998,7 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem1.getTemp();
 
-                    if(insideIf){
+                    if(insideIf || insideWhile){
                         opCode += "A2F5EC" + newItem1.getTemp();
                         int numJumpItems = jumpTable.getNumVariables();
 
@@ -961,7 +1014,7 @@ public class CodeGen {
 
                     opCode += "A9FA8D" + newItem1.getTemp();
 
-                    if(insideIf && insideIfFirstPass){
+                    if((insideIf || insideWhile) && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
@@ -969,12 +1022,12 @@ public class CodeGen {
 
                 if (inPrint) {
                     opCode += "A202AC" + newItem1.getTemp() + "FF";
-                    if(insideIf && insideIfFirstPass){
+                    if((insideIf || insideWhile) && insideIfFirstPass){
                         jumpDist += 6;
                     }
                 }
 
-                if(insideIf && !insideIfFirstPass){
+                if((insideIf || insideWhile) && !insideIfFirstPass){
                     jumpDist += opCode.length()/2;
                 }
 
@@ -1008,7 +1061,7 @@ public class CodeGen {
 
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1020,7 +1073,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if((insideIf || insideWhile) && insideIfFirstPass){
                             jumpDist += 5;
                         }
 
@@ -1033,7 +1086,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1047,7 +1100,7 @@ public class CodeGen {
 
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if((insideIf || insideWhile) && insideIfFirstPass){
                             jumpDist += 5;
                         }
 
@@ -1055,12 +1108,12 @@ public class CodeGen {
 
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
-                        if(insideIf && insideIfFirstPass){
+                        if((insideIf || insideWhile) && insideIfFirstPass){
                             jumpDist +=6;
                         }
                     }
 
-                    if(insideIf && !insideIfFirstPass){
+                    if(insideIf || insideWhile && !insideIfFirstPass){
                         jumpDist += opCode.length()/2;
                     }
 
@@ -1094,7 +1147,7 @@ public class CodeGen {
                         opCode += "A9FA8D" + newItem1.getTemp();
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1106,7 +1159,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist +=5;
                         }
 
@@ -1119,7 +1172,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1133,7 +1186,7 @@ public class CodeGen {
 
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist +=5;
                         }
 
@@ -1142,12 +1195,12 @@ public class CodeGen {
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist +=6;
                         }
                     }
 
-                    if(insideIf && !insideIfFirstPass){
+                    if(insideIf || insideWhile && !insideIfFirstPass){
                         jumpDist += opCode.length()/2;
                     }
 
@@ -1239,7 +1292,7 @@ public class CodeGen {
 
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1251,7 +1304,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist += 5;
                         }
 
@@ -1262,7 +1315,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1276,7 +1329,7 @@ public class CodeGen {
 
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist += 5;
                         }
 
@@ -1285,12 +1338,12 @@ public class CodeGen {
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist +=6;
                         }
                     }
 
-                    if(insideIf && !insideIfFirstPass){
+                    if(insideIf || insideWhile && !insideIfFirstPass){
                         jumpDist += opCode.length()/2;
                     }
 
@@ -1324,7 +1377,7 @@ public class CodeGen {
 
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1336,7 +1389,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist += 5;
                         }
 
@@ -1347,7 +1400,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf) {
+                        if(insideIf || insideWhile) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1361,7 +1414,7 @@ public class CodeGen {
 
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist += 5;
                         }
                     }
@@ -1369,12 +1422,12 @@ public class CodeGen {
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
 
-                        if(insideIf && insideIfFirstPass){
+                        if(insideIf || insideWhile && insideIfFirstPass){
                             jumpDist +=6;
                         }
                     }
 
-                    if(insideIf && !insideIfFirstPass){
+                    if(insideIf || insideWhile && !insideIfFirstPass){
                         jumpDist += opCode.length()/2;
                     }
 
@@ -1468,6 +1521,35 @@ public class CodeGen {
 
         if(insideIfFirstPass){
             insideIfFirstPass = false;
+        }
+
+        /*if(insideWhile && insideWhileFirstPass){
+            String backOpCode = "";
+
+            backOpCode += "A9008D0000";
+            backOpCode += "A201EC0000D0";
+            totalBytesUsed += backOpCode.length() / 2;
+
+            opCodeOutput += backOpCode;
+
+            int backToLoop = 256 - opCodeOutput.length()/2 + start - 2;
+
+            String backToTopWhile = Integer.toHexString(backToLoop);
+
+            if (backToTopWhile.length() < 2) {
+                backToTopWhile = "0" + backToTopWhile;
+            }
+
+            backOpCode = backToTopWhile;
+
+
+            totalBytesUsed += backOpCode.length() / 2;
+
+            opCodeOutput += backOpCode;
+        }*/
+
+        if(insideWhileFirstPass){
+            insideWhileFirstPass = false;
         }
     }
 
