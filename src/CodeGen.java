@@ -79,6 +79,7 @@ public class CodeGen {
                     opCodeOutput += "00";
                 }
 
+                // add heap to output
                 opCodeOutput += heapOutput;
 
                 if (totalBytesUsedHex.length() < 2) {
@@ -117,8 +118,9 @@ public class CodeGen {
                     }
                 }
 
-                System.out.println("Program " + programNum + " Code Generation produced " + errorCount + " error(s)");
+                System.out.println("Program " + programNum + " Code Generation Passed With " + errorCount + " error(s)");
 
+                // print static var table and jump table if no errors thrown in code gen
                 if(errorCount == 0) {
                     System.out.println("\nProgram " + programNum + " Static Variable Table");
                     System.out.println("---------------------------------");
@@ -136,8 +138,9 @@ public class CodeGen {
                 }
             }
 
+            // print error message if errors thrown
             if(errorCount > 0){
-                System.out.println("Program " + programNum + " Code Generation produced " + errorCount + " error(s)");
+                System.out.println("Program " + programNum + " Code Generation Failed With " + errorCount + " error(s)");
             }
 
         }
@@ -155,8 +158,13 @@ public class CodeGen {
         }
     }
 
+    /**
+     * Perform Depth First Traversal on the ArrayList of nodes
+     * @param children to perform dft on
+     */
     public void beginCodeGen(ArrayList<Node> children){
 
+        // iterate through each child node
         for(Node child: children){
             // check if it is a branch node
             if(child.getChildren().size() > 0){
@@ -166,8 +174,10 @@ public class CodeGen {
                 if(child.getName().equals("If")){
                     insideIf = true;
                     insideIfFirstPass = true;
+                    // call function on the children of the if
                     beginCodeGen(childChildren);
                     int numJumpItems = jumpTable.getNumVariables();
+                    // set jump distance once end of if statement is reached
                     if(errorCount == 0) {
                         jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
                         jumpDist = 0;
@@ -179,8 +189,10 @@ public class CodeGen {
                     insideWhile = true;
                     insideWhileFirstPass = true;
                     insideIfFirstPass = true;
+                    // call function on the children of the while
                     beginCodeGen(childChildren);
 
+                    // add jump variable to loop back around
                     int numJumpItems = jumpTable.getNumVariables();
                     JumpTableItem temp = new JumpTableItem("J"+ numJumpItems);
                     jumpTable.addItem(temp);
@@ -196,6 +208,7 @@ public class CodeGen {
 
                     jumpDist += backOpCode.length()/2;
 
+                    // get distance to loop back to
                     int backToLoop = 256 - opCodeOutput.length()/2 + startWhile;
 
                     insideWhile = false;
@@ -246,11 +259,11 @@ public class CodeGen {
                         storeAddInts(child.getParent().getChildren().get(0).getName().charAt(0), child.getChildren().get(0), child.getChildren().get(1), currentScope);
                 }
                 // check boolean values isEqual (within if or while)
-                else if(child.getName().equals("isEqual") && (insideIf || insideWhile)){
+                else if(child.getName().equals("isEqual") && ((insideIf || insideWhile) && (insideWhileFirstPass || insideIfFirstPass))){
                     compareValues(child.getChildren().get(0), child.getChildren().get(1), false, true);
                 }
                 // check boolean values isNotEqual (within if or while)
-                else if(child.getName().equals("isNotEqual") && (insideIf || insideWhile)){
+                else if(child.getName().equals("isNotEqual") && ((insideIf || insideWhile) && (insideWhileFirstPass || insideIfFirstPass))){
                     compareValues(child.getChildren().get(0), child.getChildren().get(1), false, false);
                 }
                 else{
@@ -278,7 +291,7 @@ public class CodeGen {
             else{
                 // variable declaration
                 if(child.getName().equals("int") || child.getName().equals("boolean") || child.getName().equals("string")){
-                    initializeVariable(child.getParent().getChildren().get(1).getName().charAt(0), currentScope);
+                    declareVariable(child.getParent().getChildren().get(1).getName().charAt(0), currentScope);
                 }
                 // assigning var to int
                 else if(child.getParent().getChildren().size() > 1 && child.getName().matches("[a-z]") &&
@@ -321,16 +334,23 @@ public class CodeGen {
 
     }
 
-    public void initializeVariable(char variableName, int scope){
+    /**
+     * Add op codes for variable declaration
+     * @param variableName, scope of variable
+     */
+    public void declareVariable(char variableName, int scope){
         int numVars = varTable.getNumVariables();
 
+        // create new static var item for the variable
         StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", variableName, scope);
         varTable.addItem(newItem);
         String opCode = "";
 
+        // if boolean set default to false
         if(getVariableType(Character.toString(variableName)).equals("boolean")){
             opCode += "A9FA8D" + newItem.getTemp();
         }
+        // if int/string set default to 0
         else{
             opCode += "A9008D" + newItem.getTemp();
         }
@@ -339,6 +359,7 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
+        // if inside if statement or while statement append to jump
         if(insideIf || insideWhile){
             jumpDist += opCode.length()/2;
         }
@@ -348,13 +369,19 @@ public class CodeGen {
         }
     }
 
+    /**
+     * Assign variable an integer value
+     * @param variableName, value to assign, scope of variable
+     */
     public void assignStmtInt(char variableName, String value, int scope){
+        // load value, store in temp location
         String opCode = "A90" + value + "8D" + varTable.getItem(variableName, scope).getTemp();
 
         totalBytesUsed += opCode.length()/2;
 
         opCodeOutput += opCode;
 
+        // if inside if statement or while statement append to jump
         if(insideIf || insideWhile){
             jumpDist += opCode.length()/2;
         }
@@ -364,13 +391,19 @@ public class CodeGen {
         }
     }
 
+    /**
+     * Assign variable a string value
+     * @param variableName, Node of var, scope of variable
+     */
     public void assignStmtString(char variableName, Node node, int scope){
+        // get node value being assigned
         String value = node.getName();
 
         String opCode = "";
 
-        // if you are assigning it to the value of a variable
+        // if you are assigning it to the value of another variable
         if(value.matches("[a-z]") && variableName != value.charAt(0)){
+            // load that temp location and store in variableName temp
             opCode += "AD" + varTable.getItem(value.charAt(0), scope).getTemp() + "8D" +
                     varTable.getItem(variableName, scope).getTemp();
 
@@ -390,6 +423,7 @@ public class CodeGen {
         // not assigning variable to another variable
         else if(variableName != value.charAt(0)){
             String end = "";
+            // check if assigning bool value and call heap memory location
             if(value.equals("true") || value.equals("false")){
                 if(value.equals("false")){
                     end = "FA";
@@ -400,31 +434,43 @@ public class CodeGen {
                 opCode += "A9" + end + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
 
             }
+            // assigning variable to boolean expression
             else if(value.equals("isEqual") || value.equals("isNotEqual")){
+                // make sure we don't have nested boolean (it is not supported)
                 if(!node.getChildren().get(0).equals("isEqual") && !node.getChildren().get(0).equals("isNotEqual") &&
                         !node.getChildren().get(1).equals("isEqual") && !node.getChildren().get(0).equals("isNotEqual")) {
+                    // compare the values for isEqual
                     if (value.equals("isEqual")) {
                         compareValues(node.getChildren().get(0), node.getChildren().get(1), false, true);
-                        end = varTable.getItem(Character.forDigit(tempCount - 1, 10), scope).getTemp();
-                    } else {
-                        compareValues(node.getChildren().get(0), node.getChildren().get(1), false, false);
-                        end = varTable.getItem(Character.forDigit(tempCount - 1, 10), scope).getTemp();
+                        end = varTable.getItem(Character.forDigit(tempCount - 1, 10), -1).getTemp();
                     }
+                    // compare the values for isNotEqual
+                    else {
+                        compareValues(node.getChildren().get(0), node.getChildren().get(1), false, false);
+                        end = varTable.getItem(Character.forDigit(tempCount - 1, 10), -1).getTemp();
+                    }
+                    // load end positon(will be true or false) and store in variable temp location
                     opCode += "AD" + end + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
+                    System.out.println(opCode);
 
                 }
+                // throw error for nested boolean
                 else{
                     errorCount++;
                     System.out.println("CODE GENERATION: ERROR: Nested Boolean Expressions are not supported.");
                 }
             }
+            // assigning string value to variable
             else {
+                // store the value in the heap
                 storeHeap(value);
 
+                // get location in heap of newly stored value
                 end = Integer.toHexString(heapEnd).toUpperCase();
                 if (end.length() < 2) {
                     end = "0" + end;
                 }
+                // load the heap end and store in variable temp location
                 opCode += "A9" + end + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
 
             }
@@ -433,6 +479,7 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
+            // if inside if statement or while statement add to jump
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
@@ -444,19 +491,26 @@ public class CodeGen {
 
     }
 
+    /**
+     * Print integer addition operation
+     * @param node1, node2, scope
+     */
     public void printAddInts(Node node1, Node node2, int scope){
         int numVars = varTable.getNumVariables();
 
+        // create new temporary item
         StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
         varTable.addItem(newItem);
 
+        // get node values
         String value1 = node1.getName();
         String value2 = node2.getName();
 
         String opCode = "";
 
-        // second value is a variable and we don't have any more nested integers
+        // second value is a variable and we don't have any more nested integer expressions
         if(!value2.matches("[0-9]") && !value2.equals("Addition")){
+            // load first value and save in temp item1
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
             numVars = varTable.getNumVariables();
@@ -464,10 +518,13 @@ public class CodeGen {
             StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
+            // add value of variable to accumulator
             opCode += "6D" + varTable.getItem(value2.charAt(0), scope).getTemp();
 
+            // store in temp 2 variable
             opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
 
+            // print temp 2 value
             opCode += "A201AC" + newItem2.getTemp();
 
 
@@ -475,31 +532,38 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
+            // add to jump if in if/while
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
         }
         // nested addition op
         else if(value2.equals("Addition")){
-
+            // call function on the nested op
             printAddInts(node2.getChildren().get(0), node2.getChildren().get(1), scope);
 
+            // load the first node value
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
+            // after ending recursion, add the first digit to the accumulated result
             opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
 
             opCode += "6D" + newItem.getTemp();
 
+            // store and load accumulator
             opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp() + "AD" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
 
+            // store accumulator in first temp
             opCode += "8D" + newItem.getTemp();
 
+            // print the accumulator value
             opCode += "A201AC" + newItem.getTemp();
 
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
 
+            // add to jump if inside if/while
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
@@ -507,7 +571,9 @@ public class CodeGen {
         }
         // just adding two ints
         else{
+            // store first value
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
+            // add second value to the accumulator
             opCode += "A90" + value2 + "6D" + newItem.getTemp();
 
             numVars = varTable.getNumVariables();
@@ -515,14 +581,17 @@ public class CodeGen {
             StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
+            // store the accumulator in new temp
             opCode += "8D" + newItem2.getTemp();
 
+            // print value
             opCode += "A201AC" + newItem2.getTemp();
 
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
 
+            // add to jump if inside if/while
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
@@ -534,6 +603,10 @@ public class CodeGen {
 
     }
 
+    /**
+     * Store integer addition operation
+     * @param var to store in, node1, node2, scope
+     */
     public void storeAddInts(char var, Node node1, Node node2, int scope){
         int numVars = varTable.getNumVariables();
 
@@ -542,43 +615,59 @@ public class CodeGen {
 
         numVars = varTable.getNumVariables();
 
+        // get node values
         String value1 = node1.getName();
         String value2 = node2.getName();
 
         String opCode = "";
 
+        // second value is a variable and we don't have any more nested integer expressions
         if(!value2.matches("[0-9]") && !value2.equals("Addition")){
+            // load first value and store in temp
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
             StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
+            // add variable current value to the accumulator
             opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
 
+            // add first value to accumulator
             opCode += "6D" + newItem.getTemp();
 
+            // store in second temp
             opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
 
+            // store accumulator in variable
             opCode += "8D" + varTable.getItem(var, scope).getTemp();
 
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
 
+            // add to jump if inside if/while
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
         }
+        // nested addition op
         else if(value2.equals("Addition")){
+            // call function on the nested op
             storeAddInts(var, node2.getChildren().get(0), node2.getChildren().get(1), scope);
+
+            // load initial first value and store in temp
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
+            // after ending recursion, add the first digit to the accumulated result
             opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
 
+            // store in variable
             opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
 
+            // store accumulator in first temp item
             opCode += "6D" + newItem.getTemp();
 
+            // load accumulator with variable value
             opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp() + "AD" +
                     varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
 
@@ -588,28 +677,36 @@ public class CodeGen {
 
             opCodeOutput += opCode;
 
+            // add to jump if inside if/while
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
 
         }
+        // just adding two ints
         else{
+            // load and store first value
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
+            // add second value to accumulator
             opCode += "A90" + value2 + "6D" + newItem.getTemp();
 
             StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
             varTable.addItem(newItem2);
 
+            // store accumulator in second temp
             opCode += "8D" + newItem2.getTemp();
 
+            // load value to y register
             opCode += "A201AC" + newItem2.getTemp();
 
+            // store result in variable
             opCode += "AC" +  newItem2.getTemp() + "8D" +  varTable.getItem(var, scope).getTemp();
 
             totalBytesUsed += opCode.length()/2;
 
             opCodeOutput += opCode;
 
+            // add to jump if inside if/while
             if(insideIf || insideWhile){
                 jumpDist += opCode.length()/2;
             }
@@ -621,6 +718,10 @@ public class CodeGen {
 
     }
 
+    /**
+     * Store string in heap
+     * @param value to store
+     */
     public void storeHeap(String value){
         // if we have a string, ignore the quotes
         if(value.charAt(0) == '\"'){
@@ -628,8 +729,11 @@ public class CodeGen {
         }
 
         String appendHeapOut = "";
+        // iterate through string and add to heap
         for(int i=0; i < value.length(); i++){
+            // get hex value of char
             String tempHeapOut = Integer.toHexString((int) value.charAt(i)).toUpperCase();
+            // make sure it is a byte
             if(tempHeapOut.length() < 2){
                 tempHeapOut = "0" + tempHeapOut;
             }
@@ -639,6 +743,7 @@ public class CodeGen {
         appendHeapOut += "00";
         heapEnd--;
 
+        // append to the heap
         heapOutput = appendHeapOut + heapOutput;
 
         if(verboseMode) {
@@ -646,7 +751,10 @@ public class CodeGen {
         }
     }
 
-
+    /**
+     * Print a variable value
+     * @param variableName, scope
+     */
     public void initializePrint(char variableName, int scope){
         String opCode = "";
 
@@ -667,6 +775,7 @@ public class CodeGen {
                 System.out.println("CODE GENERATION: Printing variable: " + variableName);
             }
         }
+        // check if printing an integer
         else if(Character.toString(variableName).matches("[0-9]")){
             opCode += "A00" + Character.toString(variableName) + "A201FF";
 
@@ -679,28 +788,36 @@ public class CodeGen {
 
         opCodeOutput += opCode;
 
+        // add to jump if inside if/while
         if(insideIf || insideWhile){
             jumpDist += opCode.length()/2;
         }
 
     }
 
+    /**
+     * Print boolean value
+     * @param val to print
+     */
     public void initializePrintBoolean(String val){
         String opCode = "";
 
         // boolean values are pre-stored, so we don't need to re store them
         String end;
+        // check if val == false -> set point in heap to get from to be false location
         if(val.equals("false")){
             end = "FA";
         }
+        // val == true -> set point in heap to get from to be true location
         else{
             end = "F5";
         }
 
         opCode += "A0" + end + "A202FF";
 
+        // add to jump if inside if/while
         if(insideIf || insideWhile){
-            jumpDist += 5;
+            jumpDist += opCode.length()/2;
         }
 
         totalBytesUsed += opCode.length()/2;
@@ -713,18 +830,26 @@ public class CodeGen {
 
     }
 
+    /**
+     * Print string value
+     * @param val to print
+     */
     public void initializePrintString(String val){
         String opCode = "";
 
+        // store value in heap
         storeHeap(val);
 
+        // get beginning location of string from heap
         String end = Integer.toHexString(heapEnd).toUpperCase();
         if(end.length() < 2){
             end = "0" + end;
         }
 
+        // load y with value from heap and print value at location
         opCode += "A0" + end + "A202FF";
 
+        // add to jump if inside if/while
         if(insideIf || insideWhile){
             jumpDist += 5;
         }
@@ -739,8 +864,12 @@ public class CodeGen {
 
     }
 
+    /**
+     * Compare two nodes within an isEqual/isNotEqual Boolean Expression
+     * @param node1, node2, boolean if inside print statement, boolean isEqual -> (true if ==) (false if !=)
+     */
     public void compareValues(Node node1, Node node2, boolean inPrint, boolean isEqual){
-        // declare start if inside while
+        // declare start location if inside while for jump back
         if(insideWhileFirstPass) {
             startWhile = opCodeOutput.length() / 2;
         }
@@ -766,6 +895,7 @@ public class CodeGen {
                 StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem);
 
+                // store first integer
                 opCode += "A90" + val1 + "8D" + newItem.getTemp();
 
                 numVars = varTable.getNumVariables();
@@ -773,10 +903,11 @@ public class CodeGen {
                 StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem2);
 
+                // store second integer
                 opCode += "A90" + val2 + "8D" + newItem2.getTemp();
 
+                // compare both integers and set z flag
                 opCode += "AE" + newItem.getTemp();
-
                 opCode += "EC" + newItem2.getTemp();
 
                 numVars = varTable.getNumVariables();
@@ -784,57 +915,86 @@ public class CodeGen {
                 StaticVariableTableItem newItem3 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem3);
 
+                // within != expression
                 if (!isEqual) {
+                    // set temp variable to be true
                     opCode += "A9F58D" + newItem3.getTemp();
 
+                    // if z flag from int comparison is true, stop over next set
                     opCode += "D005";
 
+                    // z flag was false, set temp variable to be false
                     opCode += "A9FA8D" + newItem3.getTemp();
 
-                    if(insideIf || insideWhile) {
+                    // check if inside if statement or while statement
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        // compare true to the value set in temp item
                         opCode += "A2F5EC" + newItem3.getTemp();
+
+                        // create jump variable for if/while
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
                         opCode += "D0" + tempJumpItem.getTemp();
                     }
+                    // not inside if/while
                     else{
+                        // compare true to the value set in temp item
                         opCode += "A2F5EC" + newItem3.getTemp();
+                        // if true, skip over next set of instructions
                         opCode += "D005";
                     }
 
+                    // z flag was false, set item to be true
                     opCode += "A9F58D" + newItem3.getTemp();
 
+                    // add to jump distance
                     if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
-                } else {
+                }
+                // within == expression
+                else {
+                    // set temp variable to be false
                     opCode += "A9FA8D" + newItem3.getTemp();
 
+                    // if z flag from int comparison is true, stop over next set
                     opCode += "D005";
 
+                    // z flag was false, set temp variable to be false
                     opCode += "A9F58D" + newItem3.getTemp();
 
-                    if(insideIf || insideWhile) {
+                    // check if inside if statement or while statement
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        // compare true to the value set in temp item
                         opCode += "A2F5EC" + newItem3.getTemp();
+
+                        // create jump variable for if/while
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
                         opCode += "D0" + tempJumpItem.getTemp();
                     }
+                    // not inside if/while
                     else{
+                        // compare false to the value set in temp item
                         opCode += "A2FAEC" + newItem3.getTemp();
+                        // if true, skip over next set of instructions
                         opCode += "D005";
                     }
 
+                    // z flag was false, set item to be false
                     opCode += "A9FA8D" + newItem3.getTemp();
+
+                    // add to jump distance
                     if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 5;
                     }
 
                 }
 
+                // if inside print print the true/false value stored
                 if (inPrint) {
                     opCode += "A202AC" + newItem3.getTemp() + "FF";
                     if(insideIf || insideWhile && insideIfFirstPass){
@@ -842,7 +1002,9 @@ public class CodeGen {
                     }
                 }
 
-                if(insideIf || insideWhile && !insideIfFirstPass){
+                // add to jump if inside if/while and not in first pass
+                if((insideIf || insideWhile) && !insideIfFirstPass && !insideWhileFirstPass){
+                    System.out.println("here");
                     jumpDist += opCode.length()/2;
                 }
 
@@ -869,6 +1031,7 @@ public class CodeGen {
                 }
                 opCode += "AE" + endVal1 + "00";
 
+                // set z flag based on boolean comparison
                 opCode += "EC" + endVal2 + "00";
 
                 int numVars = varTable.getNumVariables();
@@ -878,27 +1041,37 @@ public class CodeGen {
 
                 // check if we are in an isNotEqual op
                 if (!isEqual) {
+                    // set temp variable to be true
                     opCode += "A9F58D" + newItem1.getTemp();
 
+                    // if z flag from int comparison is true, skip over next set
                     opCode += "D005";
 
+                    // z flag was false, set temp variable to be false
                     opCode += "A9FA8D" + newItem1.getTemp();
 
+                    // compare true to the temp value
                     opCode += "A2F5EC" + newItem1.getTemp();
 
-                    if(insideIf || insideWhile){
+                    // check if inside if statement/while statement
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        // create jump table item
                         int numJumpItems = jumpTable.getNumVariables();
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
 
+                        // jump to temp location which will later be backpatched
                         opCode += "D0" + tempJumpItem.getTemp();
                     }
+                    // not inside if/while skip over storing true in temp
                     else {
                         opCode += "D005";
                     }
 
+                    // z flag was false, set item to be true
                     opCode += "A9F58D" + newItem1.getTemp();
 
+                    // add to jump if inside if/while
                     if(insideIf || insideWhile && insideIfFirstPass){
                         jumpDist += 5;
                     }
@@ -906,44 +1079,61 @@ public class CodeGen {
                 }
                 // in an isEqual op
                 else {
-                    if(insideIf || insideWhile){
+                    // check if inside if/while statement
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        // set temp to be false
                         opCode += "A9FA8D" + newItem1.getTemp();
 
+                        // if z flag from prev comparison was true, skip next instruction
                         opCode += "D005";
 
+                        // if z flag was false, set temp to be true
                         opCode += "A9F58D" + newItem1.getTemp();
 
+                        // compare true to temp value
                         opCode += "A2F5EC" + newItem1.getTemp();
 
                         int numJumpItems = jumpTable.getNumVariables();
 
+                        // create jump table item
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
 
+                        // jump to temp location which will later be backpatched
                         opCode += "D0" + tempJumpItem.getTemp();
 
+                        // store false in temp
                         opCode += "A9FA8D" + newItem1.getTemp();
 
+                        // if in the first pass of the if/while add to jump
                         if(insideIfFirstPass || insideWhileFirstPass) {
                             jumpDist += 5;
                         }
                     }
+                    // not inside if/while statement
                     else {
+                        // set temp to be false
                         opCode += "A9FA8D" + newItem1.getTemp();
 
+                        // if z flag from prev comparison was true, skip next instruction
                         opCode += "D005";
 
+                        // if z flag was false, set temp to be true
                         opCode += "A9F58D" + newItem1.getTemp();
 
+                        // compare false to temp value
                         opCode += "A2FAEC" + newItem1.getTemp();
 
+                        // if z flag is true, skip next instruction
                         opCode += "D005";
 
+                        // if z flag was false, set temp item to false
                         opCode += "A9FA8D" + newItem1.getTemp();
                     }
 
                 }
 
+                // if inside print statement, print the true/false value
                 if (inPrint) {
                     opCode += "A202AC" + newItem1.getTemp() + "FF";
                     if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)){
@@ -951,6 +1141,7 @@ public class CodeGen {
                     }
                 }
 
+                // if inside if/while and not first pass, add to jump
                 if((insideIf || insideWhile) && (!insideIfFirstPass || !insideWhileFirstPass)){
                     jumpDist += opCode.length()/2;
                 }
@@ -972,28 +1163,38 @@ public class CodeGen {
 
                 // we are in != op
                 if (!isEqual) {
+                    // store true in temp
                     opCode += "A9F58D" + newItem1.getTemp();
 
+                    // if z flag from previous comparison was true, skip next instruction set
                     opCode += "D005";
 
+                    // if z flag was false, set temp to false
                     opCode += "A9FA8D" + newItem1.getTemp();
 
+                    // compare true to temp value
                     opCode += "A2F5EC" + newItem1.getTemp();
 
-                    if(insideIf || insideWhile){
+                    // check if inside if/while to update jump
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        // add jump item
                         int numJumpItems = jumpTable.getNumVariables();
 
                         JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                         jumpTable.addItem(tempJumpItem);
 
+                        // jump to temp location which will later be backpatched
                         opCode += "D0" + tempJumpItem.getTemp();
                     }
+                    // not inside if/while, if z flag true skip next instruction
                     else{
                         opCode += "D005";
                     }
 
+                    // if z flag false set temp to true
                     opCode += "A9F58D" + newItem1.getTemp();
 
+                    // if inside first pass, add 5 to jump dist
                     if((insideIf || insideWhile) && insideIfFirstPass){
                         jumpDist += 5;
                     }
@@ -1007,7 +1208,7 @@ public class CodeGen {
 
                     opCode += "A9F58D" + newItem1.getTemp();
 
-                    if(insideIf || insideWhile){
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                         opCode += "A2F5EC" + newItem1.getTemp();
                         int numJumpItems = jumpTable.getNumVariables();
 
@@ -1070,7 +1271,7 @@ public class CodeGen {
 
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1095,7 +1296,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1156,7 +1357,7 @@ public class CodeGen {
                         opCode += "A9FA8D" + newItem1.getTemp();
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1181,7 +1382,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1301,7 +1502,7 @@ public class CodeGen {
 
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1324,7 +1525,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1386,7 +1587,7 @@ public class CodeGen {
 
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
@@ -1409,7 +1610,7 @@ public class CodeGen {
 
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        if(insideIf || insideWhile) {
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             opCode += "A2F5EC" + newItem1.getTemp();
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
@@ -1618,7 +1819,12 @@ public class CodeGen {
         System.out.println("CODE GENERATION: Checking value: " + val1 + " in if statement.");
     }
 
+    /**
+     * format op code to be two digit bytes
+     * @return formatted op code
+     */
     public String outputToString(){
+        // set blocks to be of two and add one space between sets
         String val = "2";
         String result = opCodeOutput.replaceAll("(.{" + val + "})", "$1 ").trim();
         return result;

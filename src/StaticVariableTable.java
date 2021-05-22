@@ -51,6 +51,7 @@ public class StaticVariableTable {
         for(int i = 0; i < variableTable.size(); i++){
             if(variableTable.get(i).getScope() == scopeNum && variableTable.get(i).getVar() == name){
                 item = variableTable.get(i);
+                i = variableTable.size();
             }
         }
         return item;
