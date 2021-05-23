@@ -88,3 +88,15 @@
 {if("hello" != "hi"){print("yes")}print("finished")}$
 
 {string a a = "hello" print(("hello" == "hi")) if("hello" == "hi"){print("equal")}print("done with compare")}$
+
+
+{
+  string a 
+  a = "hello"
+  string c 
+  c = a
+  if(a == c){
+    c = "google"
+  }  
+  print(c)
+}$
