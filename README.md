@@ -121,7 +121,8 @@ Compiler for Marist Spring 2021 Compilers Course
     ----------------------
     Temp  Distance
     ----------------------
-
+    
+    Program 1 Machine Code:
     A9 00 8D 0B 00 A9 01 8D 0B 00 00 00 00 00 00 00 
     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
@@ -218,6 +219,7 @@ Output in Non-Verbose Test Mode:
     Temp  Distance
     ----------------------
 
+    Program 1 Machine Code:
     A9 00 8D 11 00 A9 01 8D 11 00 AC 11 00 A2 01 FF 
     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
