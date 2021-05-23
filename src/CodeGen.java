@@ -134,7 +134,7 @@ public class CodeGen {
                     System.out.println("----------------------");
                     jumpTable.printJumpTable();
 
-                    System.out.println("\n" + outputToString());
+                    System.out.println("\nProgram "  + programNum + " Machine Code:\n" + outputToString() + "\n");
                 }
             }
 
@@ -2080,6 +2080,8 @@ public class CodeGen {
         // set blocks to be of two and add one space between sets
         String val = "2";
         String result = opCodeOutput.replaceAll("(.{" + val + "})", "$1 ").trim();
+
+        result = result.replaceAll("(.{48})", "$1\n");
         return result;
     }
 
