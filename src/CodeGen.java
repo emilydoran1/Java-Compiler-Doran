@@ -1003,7 +1003,6 @@ public class CodeGen {
 
                 // add to jump if inside if/while and not in first pass
                 if((insideIf || insideWhile) && !insideIfFirstPass && !insideWhileFirstPass){
-                    System.out.println("here");
                     jumpDist += opCode.length()/2;
                 }
 
@@ -1141,7 +1140,7 @@ public class CodeGen {
                 }
 
                 // if inside if/while and not first pass, add to jump
-                if((insideIf || insideWhile) && (!insideIfFirstPass || !insideWhileFirstPass)){
+                if((insideIf || insideWhile) && !insideIfFirstPass && !insideWhileFirstPass){
                     jumpDist += opCode.length()/2;
                 }
 
@@ -1482,19 +1481,21 @@ public class CodeGen {
 
                     opCodeOutput += opCode;
                 }
-                // comparing string values -> not supported
+                // comparing string values
                 else {
-                    errorCount++;
-                    System.out.println("CODE GENERATION: ERROR: Comparing Strings is not supported.");
-                    /*storeHeap(val2);
+                    // store first value in heap
+                    storeHeap(val2);
+                    String endVal2 = Integer.toHexString(heapEnd);
 
-                    String end = Integer.toHexString(heapEnd);
-                    if (end.length() < 2) {
-                        end = "0" + end;
+                    if (endVal2.length() < 2) {
+                        endVal2 = "0" + endVal2;
                     }
 
-                    opCode += "AE" + end;
+                    // compare 2 string values
+                    opCode += "AE" + endVal2.toUpperCase() + "00";
 
+                    // set z flag based on boolean comparison
+                    // compare value to the variable value
                     opCode += "EC" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
 
                     int numVars = varTable.getNumVariables();
@@ -1502,42 +1503,72 @@ public class CodeGen {
                     StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
-                    if (!isEqual) {
-                        opCode += "A9F58D" + newItem1.getTemp();
+                    // set temp to be true
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                        opCode += "D005";
+                    // if z flag from int comparison is true, skip over next set
+                    opCode += "D005";
 
-                        opCode += "A9FA8D" + newItem1.getTemp();
+                    // z flag was false, set temp variable to be false
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
+                    // compare true to the temp value
+                    if(isEqual) {
                         opCode += "A2F5EC" + newItem1.getTemp();
-
-                        opCode += "D005";
-
-                        opCode += "A9F58D" + newItem1.getTemp();
-
-                    } else {
-                        opCode += "A9FA8D" + newItem1.getTemp();
-
-                        opCode += "D005";
-
-                        opCode += "A9F58D" + newItem1.getTemp();
-
+                    }
+                    // compare false to temp value
+                    else{
                         opCode += "A2FAEC" + newItem1.getTemp();
-
-                        opCode += "D005";
-
-                        opCode += "A9FA8D" + newItem1.getTemp();
-
                     }
 
+                    // check if inside if statement/while statement
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        if(isEqual) {
+                            opCode += "A2FAEC" + newItem1.getTemp();
+                        }
+                        // compare false to temp value
+                        else{
+                            opCode += "A2F5EC" + newItem1.getTemp();
+                        }
+
+                        // create jump table item
+                        int numJumpItems = jumpTable.getNumVariables();
+                        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                        jumpTable.addItem(tempJumpItem);
+
+                        // jump to temp location which will later be backpatched
+                        opCode += "D0" + tempJumpItem.getTemp();
+                    }
+                    // not inside if/while skip over storing true in temp
+                    else {
+                        opCode += "D005";
+                    }
+
+                    // z flag was false, set item to be false
+                    opCode += "A9FA8D" + newItem1.getTemp();
+
+                    // add to jump if inside if/while
+                    if((insideIf || insideWhile) && insideIfFirstPass){
+                        jumpDist += 5;
+                    }
+
+                    // if inside print statement, print the true/false value
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)){
+                            jumpDist += 6;
+                        }
+                    }
+
+                    // if inside if/while and not first pass, add to jump
+                    if((insideIf || insideWhile) && !insideIfFirstPass && !insideWhileFirstPass){
+                        System.out.println(!insideWhileFirstPass);
+                        jumpDist += opCode.length()/2;
                     }
 
                     totalBytesUsed += opCode.length() / 2;
 
                     opCodeOutput += opCode;
-                    */
                 }
 
             }
@@ -1765,83 +1796,191 @@ public class CodeGen {
 
                     opCodeOutput += opCode;
                 }
-                // comparing string values -> not supported
+                // comparing string value to variable
                 else {
-                    errorCount++;
-                    System.out.println("CODE GENERATION: ERROR: Comparing Strings is not supported.");
+                    // store first value in heap
+                    storeHeap(val1);
+                    String endVal1 = Integer.toHexString(heapEnd);
 
-                    /*storeHeap(val2);
-
-                    String end = Integer.toHexString(heapEnd);
-                    if (end.length() < 2) {
-                        end = "0" + end;
+                    if (endVal1.length() < 2) {
+                        endVal1 = "0" + endVal1;
                     }
 
-                    opCode += "AE" + end;
+                    // compare 2 string values
+                    opCode += "AE" + endVal1.toUpperCase() + "00";
 
-                    opCode += "EC" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
+                    // set z flag based on boolean comparison
+                    // compare value to the variable value
+                    opCode += "EC" + varTable.getItem(val2.charAt(0), getVariableScope(val2)).getTemp();
 
                     int numVars = varTable.getNumVariables();
 
                     StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
-                    if (!isEqual) {
-                        opCode += "A9F58D" + newItem1.getTemp();
+                    // set temp to be true
+                    opCode += "A9F58D" + newItem1.getTemp();
 
-                        opCode += "D005";
+                    // if z flag from int comparison is true, skip over next set
+                    opCode += "D005";
 
-                        opCode += "A9FA8D" + newItem1.getTemp();
+                    // z flag was false, set temp variable to be false
+                    opCode += "A9FA8D" + newItem1.getTemp();
 
+                    // compare true to the temp value
+                    if(isEqual) {
                         opCode += "A2F5EC" + newItem1.getTemp();
-
-                        opCode += "D005";
-
-                        opCode += "A9F58D" + newItem1.getTemp();
-
-                    } else {
-                        opCode += "A9FA8D" + newItem1.getTemp();
-
-                        opCode += "D005";
-
-                        opCode += "A9F58D" + newItem1.getTemp();
-
+                    }
+                    // compare false to temp value
+                    else{
                         opCode += "A2FAEC" + newItem1.getTemp();
-
-                        opCode += "D005";
-
-                        opCode += "A9FA8D" + newItem1.getTemp();
-
                     }
 
+                    // check if inside if statement/while statement
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                        if(isEqual) {
+                            opCode += "A2FAEC" + newItem1.getTemp();
+                        }
+                        // compare false to temp value
+                        else{
+                            opCode += "A2F5EC" + newItem1.getTemp();
+                        }
+                        // create jump table item
+                        int numJumpItems = jumpTable.getNumVariables();
+                        JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                        jumpTable.addItem(tempJumpItem);
+
+                        // jump to temp location which will later be backpatched
+                        opCode += "D0" + tempJumpItem.getTemp();
+                    }
+                    // not inside if/while skip over storing true in temp
+                    else {
+                        opCode += "D005";
+                    }
+
+                    // z flag was false, set item to be false
+                    opCode += "A9FA8D" + newItem1.getTemp();
+
+                    // add to jump if inside if/while
+                    if((insideIf || insideWhile) && insideIfFirstPass){
+                        jumpDist += 5;
+                    }
+
+                    // if inside print statement, print the true/false value
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
+                        if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)){
+                            jumpDist += 6;
+                        }
+                    }
+
+                    // if inside if/while and not first pass, add to jump
+                    if((insideIf || insideWhile) && !insideIfFirstPass && !insideWhileFirstPass){
+                        System.out.println(!insideWhileFirstPass);
+                        jumpDist += opCode.length()/2;
                     }
 
                     totalBytesUsed += opCode.length() / 2;
 
                     opCodeOutput += opCode;
-                    */
                 }
 
             }
-            // no variables, comparing 2 string values -> not supported
+            // no variables, comparing 2 string values
             else {
-                errorCount++;
-                System.out.println("CODE GENERATION: ERROR: Comparing Strings is not supported.");
-                /*storeHeap(val1);
-                String end = Integer.toHexString(heapEnd);
+                // store first value in heap
+                storeHeap(val1);
+                String endVal1 = Integer.toHexString(heapEnd);
 
-                if (end.length() < 2) {
-                    end = "0" + end;
-                    if (inPrint) {
-                        opCode += "A0" + end + "A202FF";
+                if (endVal1.length() < 2) {
+                    endVal1 = "0" + endVal1;
+                }
+
+                // store second value in heap
+                storeHeap(val2);
+                String endVal2 = Integer.toHexString(heapEnd);
+
+                if (endVal2.length() < 2) {
+                    endVal2 = "0" + endVal2;
+                }
+
+                // compare 2 string values
+                opCode += "AE" + endVal1.toUpperCase() + "00";
+
+                // set z flag based on string comparison
+                opCode += "EC" + endVal2.toUpperCase() + "00";
+
+                int numVars = varTable.getNumVariables();
+
+                StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
+                varTable.addItem(newItem1);
+
+                // set temp to be true
+                opCode += "A9F58D" + newItem1.getTemp();
+
+                // if z flag from int comparison is true, skip over next set
+                opCode += "D005";
+
+                // z flag was false, set temp variable to be false
+                opCode += "A9FA8D" + newItem1.getTemp();
+
+                // check if inside if statement/while statement
+                if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                    if(isEqual) {
+                        opCode += "A2F5EC" + newItem1.getTemp();
                     }
+                    // compare false to temp value
+                    else{
+                        opCode += "A2FAEC" + newItem1.getTemp();
+                    }
+                    // create jump table item
+                    int numJumpItems = jumpTable.getNumVariables();
+                    JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
+                    jumpTable.addItem(tempJumpItem);
 
-                    totalBytesUsed += opCode.length() / 2;
+                    // jump to temp location which will later be backpatched
+                    opCode += "D0" + tempJumpItem.getTemp();
+                }
+                else{
+                    // compare true to the temp value
+                    if(isEqual) {
+                        opCode += "A2FAEC" + newItem1.getTemp();
+                    }
+                    // compare false to temp value
+                    else{
+                        opCode += "A2F5EC" + newItem1.getTemp();
 
-                    opCodeOutput += opCode;
-                }*/
+                        opCode += "A9F58D" + newItem1.getTemp();
+                    }
+                    // not inside if/while skip over storing true in temp
+                    opCode += "D005";
+                }
+
+
+                // z flag was false, set item to be false
+                opCode += "A9FA8D" + newItem1.getTemp();
+
+                // add to jump if inside if/while
+                if((insideIf || insideWhile) && insideIfFirstPass){
+                    jumpDist += 5;
+                }
+
+                // if inside print statement, print the true/false value
+                if (inPrint) {
+                    opCode += "A202AC" + newItem1.getTemp() + "FF";
+                    if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)){
+                        jumpDist += 6;
+                    }
+                }
+
+                // if inside if/while and not first pass, add to jump
+                if((insideIf || insideWhile) && !insideIfFirstPass && !insideWhileFirstPass){
+                    jumpDist += opCode.length()/2;
+                }
+
+                totalBytesUsed += opCode.length() / 2;
+
+                opCodeOutput += opCode;
             }
         }
         // throw error for nested boolean expression

@@ -83,3 +83,8 @@
   } 
   print("bye")
 }$
+
+{if("hi" == "hi"){print("yes")}print("finished")}$
+{if("hello" != "hi"){print("yes")}print("finished")}$
+
+{string a a = "hello" print(("hello" == "hi")) if("hello" == "hi"){print("equal")}print("done with compare")}$
