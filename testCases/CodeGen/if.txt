@@ -61,3 +61,25 @@
 
 {boolean j j = false string a a = "a" string b b = a boolean f f = false}$
 
+
+{
+  boolean a 
+  a = true
+  if false{
+    print(7) 
+    print("hi") 
+    print((true!=a))
+  } 
+  print("bye")
+}$
+
+{
+  boolean a 
+  a = true
+  if true{
+    print(7) 
+    print("hi") 
+    print((a!=true))
+  } 
+  print("bye")
+}$
