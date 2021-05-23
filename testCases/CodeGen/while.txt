@@ -60,3 +60,18 @@
 }$
 
 {string a a =  "a" string b b = "b" if(a!=b){print(1)}}$
+
+{string a a = "hi" string b b = a print ((a == b))}$
+
+{
+  string a 
+  a = "hello" 
+  string b 
+  b = "hi" 
+  while(a != b){
+    print("not equal") 
+    a = b
+    print(a)
+  }
+  print("equal")
+}$

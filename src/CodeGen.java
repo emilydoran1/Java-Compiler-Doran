@@ -404,7 +404,8 @@ public class CodeGen {
         // if you are assigning it to the value of another variable
         if(value.matches("[a-z]") && variableName != value.charAt(0)){
             // load that temp location and store in variableName temp
-            opCode += "AD" + varTable.getItem(value.charAt(0), scope).getTemp() + "8D" +
+            int tempScope1 = getVariableScope(value);
+            opCode += "AD" + varTable.getItem(value.charAt(0), tempScope1).getTemp() + "8D" +
                     varTable.getItem(variableName, scope).getTemp();
 
 
