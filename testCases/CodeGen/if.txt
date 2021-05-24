@@ -11,10 +11,6 @@
 
 {if(2==1){print(7)}}$
 
-{print((1!=1))}$
-
-{boolean b print(b)}$
-
 {
   int a 
   a = 5 

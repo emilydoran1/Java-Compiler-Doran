@@ -14,10 +14,31 @@
 
 {
   string y
-  {{y = "hi" print(y)}}
+  {
+    {
+      y = "hi" 
+      print(y)
+    }
+  }
   string z 
   z = "bye"
-  {y = "bye" print(y)
-  print(z)}
+  {
+    y = "bye" 
+    print(y)
+    print(z)
+  }
+}$
+
+{
+  int i 
+  i = 1
+  print(i)
+  {
+    int i 
+    {
+      print(i)
+    }
+  }
+  print(i)
 }$
 

@@ -179,7 +179,8 @@ public class CodeGen {
                     int numJumpItems = jumpTable.getNumVariables();
                     // set jump distance once end of if statement is reached
                     if(errorCount == 0) {
-                        jumpTable.getItem("J" + numJumpItems).setDistance(jumpDist);
+                        System.out.println(jumpDist);
+                        jumpTable.getItem("J" + (numJumpItems-1)).setDistance(jumpDist);
                         jumpDist = 0;
                     }
                     insideIf = false;
@@ -375,7 +376,7 @@ public class CodeGen {
      */
     public void assignStmtInt(char variableName, String value, int scope){
         // load value, store in temp location
-        String opCode = "A90" + value + "8D" + varTable.getItem(variableName, scope).getTemp();
+        String opCode = "A90" + value + "8D" + varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
 
         totalBytesUsed += opCode.length()/2;
 
@@ -406,7 +407,7 @@ public class CodeGen {
             // load that temp location and store in variableName temp
             int tempScope1 = getVariableScope(value);
             opCode += "AD" + varTable.getItem(value.charAt(0), tempScope1).getTemp() + "8D" +
-                    varTable.getItem(variableName, scope).getTemp();
+                    varTable.getItem(variableName, getVariableScope(Character.toString(variableName))).getTemp();
 
 
             totalBytesUsed += opCode.length()/2;
@@ -519,7 +520,7 @@ public class CodeGen {
             varTable.addItem(newItem2);
 
             // add value of variable to accumulator
-            opCode += "6D" + varTable.getItem(value2.charAt(0), scope).getTemp();
+            opCode += "6D" + varTable.getItem(value2.charAt(0), getVariableScope(value2)).getTemp();
 
             // store in temp 2 variable
             opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
@@ -546,12 +547,12 @@ public class CodeGen {
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
             // after ending recursion, add the first digit to the accumulated result
-            opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
+            opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp();
 
             opCode += "6D" + newItem.getTemp();
 
             // store and load accumulator
-            opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp() + "AD" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
+            opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp() + "AD" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp();
 
             // store accumulator in first temp
             opCode += "8D" + newItem.getTemp();
@@ -630,7 +631,7 @@ public class CodeGen {
             varTable.addItem(newItem2);
 
             // add variable current value to the accumulator
-            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
+            opCode += "A9006D" + varTable.getItem(var, getVariableScope(Character.toString(var))).getTemp();
 
             // add first value to accumulator
             opCode += "6D" + newItem.getTemp();
@@ -639,7 +640,9 @@ public class CodeGen {
             opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
 
             // store accumulator in variable
-            opCode += "8D" + varTable.getItem(var, scope).getTemp();
+            System.out.println(getVariableScope(Character.toString(var)));
+            opCode += "8D" + varTable.getItem(var, getVariableScope(Character.toString(var))).getTemp();
+
 
             totalBytesUsed += opCode.length()/2;
 
@@ -659,19 +662,19 @@ public class CodeGen {
             opCode += "A90" +value1 + "8D" + newItem.getTemp();
 
             // after ending recursion, add the first digit to the accumulated result
-            opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
+            opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp();
 
             // store in variable
-            opCode += "A9006D" + varTable.getItem(var, scope).getTemp();
+            opCode += "A9006D" + varTable.getItem(var, getVariableScope(Character.toString(var))).getTemp();
 
             // store accumulator in first temp item
             opCode += "6D" + newItem.getTemp();
 
             // load accumulator with variable value
-            opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp() + "AD" +
-                    varTable.getItem(Character.forDigit(tempCount-1,10), scope).getTemp();
+            opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp() + "AD" +
+                    varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp();
 
-            opCode += "8D" + varTable.getItem(var, scope).getTemp();
+            opCode += "8D" + varTable.getItem(var, getVariableScope(Character.toString(var))).getTemp();
 
             totalBytesUsed += opCode.length()/2;
 
@@ -700,7 +703,7 @@ public class CodeGen {
             opCode += "A201AC" + newItem2.getTemp();
 
             // store result in variable
-            opCode += "AC" +  newItem2.getTemp() + "8D" +  varTable.getItem(var, scope).getTemp();
+            opCode += "AC" +  newItem2.getTemp() + "8D" +  varTable.getItem(var, getVariableScope(Character.toString(var))).getTemp();
 
             totalBytesUsed += opCode.length()/2;
 
@@ -847,7 +850,7 @@ public class CodeGen {
         }
 
         // load y with value from heap and print value at location
-        opCode += "A0" + end + "A202FF";
+        opCode += "AC" + end + "A202FF";
 
         // add to jump if inside if/while
         if(insideIf || insideWhile){

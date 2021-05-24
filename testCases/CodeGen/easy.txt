@@ -1,4 +1,8 @@
-{int a a = 1 print(a)}$
+{
+  int a 
+  a = 1 
+  print(a)
+}$
 
 {
   int i
@@ -7,19 +11,6 @@
   j = 5
   print(i)
   print(j)
-}$
-
-{
-  int i 
-  i = 1
-  print(i)
-  {
-    int i 
-    {
-      print(i)
-    }
-  }
-  print(i)
 }$
 
 {
