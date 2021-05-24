@@ -1266,48 +1266,49 @@ public class CodeGen {
             else if (val1.matches("[a-z]")) {
                 String type = getVariableType(val1);
 
-                // other node is of type int (so both are)
+                // comparing int values
                 if (type.equals("int")) {
 
-                    // load second value (int value)
+                    // load first value
                     opCode += "A20" + val2;
 
-                    // compare that value to the value of the variable
+                    // compare value to the variable value
                     opCode += "EC" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
 
                     int numVars = varTable.getNumVariables();
 
-                    // add temporary variable type to store it
                     StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
 
-                    // in != op
+                    // within != expression
                     if (!isEqual) {
                         // store true in temp
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        // if z flag from prev comparison was true, skip setting temp to true
+                        // if z flag from previous comparison was true, skip setting temp to true
                         opCode += "D005";
 
-                        // if z flag was false, set temp to false
+                        // if z flag is false, set temp to false
                         opCode += "A9FA8D" + newItem1.getTemp();
 
                         // compare true to temp value
                         opCode += "A2F5EC" + newItem1.getTemp();
 
-                        // if inside first pass of if statement or while statement add jump item
+                        // check if inside first pass of if/while statement
                         if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
+                            // add jump item to jump table
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
+                            // jump to temp location which will later be backpatched
                             opCode += "D0" + tempJumpItem.getTemp();
                         }
-                        // not inside if/while. if z flag was true, skip next instruction set
+                        // not inside first pass of if/while
                         else{
+                            // if true == temp val skip next instruction
                             opCode += "D005";
                         }
-
-                        // if z flag was true, set temp to false
+                        // true != temp set temp to true
                         opCode += "A9F58D" + newItem1.getTemp();
 
                         // add to jump if inside if/while
@@ -1316,55 +1317,55 @@ public class CodeGen {
                         }
 
                     }
-                    // in == op
+                    // within == expression
                     else {
                         // store false in temp
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        // if z flag from previous comparison was true, skip next instruction
+                        // if z flag from previous comparison is true, skip over next instruction set
                         opCode += "D005";
 
-                        // if z flag was true, set temp to false
+                        // if z flag is false, store true in temp
                         opCode += "A9F58D" + newItem1.getTemp();
 
-                        // if inside first pass of if/while statement add jump table item
+                        // check if inside first pass of if/while statement
                         if((insideIf || insideWhile) && (insideIfFirstPass || insideWhileFirstPass)) {
                             // compare true to temp
                             opCode += "A2F5EC" + newItem1.getTemp();
-                            // add jump table item
+                            // add jump table item to jump table
                             int numJumpItems = jumpTable.getNumVariables();
                             JumpTableItem tempJumpItem = new JumpTableItem("J" + numJumpItems);
                             jumpTable.addItem(tempJumpItem);
                             // jump to temp location which will later be backpatched
                             opCode += "D0" + tempJumpItem.getTemp();
                         }
-                        // not inside if/while, compare true to temp
                         else{
-                            opCode += "A2F5EC" + newItem1.getTemp();
-                            // if true, skip setting temp to false
+                            // compare false to temp
+                            opCode += "A2FAEC" + newItem1.getTemp();
                             opCode += "D005";
                         }
-                        // comparison was false, set temp to false
+
+                        // store false in temp if false != temp
                         opCode += "A9FA8D" + newItem1.getTemp();
 
-                        // add to jump distance if inside if/while
+                        // add to jump if inside if/while statement
                         if((insideIf || insideWhile) && insideIfFirstPass){
                             jumpDist += 5;
                         }
 
                     }
 
-                    // if inside print statement, print temp value
+                    // print temp if inside print statement
                     if (inPrint) {
                         opCode += "A202AC" + newItem1.getTemp() + "FF";
 
-                        // if inside first pass, add to jump
+                        // add to jump
                         if((insideIf || insideWhile) && insideIfFirstPass){
                             jumpDist +=6;
                         }
                     }
 
-                    // add to jump if inside if/while
+                    // add to jump
                     if((insideIf || insideWhile) && !insideIfFirstPass){
                         jumpDist += opCode.length()/2;
                     }
@@ -1372,7 +1373,6 @@ public class CodeGen {
                     totalBytesUsed += opCode.length() / 2;
 
                     opCodeOutput += opCode;
-
                 }
                 // variable type is boolean
                 else if (type.equals("boolean")) {

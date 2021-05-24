@@ -25,11 +25,11 @@
   if(a == 4){
     boolean b
     b = (a == 4)
-    a = 6
-    print(a)
+    print((a == 6))
   }
   boolean b 
   b = (a == 4)
-  print(b)
+  print (b)
+  print(a)
   
 }$
