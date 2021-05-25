@@ -33,3 +33,15 @@
   print(a)
   
 }$
+
+{
+  int a 
+  a = 0 
+  while(6+2+1 != a)
+  {
+    print(a)
+    print(" not equal ")
+    a = 1+2+a
+  } 
+  print("done")
+}$

@@ -80,7 +80,6 @@
   print("bye")
 }$
 
-{if("hi" == "hi"){print("yes")}print("finished")}$
 {if("hello" != "hi"){print("yes")}print("finished")}$
 
 {string a a = "hello" print(("hello" == "hi")) if("hello" == "hi"){print("equal")}print("done with compare")}$
@@ -95,4 +94,34 @@
     c = "google"
   }  
   print(c)
+}$
+
+{
+  int a 
+  a = 3 
+  if(1+2+a == 3+3)
+  {
+    print("y")
+  } 
+  print("n")
+}$
+
+{
+  int a 
+  a = 3 
+  if(a == 1+1+2)
+  {
+    print("y")
+  } 
+  print("n")
+}$
+
+{
+  int a 
+  a = 9 
+  if(6+2+1 == a)
+  {
+    print("equal")
+  } 
+  print("done")
 }$

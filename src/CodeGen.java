@@ -493,6 +493,104 @@ public class CodeGen {
     }
 
     /**
+     * compare integer addition operation
+     * @param node1, node2, scope
+     */
+    public void compareAddInts(Node node1, Node node2, int scope){
+        int numVars = varTable.getNumVariables();
+
+        // create new temporary item
+        StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
+        varTable.addItem(newItem);
+
+        // get node values
+        String value1 = node1.getName();
+        String value2 = node2.getName();
+
+        String opCode = "";
+
+        // second value is a variable and we don't have any more nested integer expressions
+        if(!value2.matches("[0-9]") && !value2.equals("Addition")){
+            // load first value and save in temp item1
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+
+            numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
+            varTable.addItem(newItem2);
+
+            // add value of variable to accumulator
+            opCode += "6D" + varTable.getItem(value2.charAt(0), getVariableScope(value2)).getTemp();
+
+            // store in temp 2 variable
+            opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+
+            // add to jump if inside if/while
+            if((insideIf || insideWhile) && !insideIfFirstPass){
+                jumpDist += opCode.length()/2;
+            }
+        }
+        // nested addition op
+        else if(value2.equals("Addition")){
+            // call function on the nested op
+            compareAddInts(node2.getChildren().get(0), node2.getChildren().get(1), scope);
+
+            // load the first node value
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+
+            // after ending recursion, add the first digit to the accumulated result
+            opCode += "A9006D" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp();
+
+            opCode += "6D" + newItem.getTemp();
+
+            // store and load accumulator
+            opCode += "8D" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp() + "AD" + varTable.getItem(Character.forDigit(tempCount-1,10), -1).getTemp();
+
+            // store accumulator in first temp
+            opCode += "8D" + newItem.getTemp() + "AD" + newItem.getTemp();
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+
+            // add to jump if inside if/while
+            if((insideIf || insideWhile) && !insideIfFirstPass){
+                jumpDist += opCode.length()/2;
+            }
+
+        }
+        // just adding two ints
+        else{
+            // store first value
+            opCode += "A90" +value1 + "8D" + newItem.getTemp();
+            // add second value to the accumulator
+            opCode += "A90" + value2 + "6D" + newItem.getTemp();
+
+            numVars = varTable.getNumVariables();
+
+            StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++,10), -1);
+            varTable.addItem(newItem2);
+
+            // store the accumulator in new temp
+            opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();;
+
+            totalBytesUsed += opCode.length()/2;
+
+            opCodeOutput += opCode;
+
+            // add to jump if inside if/while
+            if((insideIf || insideWhile) && !insideIfFirstPass){
+                jumpDist += opCode.length()/2;
+            }
+        }
+
+    }
+
+    /**
      * Print integer addition operation
      * @param node1, node2, scope
      */
@@ -640,7 +738,6 @@ public class CodeGen {
             opCode += "8D" + newItem2.getTemp() + "AD" + newItem2.getTemp();
 
             // store accumulator in variable
-            System.out.println(getVariableScope(Character.toString(var)));
             opCode += "8D" + varTable.getItem(var, getVariableScope(Character.toString(var))).getTemp();
 
 
@@ -892,22 +989,41 @@ public class CodeGen {
 
         // check if values are ints
         if(!val1.equals("isEqual") && !val1.equals("isNotEqual") && !val2.equals("isEqual") && !val2.equals("isNotEqual")) {
-            if (val1.matches("[0-9]") && val2.matches("[0-9]")) {
+            if ((val1.matches("[0-9]") || val1.equals("Addition")) && (val2.matches("[0-9]") || val2.equals("Addition"))) {
                 int numVars = varTable.getNumVariables();
 
                 StaticVariableTableItem newItem = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem);
 
-                // store first integer
-                opCode += "A90" + val1 + "8D" + newItem.getTemp();
+                // val 1 is digit
+                if(val1.matches("[0-9]")) {
+                    // store first integer
+                    opCode += "A90" + val1 + "8D" + newItem.getTemp();
+                }
+                // comparing addition op
+                else{
+                    // call function to add the numbers
+                    compareAddInts(node1.getChildren().get(0), node1.getChildren().get(1), currentScope);
+                    opCode += "8D" + newItem.getTemp();
+                }
 
                 numVars = varTable.getNumVariables();
 
                 StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                 varTable.addItem(newItem2);
 
-                // store second integer
-                opCode += "A90" + val2 + "8D" + newItem2.getTemp();
+                // val 1 is digit
+                if(val2.matches("[0-9]")) {
+                    // store second integer
+                    opCode += "A90" + val2 + "8D" + newItem2.getTemp();
+                }
+                // comparing addition op
+                else{
+                    // call function to add the numbers
+                    compareAddInts(node2.getChildren().get(0), node2.getChildren().get(1), currentScope);
+                    // store accumulator in temp
+                    opCode += "8D" + newItem2.getTemp();
+                }
 
                 // compare both integers and set z flag
                 opCode += "AE" + newItem.getTemp();
@@ -1269,13 +1385,28 @@ public class CodeGen {
                 // comparing int values
                 if (type.equals("int")) {
 
-                    // load first value
-                    opCode += "A20" + val2;
+                    int numVars = varTable.getNumVariables();
 
+                    StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
+                    varTable.addItem(newItem2);
+
+                    // val2 is digit
+                    if(val2.matches("[0-9]")) {
+                        // store first integer
+                        opCode += "A90" + val2 + "8D" + newItem2.getTemp();
+                    }
+                    // comparing addition op
+                    else{
+                        // call function to add the numbers
+                        compareAddInts(node2.getChildren().get(0), node2.getChildren().get(1), currentScope);
+                        opCode += "8D" + newItem2.getTemp();
+                    }
+
+                    opCode += "AE" + newItem2.getTemp();
                     // compare value to the variable value
                     opCode += "EC" + varTable.getItem(val1.charAt(0), getVariableScope(val1)).getTemp();
 
-                    int numVars = varTable.getNumVariables();
+                    numVars = varTable.getNumVariables();
 
                     StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
@@ -1583,13 +1714,29 @@ public class CodeGen {
                 // comparing int values
                 if (type.equals("int")) {
 
-                    // load first value
-                    opCode += "A20" + val1;
+                    int numVars = varTable.getNumVariables();
+
+                    StaticVariableTableItem newItem2 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
+                    varTable.addItem(newItem2);
+
+                    // val2 is digit
+                    if(val1.matches("[0-9]")) {
+                        // store first integer
+                        opCode += "A90" + val1 + "8D" + newItem2.getTemp();
+                    }
+                    // comparing addition op
+                    else{
+                        // call function to add the numbers
+                        compareAddInts(node1.getChildren().get(0), node1.getChildren().get(1), currentScope);
+                        opCode += "8D" + newItem2.getTemp();
+                    }
+
+                    opCode += "AE" + newItem2.getTemp();
 
                     // compare value to the variable value
                     opCode += "EC" + varTable.getItem(val2.charAt(0), getVariableScope(val2)).getTemp();
 
-                    int numVars = varTable.getNumVariables();
+                    numVars = varTable.getNumVariables();
 
                     StaticVariableTableItem newItem1 = new StaticVariableTableItem("T" + numVars + "XX", Character.forDigit(tempCount++, 10), -1);
                     varTable.addItem(newItem1);
@@ -2072,7 +2219,7 @@ public class CodeGen {
         insideIfFirstPass = false;
         insideWhileFirstPass = false;
 
-        System.out.println("CODE GENERATION: Checking value: " + val1 + " in if statement.");
+        System.out.println("CODE GENERATION: Checking value: " + val1 + " in if/while statement.");
     }
 
     /**
