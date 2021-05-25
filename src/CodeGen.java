@@ -850,7 +850,7 @@ public class CodeGen {
         }
 
         // load y with value from heap and print value at location
-        opCode += "AC" + end + "A202FF";
+        opCode += "A0" + end + "A202FF";
 
         // add to jump if inside if/while
         if(insideIf || insideWhile){
