@@ -179,7 +179,6 @@ public class CodeGen {
                     int numJumpItems = jumpTable.getNumVariables();
                     // set jump distance once end of if statement is reached
                     if(errorCount == 0) {
-                        System.out.println(jumpDist);
                         jumpTable.getItem("J" + (numJumpItems-1)).setDistance(jumpDist);
                         jumpDist = 0;
                     }
