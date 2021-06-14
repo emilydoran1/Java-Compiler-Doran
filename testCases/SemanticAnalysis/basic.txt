@@ -13,3 +13,19 @@
 
 {int a
 a = 3 + 2}$
+
+{
+  string a
+  {
+    int a 
+    a=2
+  }
+  a=""
+}$
+
+{
+  string a
+  {
+    a=2
+  }
+}$

@@ -1,0 +1,127 @@
+{
+  int a 
+  a = 5 
+  if(2==1){
+    print(7) 
+    print("hi") 
+    print(a)
+  } 
+  print("bye")
+}$
+
+{if(2==1){print(7)}}$
+
+{
+  int a 
+  a = 5 
+  if(false!=true){
+    print(7) 
+    print("hi") 
+    print(a)
+  } 
+  print("bye")
+}$
+
+{
+  boolean a 
+  a = true
+  if(false==a){
+    print(7) 
+    print("hi") 
+    print((a!=true))
+  } 
+  print("bye")
+}$
+
+{
+  boolean a 
+  a = true
+  if false{
+    print(7) 
+    print("hi") 
+    print((a!=true))
+  } 
+  print("bye")
+}$
+
+{
+  int a 
+  a = 5
+  if (true == true){
+    int a 
+    print("hi") 
+    a = 2+a
+  } 
+  print(a)
+}$
+
+{boolean j j = false string a a = "a" string b b = a boolean f f = false}$
+
+
+{
+  boolean a 
+  a = true
+  if false{
+    print(7) 
+    print("hi") 
+    print((true!=a))
+  } 
+  print("bye")
+}$
+
+{
+  boolean a 
+  a = true
+  if true{
+    print(7) 
+    print("hi") 
+    print((a!=true))
+  } 
+  print("bye")
+}$
+
+{if("hello" != "hi"){print("yes")}print("finished")}$
+
+{string a a = "hello" print(("hello" == "hi")) if("hello" == "hi"){print("equal")}print("done with compare")}$
+
+
+{
+  string a 
+  a = "hello"
+  string c 
+  c = a
+  if(a == c){
+    c = "google"
+  }  
+  print(c)
+}$
+
+{
+  int a 
+  a = 3 
+  if(1+2+a == 3+3)
+  {
+    print("y")
+  } 
+  print("n")
+}$
+
+{
+  int a 
+  a = 3 
+  if(a == 1+1+2)
+  {
+    print("y")
+  } 
+  print("n")
+}$
+
+{
+  int a 
+  a = 9 
+  if(6+2+1 == a)
+  {
+    print("equal")
+  } 
+  print("done")
+}$

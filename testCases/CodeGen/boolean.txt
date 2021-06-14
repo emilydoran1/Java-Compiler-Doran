@@ -1,0 +1,65 @@
+{print(1) print(true)}$
+
+{boolean b b = true print(b)
+b = false print(b)}$
+
+{
+  print("hello emily")
+  string s 
+  s = "goodbye emily"
+  print(s)
+}$
+
+{print((1!=6))}$
+
+{int a a = 6 print(a) int bb = 5 print((a!=b)) print(b)}$
+
+{ 
+  boolean a a = true 
+  boolean b
+  b = false
+  print((a!=b))
+}$
+
+
+{ 
+  boolean a a = true 
+  boolean b b = a
+  print((a!=b))
+}$
+
+{ 
+  string a a = "hi" 
+  string b b = a
+  b = "bye"
+  print((a!=b))
+}$
+
+{ 
+  int a a = 1 
+  int b
+  b = 7
+  print((a!=b))
+}$
+
+{ 
+  int a a = 1 
+  print((a!=1))
+}$
+
+{ 
+  boolean a a = false
+  print(a)
+  print((false==a))
+}$
+
+{ 
+  boolean a a = false
+  boolean b b = false
+  print((a!=b))
+}$
+
+{print(((true!=false) != (1 == 2)))}$
+
+
+{boolean a print(a) a = (1 == 1) print(a)}$

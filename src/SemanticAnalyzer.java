@@ -52,11 +52,17 @@ public class SemanticAnalyzer {
                 System.out.printf("%-6s%-9s%-7s%-4s\n", "Name", "Type", "Scope", "Line");
                 System.out.println("---------------------------");
                 symbolTable.printSymbolTable();
+
+                // call Code Generation
+                CodeGen codeGen = new CodeGen(ast, symbolTable, programNum, verboseMode, passedLex, passedParse, true);
             }
             // errors thrown -> stop compilation
             else{
                 System.out.println("\nAST for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
                 System.out.println("\nSymbol Table for program " + programNum + ": Skipped due to SEMANTIC ANALYSIS error(s)");
+
+                // call Code Generation
+                CodeGen codeGen = new CodeGen(ast, symbolTable, programNum, verboseMode, passedLex, passedParse, false);
             }
 
         }

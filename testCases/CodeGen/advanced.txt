@@ -1,0 +1,48 @@
+{
+  int a 
+  a = 2
+  while(a != 8){
+    print(a)
+    a = 1+2+a
+  }
+  print("done")
+  while(a != 0){
+    a = 0
+  }
+  while(a != 5){
+    print(a)
+    a = 1+a
+  }
+  print(a)
+} $
+
+{
+  int a
+  a = 1
+  if(a != 4){
+    a = 4
+  }
+  if(a == 4){
+    boolean b
+    b = (a == 4)
+    print((a == 6))
+  }
+  boolean b 
+  b = (a == 4)
+  print (b)
+  print(a)
+  
+}$
+
+{
+  int a 
+  a = 0 
+  while(6+2+1 != a)
+  {
+    print(a)
+    print(" not equal ")
+    a = 1+2+a
+  } 
+  print("done")
+
+}$

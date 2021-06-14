@@ -1,0 +1,77 @@
+{
+  int a 
+  a = 1 
+  while (a != 1)
+  {
+    a = 1+a 
+    print(a)
+  }
+
+  {
+    boolean b
+    b = true 
+    while (b != false)
+    {
+      b = false
+      string a 
+      a = "a"
+      print(a)
+    } 
+    while (a != 3)
+    {
+      print(a)
+      a = 1+a
+    } 
+
+    print("bye")
+  }
+}$
+
+{
+  int a 
+  a = 2
+  a = 1+2+a 
+  while(a != 9){
+    print(a)
+    a = 2+a
+  }
+  print("done")
+}$
+
+{
+  int a 
+  a = 6
+  a = 1+2+a 
+  while(a != 9){
+    print(a)
+    a = 2+a
+  }
+  print("done")
+}$
+
+{
+  boolean a
+  while(a != true){
+     print(a)
+     a = ("srt" == "srt")
+     print(a)
+  }
+  print("done")
+}$
+
+{string a a =  "a" string b b = "b" if(a!=b){print(1)}}$
+
+{string a a = "hi" string b b = a print ((a == b))}$
+
+{
+  string a 
+  a = "hello" 
+  string b 
+  b = "hi" 
+  while(a != b){
+    print("not equal") 
+    a = b
+    print(a)
+  }
+  print("equal")
+}$
